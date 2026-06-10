@@ -324,6 +324,7 @@
     function showPreviewScreen(event) {
         event.preventDefault();
         
+        // 抓取前台各欄位的輸入內容並帶入預覽區
         document.getElementById('p-company').innerText = document.getElementById('company').value;
         document.getElementById('p-vehicle_no').innerText = document.getElementById('vehicle_no').value.toUpperCase();
         document.getElementById('p-contact_person').innerText = document.getElementById('contact_person').value;
@@ -331,6 +332,7 @@
         document.getElementById('p-purpose').innerText = document.getElementById('purpose').value;
         document.getElementById('p-vehicle_type').innerText = document.getElementById('vehicle_type').value;
         
+        // 抓取重新排列後的「日期」與「24小時制時間」下拉選單數值
         const selectedDate = document.getElementById('visit_date').value;
         const selectedHour = document.getElementById('visitHour').value;
         const selectedMin = document.getElementById('visitMin').value;
@@ -338,6 +340,7 @@
         document.getElementById('p-visit_date').innerText = selectedDate;
         document.getElementById('p-visitTime').innerText = selectedHour + ":" + selectedMin;
         
+        // 切換畫面：隱藏填表畫面，顯示預覽核對畫面
         document.getElementById('formSection').classList.add('hidden-field');
         document.getElementById('previewSection').classList.remove('hidden-field');
     }
@@ -423,8 +426,7 @@
         document.getElementById('successSection').classList.add('hidden-field');
         document.getElementById('formSection').classList.remove('hidden-field');
     }
-
-    // 全球唯一：快取記憶體變數，儲存目前從雲端拉下來的所有車牌大名單
+    // 全球唯一快取記憶體變數，儲存目前從雲端拉下來的所有車牌大名單
     let globalCachedDataList = [];
 
     // 跨裝置同步：向資料庫拉取最新數據
@@ -489,7 +491,7 @@
             })
             .catch(error => {
                 console.error(error);
-                const errHTML = `<tr><td colspan="10" class="text-center text-danger py-3">⚠️ 雲端連線失敗，請確認 Web App URL 是否正確。</td></tr>`;
+                const errHTML = `<tr><td colspan="10" class="text-center text-danger py-3">⚠️ 雲端連線失敗，請檢查網路連線或 Web App URL 是否正確。</td></tr>`;
                 todayTbody.innerHTML = errHTML;
                 tomorrowTbody.innerHTML = errHTML;
             });
@@ -505,7 +507,7 @@
         const dd = String(tomorrow.getDate()).padStart(2, '0');
         const tomorrowString = yyyy + "-" + mm + "-" + dd;
 
-        // 2. 從全局記憶體中，精準篩選出預約明天到訪的所有車輛數據
+        // 2. 從全局記憶體中精準篩選出預約明天到訪的所有車輛數據
         let tomorrowCars = globalCachedDataList.filter(item => {
             return String(item.visit_date).trim() === tomorrowString;
         });
@@ -526,63 +528,73 @@
         doc.setFont("Helvetica", "normal");
         doc.setFontSize(12);
         doc.text("Registered Vehicle Log", 14, 21);
-doc.text("EPD Approval: ________________________", 200, 15);
-// 5. 將車輛數據動態轉換為對齊官方紙本欄位的二維矩陣陣列
-let tableRows = [];
-tomorrowCars.forEach((car, index) => {
-tableRows.push([
-index + 1, // 項目 Item
-car.company || '', // 公司名稱 Company
-String(car.vehicle_no).toUpperCase(), // 車牌號碼 Vehicle No.
-car.contact_person || '', // 聯絡人 Contact Person
-car.tel_no || '', // 電話號碼 Tel. No.
-car.time_in === '---' ? '' : car.time_in, // 進入時間 Time In
-car.time_out === '---' ? '' : car.time_out, // 離開時間 Time Out
-car.purpose || '', // 進入目的 Purpose
-car.vehicle_type || '' // 車輛種類 Vehicle Type
-]);
-});
-// 6. 驅動 AutoTable 套件，在 PDF 內部生成無變形且高度精美的實體表格
-doc.autoTable({
-startY: 28,
-head: [['Item', 'Company', 'Vehicle No.', 'Contact Person', 'Tel. No.', 'Time In', 'Time Out', 'Purpose / Work Content', 'Vehicle Type']],
-body: tableRows,
-theme: 'grid',
-headStyles: { fillColor:, textColor:, fontStyle: 'bold', halign: 'center' },
-bodyStyles: { textColor:, halign: 'center' },
-styles: { fontSize: 9, cellPadding: 3 },
-columnStyles: {
-0: { cellWidth: 12 }, // Item
-1: { cellWidth: 40 }, // Company
-2: { cellWidth: 26 }, // Vehicle No.
-3: { cellWidth: 30 }, // Contact Person
-4: { cellWidth: 26 }, // Tel. No.
-5: { cellWidth: 22 }, // Time In
-6: { cellWidth: 22 }, // Time Out
-7: { cellWidth: 50 }, // Purpose
-8: { cellWidth: 35 } // Vehicle Type
-}
-});
-// 7. 自動觸發設備下載：以明天日期命名檔案並儲存至工作人員的裝置
-const fileName = tomorrowString + "_Log.pdf";
-doc.save(fileName);
-}
-// 閘口人員專用：過濾兩個表格內的車牌關鍵字
-function filterGateTables() {
-const input = document.getElementById('searchPlate').value.toUpperCase();
-const tables = [document.getElementById('todayTableBody'), document.getElementById('tomorrowTableBody')];
-tables.forEach(tbody => {
-const rows = tbody.getElementsByTagName('tr');
-for (let i = 0; i < rows.length; i++) {
-const td = rows[i].getElementsByTagName('td');
-if (td.length > 0) {
-const txtValue = rows[i].textContent || rows[i].innerText;
-if (txtValue.toUpperCase().indexOf(input) > -1) {
-rows[i].style.display = "";
-} else {
-rows[i].style.display = "none";
-}
-}
-}
-});
-}
+        doc.text("EPD Approval: ________________________", 200, 15);
+
+        // 5. 將車輛數據動態轉換為對齊官方紙本欄位的二維矩陣陣列
+        let tableRows = [];
+        tomorrowCars.forEach((car, index) => {
+            tableRows.push([
+                index + 1,                     // 項目 Item
+                car.company || '',             // 公司名稱 Company
+                String(car.vehicle_no).toUpperCase(), // 車牌號碼 Vehicle No.
+                car.contact_person || '',      // 聯絡人 Contact Person
+                car.tel_no || '',              // 電話號碼 Tel. No.
+                car.time_in === '---' ? '' : car.time_in,   // 進入時間 Time In
+                car.time_out === '---' ? '' : car.time_out, // 離開時間 Time Out
+                car.purpose || '',             // 進入目的 Purpose
+                car.vehicle_type || ''         // 車輛種類 Vehicle Type
+            ]);
+        });
+
+        // 6. 驅動 AutoTable 套件，在 PDF 內部生成無變形且高度精美的實體表格
+        doc.autoTable({
+            startY: 28,
+            head: [['Item', 'Company', 'Vehicle No.', 'Contact Person', 'Tel. No.', 'Time In', 'Time Out', 'Purpose / Work Content', 'Vehicle Type']],
+            body: tableRows,
+            theme: 'grid',
+            headStyles: { fillColor:, textColor:, fontStyle: 'bold', halign: 'center' },
+            bodyStyles: { textColor:, halign: 'center' },
+            styles: { fontSize: 9, cellPadding: 3 },
+            columnStyles: {
+                0: { cellWidth: 12 },  // Item
+                1: { cellWidth: 40 },  // Company
+                2: { cellWidth: 26 },  // Vehicle No.
+                3: { cellWidth: 30 },  // Contact Person
+                4: { cellWidth: 26 },  // Tel. No.
+                5: { cellWidth: 22 },  // Time In
+                6: { cellWidth: 22 },  // Time Out
+                7: { cellWidth: 50 },  // Purpose
+                8: { cellWidth: 35 }   // Vehicle Type
+            }
+        });
+
+        // 7. 自動觸發設備下載：以明天日期命名檔案並儲存至工作人員的裝置
+        const fileName = tomorrowString + "_Log.pdf";
+        doc.save(fileName);
+    }
+
+    // 閘口人員專用：過濾兩個表格內的車牌關鍵字
+    function filterGateTables() {
+        const input = document.getElementById('searchPlate').value.toUpperCase();
+        const tables = [document.getElementById('todayTableBody'), document.getElementById('tomorrowTableBody')];
+        
+        tables.forEach(tbody => {
+            const rows = tbody.getElementsByTagName('tr');
+            for (let i = 0; i < rows.length; i++) {
+                const td = rows[i].getElementsByTagName('td');
+                if (td.length > 0) {
+                    const txtValue = rows[i].textContent || rows[i].innerText;
+                    if (txtValue.toUpperCase().indexOf(input) > -1) {
+                        rows[i].style.display = "";
+                    } else {
+                        rows[i].style.display = "none";
+                    }
+                }
+            }
+        });
+    }
+</script>
+<!-- 引入 Bootstrap 驅動套件 -->
+<script src="https://jsdelivr.net"></script>
+</body>
+</html>
