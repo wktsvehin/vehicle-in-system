@@ -69,12 +69,12 @@
             <!-- 畫面 A：填寫表格畫面 -->
             <div id="formSection" class="card p-4">
                 <h4 class="card-title mb-3 fw-bold" style="color: #2d3748;">車輛入站申請 <span class="text-muted fw-normal" style="font-size: 1.05rem;">/ Vehicle Access Application</span></h4>
-                <!-- 官方收集個人資料聲明 -->
+                
+                <!-- 官方收集個人資料聲明（已更新為 Reminder） -->
                 <div class="alert alert-info py-2 px-3 small fw-bold mb-3" role="alert" style="border-left: 5px solid #4fd1c5; background-color: #f7fafc; color: #2c7a7b;">
-                    ⚠️ <b>提醒事項 / PICS：</b>所收集資料只用於檢查車輛進入本站之用，如資料不齊全或錯誤，或會影響車輛進入本站，敬請注意。<br>
+                    ⚠️ <b>提醒事項 / Reminder :</b> 所收集資料只用於檢查車輛進入本站之用，如資料不齊全或錯誤，或會影響車輛進入本站，敬請注意。<br>
                     <span class="fw-normal text-muted" style="font-size: 0.75rem;">The information collected is only used for checking vehicle entry. Incorrect or incomplete information may affect entry.</span>
                 </div>
-
                 <div class="alert alert-warning py-2 small" role="alert" style="background-color: #fffaf0; border-color: #feebc8; color: #dd6b20;">
                     💡 <b>預約截數提示 / Cut-off Time Note：</b><br>
                     每天下午 3:00 截數。3:00 前申請最快可預約明日入站；3:00 後申請將於後日生效。<br>
@@ -82,43 +82,57 @@
                 </div>
                 <form id="regForm" autocomplete="off" onsubmit="showPreviewScreen(event)">
                     <div class="mb-3">
-                        <label id="dateLabel" class="form-label fw-bold biling-label">預計到訪日期 <span class="biling-sub">Expected Visit Date</span><span class="required-star">*</span></label>
-                        <input type="date" id="startDateInput" class="form-control" required onchange="generateReferenceNumber()">
-                    </div>
-                    <div class="mb-3">
                         <label class="form-label fw-bold biling-label">公司名稱 <span class="biling-sub">Company Name</span><span class="required-star">*</span></label>
-                        <input type="text" id="company" class="form-control" placeholder="e.g. ABC Engineering Company Ltd" required>
+                        <input type="text" id="company" class="form-control" placeholder="e.g. ABC Engineering Co." required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold biling-label">車牌號碼 <span class="biling-sub">Vehicle Registration Mark (Vehicle No.)</span><span class="required-star">*</span></label>
-                        <input type="text" id="vehicleNo" class="form-control form-control-lg plate-input" placeholder="e.g. AB1234" required>
+                        <label class="form-label fw-bold biling-label">車牌號碼 <span class="biling-sub">Vehicle Registration Mark (Plate No.)</span><span class="required-star">*</span></label>
+                        <input type="text" id="vehicle_no" class="form-control form-control-lg plate-input" placeholder="e.g. AB1234" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold biling-label">聯絡人 <span class="biling-sub">Contact Person</span><span class="required-star">*</span></label>
-                        <input type="text" id="contactPerson" class="form-control" placeholder="e.g. Chan Tai Man" required>
+                        <label class="form-label fw-bold biling-label">聯絡人姓名 <span class="biling-sub">Contact Person Name</span><span class="required-star">*</span></label>
+                        <input type="text" id="contact_person" class="form-control" placeholder="e.g. Chan Tai Man" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold biling-label">電話號碼 (香港 8 位數字) <span class="biling-sub">Tel. No. (HK 8 digits)</span><span class="required-star">*</span></label>
-                        <input type="tel" id="telNo" class="form-control" placeholder="e.g. 91234567" required pattern="\d{8}" maxlength="8" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
+                        <input type="tel" id="tel_no" class="form-control" placeholder="e.g. 91234567" required pattern="\d{8}" maxlength="8" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold biling-label">車輛種類 <span class="biling-sub">Vehicle Type</span><span class="required-star">*</span></label>
-                        <select id="vehicleType" class="form-select" required>
+                        <select id="vehicle_type" class="form-select" required>
                             <option value="" disabled selected>請選擇 / Please Select</option>
-                            <option value="夾斗車 Grab Tipper">夾斗車 Grab Tipper</option>
-                            <option value="垃圾收集車 RCV">垃圾收集車 RCV</option>
-                            <option value="密斗貨車 Box Truck">密斗貨車 Box Truck</option>
-                            <option value="掛接車輛 Articulated Vehicle">掛接車輛 Articulated Vehicle</option>
-                            <option value="私家車/客貨車 Private Car/Van">私家車/客貨車 Private Car/Van</option>
+                            <option value="私家車">私家車 / Private Car</option>
+                            <option value="輕型貨車">輕型貨車 / Light Goods Vehicle</option>
+                            <option value="工程車">工程車 / Construction Vehicle</option>
+                            <option value="中型貨車">中型貨車 / Medium Goods Vehicle</option>
+                            <option value="大型貨車">大型貨車 / Heavy Goods Vehicle</option>
+                            <option value="其他">其他 / Others</option>
                         </select>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold biling-label">進入目的 / 工作內容 <span class="biling-sub">Purpose of Entry / Nature of Work</span><span class="required-star">*</span></label>
-                        <input type="text" id="purpose" class="form-control" placeholder="e.g. Delivery / Sludge Hausage" required>
+                        <input type="text" id="purpose" class="form-control" placeholder="e.g. Delivery / Facility Maintenance" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold biling-label">預計到訪時間 <span class="text-muted small fw-normal">(選填 Optional)</span> <span class="biling-sub">Estimated Time of Arrival (ETA)</span></label>
-                        <input type="text" id="visitTime" class="form-control" placeholder="e.g. 10:00 / 2:30 PM">
+                        <label class="form-label fw-bold biling-label">預計到訪日期 <span class="biling-sub">Expected Visit Date (Selection Box)</span><span class="required-star">*</span></label>
+                        <select id="visitDateSelect" class="form-select" required>
+                            <!-- 由 JavaScript 自動動態計算日期選項 -->
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold biling-label">預計到訪時間 <span class="biling-sub">Estimated Arrival Time (24-Hour Selection)</span><span class="required-star">*</span></label>
+                        <div class="d-flex gap-2">
+                            <select id="visitHourSelect" class="form-select text-center" style="max-width: 120px;" required>
+                                <!-- 由 JavaScript 生成 24小時制 00-23 的選單 -->
+                            </select>
+                            <span class="align-self-center fw-bold fs-5">:</span>
+                            <select id="visitMinSelect" class="form-select text-center" style="max-width: 120px;" required>
+                                <option value="00">00</option>
+                                <option value="15">15</option>
+                                <option value="30">30</option>
+                                <option value="45">45</option>
+                            </select>
+                        </div>
                     </div>
                     <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold py-2 mt-3">
                         前往預覽申請頁面 <span class="fw-normal" style="font-size: 0.85rem;"><br>Proceed to Preview Application</span>
@@ -131,15 +145,14 @@
                 <h4 class="card-title mb-1 fw-bold text-dark">請核對您的申請資料</h4>
                 <h6 class="text-secondary fw-normal mb-3" style="font-size: 0.9rem;">Please Verify Your Application Details</h6>
                 <div class="preview-box">
-                    <div class="preview-item"><div class="preview-label">參考編號<br><span class="small text-muted fw-normal">Reference No.</span></div><div id="p-refNo" class="preview-value text-dark fw-bold"></div></div>
-                    <div class="preview-item"><div class="preview-label">預計到訪日期<br><span class="small text-muted fw-normal">Scheduled Date</span></div><div id="p-date" class="preview-value text-success fw-bold"></div></div>
                     <div class="preview-item"><div class="preview-label">公司名稱<br><span class="small text-muted fw-normal">Company Name</span></div><div id="p-company" class="preview-value"></div></div>
-                    <div class="preview-item"><div class="preview-label">車牌號碼<br><span class="small text-muted fw-normal">Vehicle No.</span></div><div id="p-vehicleNo" class="preview-value text-danger fs-5 fw-bold"></div></div>
-                    <div class="preview-item"><div class="preview-label">聯絡人<br><span class="small text-muted fw-normal">Contact Person</span></div><div id="p-contactPerson" class="preview-value"></div></div>
-                    <div class="preview-item"><div class="preview-label">電話號碼<br><span class="small text-muted fw-normal">Tel. No.</span></div><div id="p-telNo" class="preview-value"></div></div>
-                    <div class="preview-item"><div class="preview-label">車輛種類<br><span class="small text-muted fw-normal">Vehicle Type</span></div><div id="p-vehicleType" class="preview-value"></div></div>
-                    <div class="preview-item"><div class="preview-label">進入目的/工作內容<br><span class="small text-muted fw-normal">Purpose</span></div><div id="p-purpose" class="preview-value"></div></div>
-                    <div class="preview-item"><div class="preview-label">預計到訪時間<br><span class="small text-muted fw-normal">ETA</span></div><div id="p-visitTime" class="preview-value text-primary"></div></div>
+                    <div class="preview-item"><div class="preview-label">車牌號碼<br><span class="small text-muted fw-normal">Vehicle No.</span></div><div id="p-vehicle_no" class="preview-value text-danger fs-5 fw-bold"></div></div>
+                    <div class="preview-item"><div class="preview-label">聯絡人姓名<br><span class="small text-muted fw-normal">Contact Person</span></div><div id="p-contact_person" class="preview-value"></div></div>
+                    <div class="preview-item"><div class="preview-label">電話號碼<br><span class="small text-muted fw-normal">Tel. No.</span></div><div id="p-tel_no" class="preview-value"></div></div>
+                    <div class="preview-item"><div class="preview-label">車輛種類<br><span class="small text-muted fw-normal">Vehicle Type</span></div><div id="p-vehicle_type" class="preview-value"></div></div>
+                    <div class="preview-item"><div class="preview-label">進入目的<br><span class="small text-muted fw-normal">Purpose</span></div><div id="p-purpose" class="preview-value"></div></div>
+                    <div class="preview-item"><div class="preview-label">預計到訪日期<br><span class="small text-muted fw-normal">Visit Date</span></div><div id="p-date" class="preview-value text-success fw-bold"></div></div>
+                    <div class="preview-item"><div class="preview-label">預計到訪時間<br><span class="small text-muted fw-normal">Arrival Time (ETA)</span></div><div id="p-time" class="preview-value text-primary"></div></div>
                 </div>
                 <div class="d-flex gap-3">
                     <button type="button" class="btn btn-secondary btn-lg w-50 fw-bold py-2" onclick="hidePreviewScreen()">⬅️ 返回修改<br><span class="fw-normal small" style="font-size: 0.75rem;">Back to Edit</span></button>
@@ -152,8 +165,13 @@
                 <div class="ref-box">
                     <h3 class="text-success fw-bold mb-1">🎉 登記申請已送出</h3>
                     <h5 class="text-success fw-normal mb-3" style="font-size: 1.1rem;">Application Submitted Successfully</h5>
-                    <p class="mb-3 fs-5 text-dark">您的參考編號為 Your Reference No. is : <br><b id="finalRefNo" class="text-primary fs-3"></b></p>
-                    <p class="lead mb-2 fs-6 text-dark">請截圖或保存此畫面作為核對憑證。<br><span class="text-muted small" style="font-size: 0.8rem;">Please screenshot or save this screen as proof of verification.</span></p>
+                    <div class="my-3 p-3 bg-light border rounded text-start mx-auto" style="max-width: 450px;">
+                        <p class="mb-1 fw-bold text-dark">參考編號 / Reference No. : <span id="s-ref" class="text-primary fs-5 fw-bold"></span></p>
+                        <p class="mb-0 text-muted small">請截圖或保存此畫面，並於到達西九龍轉運站閘口時向保安人員出示本頁。<br>Please screenshot or save this reference for gate checkpoint validation.</p>
+                    </div>
+                    <div class="my-2 p-2 border-top text-center text-muted fw-bold" style="font-size: 0.9rem; border-style: dashed !important;">
+                        EPD Approval : _______________________
+                    </div>
                 </div>
                 <button type="button" class="btn btn-outline-primary btn-lg w-100 fw-bold py-2 mt-4" onclick="resetForm()">返回填寫新申請 <br><span class="fw-normal small" style="font-size: 0.75rem;">Back to New Application</span></button>
             </div>
@@ -185,7 +203,7 @@
                 </div>
                 
                 <div class="mb-4">
-                    <input type="text" id="searchPlate" class="form-control form-control-lg plate-input" placeholder="搜尋車牌或公司 Search Vehicle No. or Company" oninput="filterGateTables()">
+                    <input type="text" id="searchPlate" class="form-control form-control-lg plate-input" placeholder="搜尋車牌 Search Plate No. (e.g. AB1234)" oninput="filterGateTables()">
                 </div>
 
                 <!-- 表格 A：申請處理中 -->
@@ -194,14 +212,13 @@
                     <table class="table table-striped table-hover align-middle mb-0">
                         <thead class="table-warning" style="font-size: 0.85rem; background-color: #d69e2e; color: white;">
                             <tr>
-                                <th>項目<br>Item</th>
-                                <th>參考編號<br>Ref No.</th>
-                                <th>公司名稱<br>Company</th>
-                                <th>車牌號碼<br>Vehicle No.</th>
-                                <th>聯絡人<br>Contact</th>
-                                <th>電話號碼<br>Tel No.</th>
-                                <th>進入目的<br>Purpose</th>
-                                <th>車種類型<br>Vehicle Type</th>
+                                <th>編號 <span class="fw-normal d-block">Ref No.</span></th>
+                                <th>公司名稱 <span class="fw-normal d-block">Company</span></th>
+                                <th>車牌 <span class="fw-normal d-block">Plate</span></th>
+                                <th>聯絡人 <span class="fw-normal d-block">Contact</span></th>
+                                <th>到訪日期 <span class="fw-normal d-block">Date</span></th>
+                                <th>目的 <span class="fw-normal d-block">Purpose</span></th>
+                                <th>車種 <span class="fw-normal d-block">Type</span></th>
                             </tr>
                         </thead>
                         <tbody id="todayTableBody" style="font-size: 0.9rem;">
@@ -216,14 +233,13 @@
                     <table class="table table-striped table-hover align-middle mb-0">
                         <thead class="table-success" style="font-size: 0.85rem; background-color: #2f855a; color: white;">
                             <tr>
-                                <th>項目<br>Item</th>
-                                <th>參考編號<br>Ref No.</th>
-                                <th>公司名稱<br>Company</th>
-                                <th>車牌號碼<br>Vehicle No.</th>
-                                <th>聯絡人<br>Contact</th>
-                                <th>電話號碼<br>Tel No.</th>
-                                <th>進入目的<br>Purpose</th>
-                                <th>車種類型<br>Vehicle Type</th>
+                                <th>編號 <span class="fw-normal d-block">Ref No.</span></th>
+                                <th>公司名稱 <span class="fw-normal d-block">Company</span></th>
+                                <th>車牌 <span class="fw-normal d-block">Plate</span></th>
+                                <th>聯絡人 <span class="fw-normal d-block">Contact</span></th>
+                                <th>到訪日期 <span class="fw-normal d-block">Date</span></th>
+                                <th>目的 <span class="fw-normal d-block">Purpose</span></th>
+                                <th>車種 <span class="fw-normal d-block">Type</span></th>
                             </tr>
                         </thead>
                         <tbody id="tomorrowTableBody" style="font-size: 0.9rem;">
@@ -238,47 +254,60 @@
 
 <!-- 引入系統邏輯 JavaScript -->
 <script>
-    let isInternalAuthenticated = false; 
-    let generatedRefNo = "";
+    let isInternalAuthenticated = false; // 紀錄密碼驗證狀態
+    let generatedRefNo = ""; // 用於暫存生成的 Reference Number
 
-    // 🔑 雲端資料庫通道：請在雙引號內貼上你剛剛在 Google 複製得到的 exec 網址！
-    const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbz6L1lO15lIwMUcKT6Veg6RoTndla90i0pKLVTzE4qGmvHl2pZULMYhmdhnqJt-aVE9/exec"; 
-
-    // 自動計算訪客日期限制與生成隨機序號
-    function updateDatePickerConstraints() {
+    // ☁️ 雲端資料庫網址設定 (Google Cloud Web App API)
+    const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbz6L1lO15lIwMUcKT6Veg6RoTndla90i0pKLVTzE4qGmvHl2pZULMYhmdhnqJt-aVE9/exec"; // ⚠️請在這裡貼上第一步第8點得到的 exec 網址！
+    // 1. 自動計算與生成中英日期與時間的 Selection Box 選項
+    function initDateTimeSelectors() {
         const now = new Date();
         const hour = now.getHours();
         let minDate = new Date();
         
+        // 下午 3:00 截數邏輯計算
         if (hour >= 15) {
             minDate.setDate(now.getDate() + 2);
         } else {
             minDate.setDate(now.getDate() + 1);
         }
         
-        const minStr = minDate.toISOString().split('T')[0];
-        const startInput = document.getElementById('startDateInput');
-        if (startInput) {
-            startInput.min = minStr;
-            startInput.value = minStr; // 預設帶入最早可選日期
-            generateReferenceNumber(); // 初始化序號
+        const dateSelect = document.getElementById('visitDateSelect');
+        if (dateSelect) {
+            dateSelect.innerHTML = '';
+            // 往後推算並生成 7 天的選項
+            for (let i = 0; i < 7; i++) {
+                let targetDate = new Date(minDate);
+                targetDate.setDate(minDate.getDate() + i);
+                
+                let yyyy = targetDate.getFullYear();
+                let mm = String(targetDate.getMonth() + 1).padStart(2, '0');
+                let dd = String(targetDate.getDate()).padStart(2, '0');
+                let dateValue = `${yyyy}-${mm}-${dd}`;
+                
+                let option = document.createElement('option');
+                option.value = dateValue;
+                option.innerText = dateValue;
+                dateSelect.appendChild(option);
+            }
+        }
+
+        // 生成 24 小時制的 Hour 下拉選單 (00 - 23)
+        const hourSelect = document.getElementById('visitHourSelect');
+        if (hourSelect) {
+            hourSelect.innerHTML = '';
+            for (let h = 0; h < 24; h++) {
+                let hStr = String(h).padStart(2, '0');
+                let option = document.createElement('option');
+                option.value = hStr;
+                option.innerText = hStr;
+                hourSelect.appendChild(option);
+            }
         }
     }
 
-    function generateReferenceNumber() {
-        const dateInput = document.getElementById('startDateInput').value;
-        if (!dateInput) return;
-        
-        // 格式化日期為 YYYYMMDD
-        const cleanDate = dateInput.replace(/-/g, '');
-        // 生成 3 位隨機亂數防重複
-        const randomNum = Math.floor(100 + Math.random() * 900);
-        
-        generatedRefNo = `REF-${cleanDate}-${randomNum}`;
-    }
-
     window.onload = function() {
-        updateDatePickerConstraints();
+        initDateTimeSelectors();
     };
 
     function triggerInternalAuth() {
@@ -294,7 +323,7 @@
 
     function verifyInternalPassword() {
         const inputPwd = document.getElementById('internalPwd').value;
-        const correctPwd = "1234"; // 🔒 內部登入密碼可在此處手動修改
+        const correctPwd = "wkts001"; // 🔒 已更新員工登入密碼
         
         if (inputPwd === correctPwd) {
             isInternalAuthenticated = true;
@@ -311,21 +340,34 @@
         triggerInternalAuth();
     }
 
-    function switchToVisitor() {}
+    function switchToVisitor() {
+        // 切換回訪客頁面
+    }
 
+    // 顯示預覽畫面
     function showPreviewScreen(event) {
         event.preventDefault();
         
-        document.getElementById('p-refNo').innerText = generatedRefNo;
-        document.getElementById('p-date').innerText = document.getElementById('startDateInput').value;
         document.getElementById('p-company').innerText = document.getElementById('company').value;
-        document.getElementById('p-vehicleNo').innerText = document.getElementById('vehicleNo').value.toUpperCase();
-        document.getElementById('p-contactPerson').innerText = document.getElementById('contactPerson').value;
-        document.getElementById('p-telNo').innerText = document.getElementById('telNo').value;
-        document.getElementById('p-vehicleType').innerText = document.getElementById('vehicleType').value;
+        document.getElementById('p-vehicle_no').innerText = document.getElementById('vehicle_no').value.toUpperCase();
+        document.getElementById('p-contact_person').innerText = document.getElementById('contact_person').value;
+        document.getElementById('tel_no').value = document.getElementById('tel_no').value;
+        document.getElementById('p-tel_no').innerText = document.getElementById('tel_no').value;
+        document.getElementById('p-vehicle_type').innerText = document.getElementById('vehicle_type').value;
         document.getElementById('p-purpose').innerText = document.getElementById('purpose').value;
-        document.getElementById('p-visitTime').innerText = document.getElementById('visitTime').value || '未填寫 / Not Specified';
         
+        const dateVal = document.getElementById('visitDateSelect').value;
+        const hourVal = document.getElementById('visitHourSelect').value;
+        const minVal = document.getElementById('visitMinSelect').value;
+        
+        document.getElementById('p-date').innerText = dateVal;
+        document.getElementById('p-time').innerText = `${hourVal}:${minVal} (24-Hour Base)`;
+        
+        // 核心：點擊預覽時，前端自動計算出專屬的 Reference Number 規則
+        const cleanDate = dateVal.replace(/-/g, '');
+        const randomNum = Math.floor(100 + Math.random() * 900);
+        generatedRefNo = `REF-${cleanDate}-${randomNum}`;
+
         document.getElementById('formSection').classList.add('hidden-field');
         document.getElementById('previewSection').classList.remove('hidden-field');
     }
@@ -335,22 +377,25 @@
         document.getElementById('formSection').classList.remove('hidden-field');
     }
 
-    // 傳送最新資料至 Google 試算表雲端儲存
+    // 傳送資料到雲端 Google Sheets
     function finalSubmitData() {
         const btn = document.getElementById('confirmSubmitBtn');
         btn.disabled = true;
         btn.innerText = "正在傳送... Submitting...";
 
+        const hourVal = document.getElementById('visitHourSelect').value;
+        const minVal = document.getElementById('visitMinSelect').value;
+
         const payload = {
             ref_no: generatedRefNo,
-            date: document.getElementById('startDateInput').value,
             company: document.getElementById('company').value,
-            vehicle_no: document.getElementById('vehicleNo').value.toUpperCase(),
-            contact_person: document.getElementById('contactPerson').value,
-            tel_no: document.getElementById('telNo').value,
+            vehicle_no: document.getElementById('vehicle_no').value.toUpperCase(),
+            contact_person: document.getElementById('contact_person').value,
+            tel_no: document.getElementById('tel_no').value,
             purpose: document.getElementById('purpose').value,
-            vehicle_type: document.getElementById('vehicleType').value,
-            visit_date: document.getElementById('startDateInput').value // 系統比對輔助日期
+            vehicle_type: document.getElementById('vehicle_type').value,
+            visit_date: document.getElementById('visitDateSelect').value,
+            visitTime: `${hourVal}:${minVal}`
         };
 
         fetch(GOOGLE_API_URL, {
@@ -360,99 +405,37 @@
             body: JSON.stringify(payload)
         })
         .then(() => {
-            document.getElementById('finalRefNo').innerText = generatedRefNo;
+            document.getElementById('s-ref').innerText = generatedRefNo;
             document.getElementById('previewSection').classList.add('hidden-field');
             document.getElementById('successSection').classList.remove('hidden-field');
             btn.disabled = false;
-            btn.innerText = "確認提交 ➡️";
+            btn.innerText = "確認提交 Confirm & Submit ➡️";
         })
         .catch(err => {
             console.error(err);
-            alert("提交失敗，請檢查網絡連線。");
+            alert("提交失敗，請檢查網絡後重試。");
             btn.disabled = false;
-            btn.innerText = "確認提交 ➡️";
+            btn.innerText = "確認提交 Confirm & Submit ➡️";
         });
     }
 
     function resetForm() {
         document.getElementById('regForm').reset();
-        updateDatePickerConstraints();
+        initDateTimeSelectors();
         document.getElementById('successSection').classList.add('hidden-field');
         document.getElementById('formSection').classList.remove('hidden-field');
     }
 
-    // 即時跨裝置同步讀取 Google 試算表名單
+    // 跨裝置即時讀取 Google 試算表名單
     function loadInternalDataLists() {
         const todayTbody = document.getElementById('todayTableBody');
         const tomorrowTbody = document.getElementById('tomorrowTableBody');
         
-        todayTbody.innerHTML = '<tr><td colspan="8" class="text-center">正在同步雲端數據... Syncing...</td></tr>';
-        tomorrowTbody.innerHTML = '<tr><td colspan="8" class="text-center">正在同步雲端數據... Syncing...</td></tr>';
+        todayTbody.innerHTML = '<tr><td colspan="7" class="text-center">正在同步雲端數據... Syncing...</td></tr>';
+        tomorrowTbody.innerHTML = '<tr><td colspan="7" class="text-center">正在同步雲端數據... Syncing...</td></tr>';
         
         fetch(GOOGLE_API_URL)
             .then(response => response.json())
             .then(dataList => {
                 todayTbody.innerHTML = '';
-                tomorrowTbody.innerHTML = '';
-
-                let inProgressCars = dataList.filter(item => item.status === "in_progress");
-                let confirmedCars = dataList.filter(item => item.status !== "in_progress");
-
-                if (inProgressCars.length === 0) {
-                    todayTbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">暫無處理中的申請 / No records.</td></tr>';
-                } else {
-                    inProgressCars.forEach(item => {
-                        const tr = document.createElement('tr');
-                        tr.innerHTML = `
-                            <td>${item.item}</td>
-                            <td class="small text-muted">${item.ref_no}</td>
-                            <td>${item.company}</td>
-                            <td class="fw-bold text-uppercase text-warning">${item.vehicle_no}</td>
-                            <td>${item.contact_person}</td>
-                            <td>${item.tel_no}</td>
-                            <td>${item.purpose}</td>
-                            <td><span class="badge bg-secondary">${item.vehicle_type}</span></td>
-                        `;
-                        todayTbody.appendChild(tr);
-                    });
-                }
-
-                if (confirmedCars.length === 0) {
-                    tomorrowTbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">暫無已確認之名單 / No records.</td></tr>';
-                } else {
-                    confirmedCars.forEach(item => {
-                        const tr = document.createElement('tr');
-                        tr.innerHTML = `
-                            <td>${item.item}</td>
-                            <td class="small text-muted">${item.ref_no}</td>
-                            <td>${item.company}</td>
-                            <td class="fw-bold text-uppercase text-success">${item.vehicle_no}</td>
-                            <td>${item.contact_person}</td>
-                            <td>${item.tel_no}</td>
-                            <td>${item.purpose}</td>
-                            <td><span class="badge bg-success">${item.vehicle_type}</span></td>
-                        `;
-                        tomorrowTbody.appendChild(tr);
-                    });
-                }
-            })
-            .catch(error => {
-                console.error(error);
-                const errHTML = `<tr><td colspan="8" class="text-center text-danger">⚠️ 雲端讀取失敗。請檢查網絡或 Apps Script 設定。</td></tr>`;
-                todayTbody.innerHTML = errHTML;
-                tomorrowTbody.innerHTML = errHTML;
-            });
-    }
-
-    // 內部搜尋功能
-    function filterGateTables() {
-        const input = document.getElementById('searchPlate').value.toUpperCase();
-        const tables = [document.getElementById('todayTableBody'), document.getElementById('tomorrowTableBody')];
-        
-        tables.forEach(tbody => {
-            const rows = tbody.getElementsByTagName('tr');
-            for (let i = 0; i < rows.length; i++) {
-                const td = rows[i].getElementsByTagName('td');
-                if (td.length > 0) {
-                    const txtValue = rows[i].textContent || rows[i].innerText;
-                    if (txtValue.toUpperCase().indexOf(input) > -1) {
+                tomorrowTbody
