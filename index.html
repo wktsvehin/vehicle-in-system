@@ -69,12 +69,12 @@
             <!-- 畫面 A：填寫表格畫面 -->
             <div id="formSection" class="card p-4">
                 <h4 class="card-title mb-3 fw-bold" style="color: #2d3748;">車輛入站申請 <span class="text-muted fw-normal" style="font-size: 1.05rem;">/ Vehicle Access Application</span></h4>
-                
-                <!-- 官方收集個人資料聲明（已更新為 Reminder） -->
+                <!-- 官方收集個人資料聲明 -->
                 <div class="alert alert-info py-2 px-3 small fw-bold mb-3" role="alert" style="border-left: 5px solid #4fd1c5; background-color: #f7fafc; color: #2c7a7b;">
-                    ⚠️ <b>提醒事項 / Reminder :</b> 所收集資料只用於檢查車輛進入本站之用，如資料不齊全或錯誤，或會影響車輛進入本站，敬請注意。<br>
+                    ⚠️ <b>提醒事項 / Reminder：</b>所收集資料只用於檢查車輛進入本站之用，如資料不齊全或錯誤，或會影響車輛進入本站，敬請注意。<br>
                     <span class="fw-normal text-muted" style="font-size: 0.75rem;">The information collected is only used for checking vehicle entry. Incorrect or incomplete information may affect entry.</span>
                 </div>
+
                 <div class="alert alert-warning py-2 small" role="alert" style="background-color: #fffaf0; border-color: #feebc8; color: #dd6b20;">
                     💡 <b>預約截數提示 / Cut-off Time Note：</b><br>
                     每天下午 3:00 截數。3:00 前申請最快可預約明日入站；3:00 後申請將於後日生效。<br>
@@ -86,11 +86,11 @@
                         <input type="text" id="company" class="form-control" placeholder="e.g. ABC Engineering Co." required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold biling-label">車牌號碼 <span class="biling-sub">Vehicle Registration Mark (Plate No.)</span><span class="required-star">*</span></label>
+                        <label class="form-label fw-bold biling-label">車牌號碼 <span class="biling-sub">Vehicle Registration Mark</span><span class="required-star">*</span></label>
                         <input type="text" id="vehicle_no" class="form-control form-control-lg plate-input" placeholder="e.g. AB1234" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold biling-label">聯絡人姓名 <span class="biling-sub">Contact Person Name</span><span class="required-star">*</span></label>
+                        <label class="form-label fw-bold biling-label">聯絡人 <span class="biling-sub">Contact Person</span><span class="required-star">*</span></label>
                         <input type="text" id="contact_person" class="form-control" placeholder="e.g. Chan Tai Man" required>
                     </div>
                     <div class="mb-3">
@@ -98,41 +98,34 @@
                         <input type="tel" id="tel_no" class="form-control" placeholder="e.g. 91234567" required pattern="\d{8}" maxlength="8" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
                     </div>
                     <div class="mb-3">
+                        <label class="form-label fw-bold biling-label">進入目的 / 工作內容 <span class="biling-sub">Purpose of Entry / Work Content</span><span class="required-star">*</span></label>
+                        <input type="text" id="purpose" class="form-control" placeholder="e.g. Delivery / Maintenance" required>
+                    </div>
+                    <div class="mb-3">
                         <label class="form-label fw-bold biling-label">車輛種類 <span class="biling-sub">Vehicle Type</span><span class="required-star">*</span></label>
                         <select id="vehicle_type" class="form-select" required>
-                            <option value="" disabled selected>請選擇 / Please Select</option>
-                            <option value="私家車">私家車 / Private Car</option>
-                            <option value="輕型貨車">輕型貨車 / Light Goods Vehicle</option>
-                            <option value="工程車">工程車 / Construction Vehicle</option>
-                            <option value="中型貨車">中型貨車 / Medium Goods Vehicle</option>
-                            <option value="大型貨車">大型貨車 / Heavy Goods Vehicle</option>
-                            <option value="其他">其他 / Others</option>
+                            <option value="" disabled selected>-- 請選擇 Please Select --</option>
+                            <option value="私家車 Private Car">私家車 Private Car</option>
+                            <option value="輕型貨車 LGV">輕型貨車 LGV</option>
+                            <option value="工程車 Construction Vehicle">工程車 Construction Vehicle</option>
+                            <option value="中型貨車 MGV">中型貨車 MGV</option>
+                            <option value="大型貨車 HGV">大型貨車 HGV</option>
+                            <option value="其他 Others">其他 Others</option>
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold biling-label">進入目的 / 工作內容 <span class="biling-sub">Purpose of Entry / Nature of Work</span><span class="required-star">*</span></label>
-                        <input type="text" id="purpose" class="form-control" placeholder="e.g. Delivery / Facility Maintenance" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold biling-label">預計到訪日期 <span class="biling-sub">Expected Visit Date (Selection Box)</span><span class="required-star">*</span></label>
-                        <select id="visitDateSelect" class="form-select" required>
-                            <!-- 由 JavaScript 自動動態計算日期選項 -->
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold biling-label">預計到訪時間 <span class="biling-sub">Estimated Arrival Time (24-Hour Selection)</span><span class="required-star">*</span></label>
+                        <label class="form-label fw-bold biling-label">預計到訪時間 <span class="biling-sub">Estimated Time of Arrival (24h)</span><span class="required-star">*</span></label>
                         <div class="d-flex gap-2">
-                            <select id="visitHourSelect" class="form-select text-center" style="max-width: 120px;" required>
-                                <!-- 由 JavaScript 生成 24小時制 00-23 的選單 -->
-                            </select>
-                            <span class="align-self-center fw-bold fs-5">:</span>
-                            <select id="visitMinSelect" class="form-select text-center" style="max-width: 120px;" required>
-                                <option value="00">00</option>
-                                <option value="15">15</option>
-                                <option value="30">30</option>
-                                <option value="45">45</option>
-                            </select>
+                            <select id="visitHour" class="form-select" required></select>
+                            <span class="align-self-center fw-bold">:</span>
+                            <select id="visitMin" class="form-select" required></select>
                         </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold biling-label">預計到訪日期 <span class="biling-sub">Expected Visit Date</span><span class="required-star">*</span></label>
+                        <select id="visit_date" class="form-select" required>
+                            <!-- 由 JavaScript 動態生成日期選單 -->
+                        </select>
                     </div>
                     <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold py-2 mt-3">
                         前往預覽申請頁面 <span class="fw-normal" style="font-size: 0.85rem;"><br>Proceed to Preview Application</span>
@@ -142,18 +135,22 @@
 
             <!-- 畫面 B：獨立申請預覽確認頁面 -->
             <div id="previewSection" class="card p-4 hidden-field">
-                <h4 class="card-title mb-1 fw-bold text-dark">請核對您的申請資料</h4>
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <h4 class="card-title mb-0 fw-bold text-dark">請核對您的申請資料</h4>
+                    <span class="text-muted small fw-bold text-uppercase border p-1 rounded bg-light" style="font-size:0.75rem;">EPD Approval: ____________</span>
+                </div>
                 <h6 class="text-secondary fw-normal mb-3" style="font-size: 0.9rem;">Please Verify Your Application Details</h6>
                 <div class="preview-box">
                     <div class="preview-item"><div class="preview-label">公司名稱<br><span class="small text-muted fw-normal">Company Name</span></div><div id="p-company" class="preview-value"></div></div>
                     <div class="preview-item"><div class="preview-label">車牌號碼<br><span class="small text-muted fw-normal">Vehicle No.</span></div><div id="p-vehicle_no" class="preview-value text-danger fs-5 fw-bold"></div></div>
-                    <div class="preview-item"><div class="preview-label">聯絡人姓名<br><span class="small text-muted fw-normal">Contact Person</span></div><div id="p-contact_person" class="preview-value"></div></div>
+                    <div class="preview-item"><div class="preview-label">聯絡人<br><span class="small text-muted fw-normal">Contact Person</span></div><div id="p-contact_person" class="preview-value"></div></div>
                     <div class="preview-item"><div class="preview-label">電話號碼<br><span class="small text-muted fw-normal">Tel. No.</span></div><div id="p-tel_no" class="preview-value"></div></div>
-                    <div class="preview-item"><div class="preview-label">車輛種類<br><span class="small text-muted fw-normal">Vehicle Type</span></div><div id="p-vehicle_type" class="preview-value"></div></div>
-                    <div class="preview-item"><div class="preview-label">進入目的<br><span class="small text-muted fw-normal">Purpose</span></div><div id="p-purpose" class="preview-value"></div></div>
-                    <div class="preview-item"><div class="preview-label">預計到訪日期<br><span class="small text-muted fw-normal">Visit Date</span></div><div id="p-date" class="preview-value text-success fw-bold"></div></div>
-                    <div class="preview-item"><div class="preview-label">預計到訪時間<br><span class="small text-muted fw-normal">Arrival Time (ETA)</span></div><div id="p-time" class="preview-value text-primary"></div></div>
+                    <div class="preview-item"><div class="preview-label">進入目的 / 工作內容<br><span class="small text-muted fw-normal">Purpose / Content</span></div><div id="p-purpose" class="preview-value"></div></div>
+                    <div class="preview-item"><div class="preview-label">車輛種類<br><span class="small text-muted fw-normal">Vehicle Type</span></div><div id="p-vehicle_type" class="preview-value text-primary"></div></div>
+                    <div class="preview-item"><div class="preview-label">預計到訪時間<br><span class="small text-muted fw-normal">ETA (24h)</span></div><div id="p-visitTime" class="preview-value text-primary"></div></div>
+                    <div class="preview-item"><div class="preview-label">預計到訪日期<br><span class="small text-muted fw-normal">Visit Date</span></div><div id="p-visit_date" class="preview-value text-success fw-bold"></div></div>
                 </div>
+
                 <div class="d-flex gap-3">
                     <button type="button" class="btn btn-secondary btn-lg w-50 fw-bold py-2" onclick="hidePreviewScreen()">⬅️ 返回修改<br><span class="fw-normal small" style="font-size: 0.75rem;">Back to Edit</span></button>
                     <button type="button" id="confirmSubmitBtn" class="btn btn-success btn-lg w-50 fw-bold py-2" onclick="finalSubmitData()">確認提交 ➡️<br><span class="fw-normal small" style="font-size: 0.75rem;">Confirm & Submit</span></button>
@@ -165,13 +162,11 @@
                 <div class="ref-box">
                     <h3 class="text-success fw-bold mb-1">🎉 登記申請已送出</h3>
                     <h5 class="text-success fw-normal mb-3" style="font-size: 1.1rem;">Application Submitted Successfully</h5>
-                    <div class="my-3 p-3 bg-light border rounded text-start mx-auto" style="max-width: 450px;">
-                        <p class="mb-1 fw-bold text-dark">參考編號 / Reference No. : <span id="s-ref" class="text-primary fs-5 fw-bold"></span></p>
-                        <p class="mb-0 text-muted small">請截圖或保存此畫面，並於到達西九龍轉運站閘口時向保安人員出示本頁。<br>Please screenshot or save this reference for gate checkpoint validation.</p>
+                    <div class="p-3 my-3 bg-white rounded border">
+                        <span class="d-block fw-bold text-secondary text-uppercase" style="font-size: 0.8rem;">參考編號 / Reference No.</span>
+                        <h2 id="displayRefNo" class="text-primary fw-bold my-1">---</h2>
                     </div>
-                    <div class="my-2 p-2 border-top text-center text-muted fw-bold" style="font-size: 0.9rem; border-style: dashed !important;">
-                        EPD Approval : _______________________
-                    </div>
+                    <p class="lead mb-2 fs-6 text-dark">請截圖或保存此畫面作為核對憑證。<br><span class="text-muted small" style="font-size: 0.8rem;">Please screenshot or save this screen as proof of verification.</span></p>
                 </div>
                 <button type="button" class="btn btn-outline-primary btn-lg w-100 fw-bold py-2 mt-4" onclick="resetForm()">返回填寫新申請 <br><span class="fw-normal small" style="font-size: 0.75rem;">Back to New Application</span></button>
             </div>
@@ -189,7 +184,7 @@
                 <div>
                     <button type="button" class="btn btn-primary fw-bold px-4 py-2" onclick="verifyInternalPassword()">驗證登入 Login</button>
                 </div>
-                <div id="authErrorMsg" class="text-danger mt-3 fw-bold small hidden-field">⚠️ 密碼錯誤，請重新輸入！ / Invalid password!</div>
+                <div id="authErrorMsg" class="text-danger mt-3 fw-bold small hidden-field">⚠️ 密碼錯誤！ / Invalid password!</div>
             </div>
 
             <!-- 內部資訊展示區塊 (驗證成功後才顯示) -->
@@ -209,16 +204,19 @@
                 <!-- 表格 A：申請處理中 -->
                 <h5 class="internal-section-title">⏳ 申請處理中 / Application Under Progress</h5>
                 <div class="table-responsive">
-                    <table class="table table-striped table-hover align-middle mb-0">
-                        <thead class="table-warning" style="font-size: 0.85rem; background-color: #d69e2e; color: white;">
+                    <table class="table table-striped table-hover align-middle mb-0" style="min-width: 850px;">
+                        <thead class="table-warning" style="font-size: 0.82rem; background-color: #d69e2e; color: white;">
                             <tr>
-                                <th>編號 <span class="fw-normal d-block">Ref No.</span></th>
-                                <th>公司名稱 <span class="fw-normal d-block">Company</span></th>
-                                <th>車牌 <span class="fw-normal d-block">Plate</span></th>
-                                <th>聯絡人 <span class="fw-normal d-block">Contact</span></th>
-                                <th>到訪日期 <span class="fw-normal d-block">Date</span></th>
-                                <th>目的 <span class="fw-normal d-block">Purpose</span></th>
-                                <th>車種 <span class="fw-normal d-block">Type</span></th>
+                                <th>項目<br>Item</th>
+                                <th>參考編號<br>Ref No.</th>
+                                <th>公司名稱<br>Company</th>
+                                <th>車牌號碼<br>Vehicle No.</th>
+                                <th>聯絡人<br>Contact</th>
+                                <th>電話號碼<br>Tel No.</th>
+                                <th>進入時間<br>Time In</th>
+                                <th>離開時間<br>Time Out</th>
+                                <th>進入目的<br>Purpose</th>
+                                <th>車輛種類<br>Vehicle Type</th>
                             </tr>
                         </thead>
                         <tbody id="todayTableBody" style="font-size: 0.9rem;">
@@ -230,16 +228,19 @@
                 <!-- 表格 B：已確認名單 -->
                 <h5 class="internal-section-title">✅ 已確認名單 / Confirmed List</h5>
                 <div class="table-responsive">
-                    <table class="table table-striped table-hover align-middle mb-0">
-                        <thead class="table-success" style="font-size: 0.85rem; background-color: #2f855a; color: white;">
+                    <table class="table table-striped table-hover align-middle mb-0" style="min-width: 850px;">
+                        <thead class="table-success" style="font-size: 0.82rem; background-color: #2f855a; color: white;">
                             <tr>
-                                <th>編號 <span class="fw-normal d-block">Ref No.</span></th>
-                                <th>公司名稱 <span class="fw-normal d-block">Company</span></th>
-                                <th>車牌 <span class="fw-normal d-block">Plate</span></th>
-                                <th>聯絡人 <span class="fw-normal d-block">Contact</span></th>
-                                <th>到訪日期 <span class="fw-normal d-block">Date</span></th>
-                                <th>目的 <span class="fw-normal d-block">Purpose</span></th>
-                                <th>車種 <span class="fw-normal d-block">Type</span></th>
+                                <th>項目<br>Item</th>
+                                <th>參考編號<br>Ref No.</th>
+                                <th>公司名稱<br>Company</th>
+                                <th>車牌號碼<br>Vehicle No.</th>
+                                <th>聯絡人<br>Contact</th>
+                                <th>電話號碼<br>Tel No.</th>
+                                <th>進入時間<br>Time In</th>
+                                <th>離開時間<br>Time Out</th>
+                                <th>進入目的<br>Purpose</th>
+                                <th>車輛種類<br>Vehicle Type</th>
                             </tr>
                         </thead>
                         <tbody id="tomorrowTableBody" style="font-size: 0.9rem;">
@@ -254,61 +255,10 @@
 
 <!-- 引入系統邏輯 JavaScript -->
 <script>
-    let isInternalAuthenticated = false; // 紀錄密碼驗證狀態
-    let generatedRefNo = ""; // 用於暫存生成的 Reference Number
+    // ☁️ 雲端 Google 試算表 Web App URL 通道連結 (已為你自動保留)
+    const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbz6L1lO15lIwMUcKT6Veg6RoTndla90i0pKLVTzE4qGmvHl2pZULMYhmdhnqJt-aVE9/exec";
 
-    // ☁️ 雲端資料庫網址設定 (Google Cloud Web App API)
-    const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbz6L1lO15lIwMUcKT6Veg6RoTndla90i0pKLVTzE4qGmvHl2pZULMYhmdhnqJt-aVE9/exec"; // ⚠️請在這裡貼上第一步第8點得到的 exec 網址！
-    // 1. 自動計算與生成中英日期與時間的 Selection Box 選項
-    function initDateTimeSelectors() {
-        const now = new Date();
-        const hour = now.getHours();
-        let minDate = new Date();
-        
-        // 下午 3:00 截數邏輯計算
-        if (hour >= 15) {
-            minDate.setDate(now.getDate() + 2);
-        } else {
-            minDate.setDate(now.getDate() + 1);
-        }
-        
-        const dateSelect = document.getElementById('visitDateSelect');
-        if (dateSelect) {
-            dateSelect.innerHTML = '';
-            // 往後推算並生成 7 天的選項
-            for (let i = 0; i < 7; i++) {
-                let targetDate = new Date(minDate);
-                targetDate.setDate(minDate.getDate() + i);
-                
-                let yyyy = targetDate.getFullYear();
-                let mm = String(targetDate.getMonth() + 1).padStart(2, '0');
-                let dd = String(targetDate.getDate()).padStart(2, '0');
-                let dateValue = `${yyyy}-${mm}-${dd}`;
-                
-                let option = document.createElement('option');
-                option.value = dateValue;
-                option.innerText = dateValue;
-                dateSelect.appendChild(option);
-            }
-        }
-
-        // 生成 24 小時制的 Hour 下拉選單 (00 - 23)
-        const hourSelect = document.getElementById('visitHourSelect');
-        if (hourSelect) {
-            hourSelect.innerHTML = '';
-            for (let h = 0; h < 24; h++) {
-                let hStr = String(h).padStart(2, '0');
-                let option = document.createElement('option');
-                option.value = hStr;
-                option.innerText = hStr;
-                hourSelect.appendChild(option);
-            }
-        }
-    }
-
-    window.onload = function() {
-        initDateTimeSelectors();
-    };
+    let isInternalAuthenticated = false;
 
     function triggerInternalAuth() {
         if (!isInternalAuthenticated) {
@@ -323,7 +273,7 @@
 
     function verifyInternalPassword() {
         const inputPwd = document.getElementById('internalPwd').value;
-        const correctPwd = "wkts001"; // 🔒 已更新員工登入密碼
+        const correctPwd = "wkts001"; // 🔒 密碼已更新為 wkts001
         
         if (inputPwd === correctPwd) {
             isInternalAuthenticated = true;
@@ -340,34 +290,74 @@
         triggerInternalAuth();
     }
 
-    function switchToVisitor() {
-        // 切換回訪客頁面
+    function switchToVisitor() {}
+
+    // 🕒 修正後：動態生成 24 小時制時間與自由日期回應的下拉選單 (Selection Box Fix)
+    function initDropdownSelectionBoxes() {
+        // 1. 生成小時選單 (00 - 23)
+        const hourSelect = document.getElementById('visitHour');
+        hourSelect.innerHTML = '<option value="" disabled selected>時 Hour</option>';
+        for(let h = 0; h < 24; h++) {
+            let hStr = h < 10 ? '0' + h : h;
+            hourSelect.innerHTML += `<option value="${hStr}">${hStr}</option>`;
+        }
+
+        // 2. 生成分鐘選單 (00, 15, 30, 45)
+        const minSelect = document.getElementById('visitMin');
+        minSelect.innerHTML = '<option value="" disabled selected>分 Min</option>';
+        const intervals = ['00', '15', '30', '45'];
+        intervals.forEach(m => {
+            minSelect.innerHTML += `<option value="${m}">${m}</option>`;
+        });
+
+        // 3. 生成日期選單（根據下午 3 點自動判斷起始日期，但選單元件本身完全自由回應）
+        const dateSelect = document.getElementById('visit_date');
+        dateSelect.innerHTML = '<option value="" disabled selected>-- 請選擇日期 Select Date --</option>';
+        
+        const now = new Date();
+        const hour = now.getHours();
+        let startDate = new Date();
+        
+        // 下午 3 點截數邏輯
+        if (hour >= 15) {
+            startDate.setDate(now.getDate() + 2);
+        } else {
+            startDate.setDate(now.getDate() + 1);
+        }
+
+        // 提供接下來 14 天的日期供訪客自由下拉點選
+        for(let i = 0; i < 14; i++) {
+            let futureDate = new Date(startDate);
+            futureDate.setDate(startDate.getDate() + i);
+            let yyyy = futureDate.getFullYear();
+            let mm = String(futureDate.getMonth() + 1).padStart(2, '0');
+            let dd = String(futureDate.getDate()).padStart(2, '0');
+            let dateStr = `${yyyy}-${mm}-${dd}`;
+            dateSelect.innerHTML += `<option value="${dateStr}">${dateStr}</option>`;
+        }
     }
 
-    // 顯示預覽畫面
+    // 網頁初始化載入
+    window.onload = function() {
+        initDropdownSelectionBoxes();
+    };
     function showPreviewScreen(event) {
         event.preventDefault();
         
+        // 抓取 24 小時制的時與分結合
+        const hh = document.getElementById('visitHour').value;
+        const mm = document.getElementById('visitMin').value;
+        const fullTimeStr = `${hh}:${mm}`;
+
         document.getElementById('p-company').innerText = document.getElementById('company').value;
         document.getElementById('p-vehicle_no').innerText = document.getElementById('vehicle_no').value.toUpperCase();
         document.getElementById('p-contact_person').innerText = document.getElementById('contact_person').value;
-        document.getElementById('tel_no').value = document.getElementById('tel_no').value;
         document.getElementById('p-tel_no').innerText = document.getElementById('tel_no').value;
-        document.getElementById('p-vehicle_type').innerText = document.getElementById('vehicle_type').value;
         document.getElementById('p-purpose').innerText = document.getElementById('purpose').value;
+        document.getElementById('p-vehicle_type').innerText = document.getElementById('vehicle_type').value;
+        document.getElementById('p-visitTime').innerText = fullTimeStr;
+        document.getElementById('p-visit_date').innerText = document.getElementById('visit_date').value;
         
-        const dateVal = document.getElementById('visitDateSelect').value;
-        const hourVal = document.getElementById('visitHourSelect').value;
-        const minVal = document.getElementById('visitMinSelect').value;
-        
-        document.getElementById('p-date').innerText = dateVal;
-        document.getElementById('p-time').innerText = `${hourVal}:${minVal} (24-Hour Base)`;
-        
-        // 核心：點擊預覽時，前端自動計算出專屬的 Reference Number 規則
-        const cleanDate = dateVal.replace(/-/g, '');
-        const randomNum = Math.floor(100 + Math.random() * 900);
-        generatedRefNo = `REF-${cleanDate}-${randomNum}`;
-
         document.getElementById('formSection').classList.add('hidden-field');
         document.getElementById('previewSection').classList.remove('hidden-field');
     }
@@ -377,14 +367,23 @@
         document.getElementById('formSection').classList.remove('hidden-field');
     }
 
-    // 傳送資料到雲端 Google Sheets
+    // 最終提交傳送到 Google Sheets 資料庫
     function finalSubmitData() {
         const btn = document.getElementById('confirmSubmitBtn');
         btn.disabled = true;
         btn.innerText = "正在傳送... Submitting...";
 
-        const hourVal = document.getElementById('visitHourSelect').value;
-        const minVal = document.getElementById('visitMinSelect').value;
+        // 自動產出正式不重複的編號 (e.g. REF-20260610-12345)
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const rand = Math.floor(10000 + Math.random() * 90000);
+        const generatedRefNo = `REF-${yyyy}${mm}${dd}-${rand}`;
+
+        const hh = document.getElementById('visitHour').value;
+        const minVal = document.getElementById('visitMin').value;
+        const fullTimeStr = `${hh}:${minVal}`;
 
         const payload = {
             ref_no: generatedRefNo,
@@ -394,8 +393,8 @@
             tel_no: document.getElementById('tel_no').value,
             purpose: document.getElementById('purpose').value,
             vehicle_type: document.getElementById('vehicle_type').value,
-            visit_date: document.getElementById('visitDateSelect').value,
-            visitTime: `${hourVal}:${minVal}`
+            visit_date: document.getElementById('visit_date').value,
+            visitTime: fullTimeStr
         };
 
         fetch(GOOGLE_API_URL, {
@@ -405,37 +404,41 @@
             body: JSON.stringify(payload)
         })
         .then(() => {
-            document.getElementById('s-ref').innerText = generatedRefNo;
+            document.getElementById('displayRefNo').innerText = generatedRefNo;
             document.getElementById('previewSection').classList.add('hidden-field');
             document.getElementById('successSection').classList.remove('hidden-field');
             btn.disabled = false;
-            btn.innerText = "確認提交 Confirm & Submit ➡️";
+            btn.innerText = "確認提交 ➡️";
         })
         .catch(err => {
             console.error(err);
-            alert("提交失敗，請檢查網絡後重試。");
+            alert("提交失敗，請檢查網絡後重試。 Submit failed.");
             btn.disabled = false;
-            btn.innerText = "確認提交 Confirm & Submit ➡️";
+            btn.innerText = "確認提交 ➡️";
         });
     }
 
     function resetForm() {
         document.getElementById('regForm').reset();
-        initDateTimeSelectors();
+        initDropdownSelectionBoxes();
         document.getElementById('successSection').classList.add('hidden-field');
         document.getElementById('formSection').classList.remove('hidden-field');
     }
 
-    // 跨裝置即時讀取 Google 試算表名單
+    // 跨裝置同步讀取雲端名單
     function loadInternalDataLists() {
         const todayTbody = document.getElementById('todayTableBody');
         const tomorrowTbody = document.getElementById('tomorrowTableBody');
         
-        todayTbody.innerHTML = '<tr><td colspan="7" class="text-center">正在同步雲端數據... Syncing...</td></tr>';
-        tomorrowTbody.innerHTML = '<tr><td colspan="7" class="text-center">正在同步雲端數據... Syncing...</td></tr>';
+        todayTbody.innerHTML = '<tr><td colspan="10" class="text-center">正在同步雲端數據... Syncing cloud data...</td></tr>';
+        tomorrowTbody.innerHTML = '<tr><td colspan="10" class="text-center">正在同步雲端數據... Syncing cloud data...</td></tr>';
         
         fetch(GOOGLE_API_URL)
             .then(response => response.json())
             .then(dataList => {
                 todayTbody.innerHTML = '';
-                tomorrowTbody
+                tomorrowTbody.innerHTML = '';
+
+                // 根據 Google 試算表的 status (in_progress) 欄位進行分類
+                let inProgressCars = dataList.
+
