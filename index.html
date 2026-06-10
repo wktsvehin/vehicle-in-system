@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-HK">
 <head>
     <meta charset="UTF-8">
@@ -82,40 +82,43 @@
                 </div>
                 <form id="regForm" autocomplete="off" onsubmit="showPreviewScreen(event)">
                     <div class="mb-3">
-                        <label class="form-label fw-bold biling-label">車牌號碼 <span class="biling-sub">Vehicle Registration Mark</span><span class="required-star">*</span></label>
-                        <input type="text" id="plate" class="form-control form-control-lg plate-input" placeholder="e.g. AB1234" required>
+                        <label id="dateLabel" class="form-label fw-bold biling-label">預計到訪日期 <span class="biling-sub">Expected Visit Date</span><span class="required-star">*</span></label>
+                        <input type="date" id="startDateInput" class="form-control" required onchange="generateReferenceNumber()">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold biling-label">司機名稱 / 機構名稱 <span class="biling-sub">Driver Name / Company Name</span><span class="required-star">*</span></label>
-                        <input type="text" id="name" class="form-control" placeholder="e.g. Chan Tai Man / ABC Engineering" required>
+                        <label class="form-label fw-bold biling-label">公司名稱 <span class="biling-sub">Company Name</span><span class="required-star">*</span></label>
+                        <input type="text" id="company" class="form-control" placeholder="e.g. ABC Engineering Company Ltd" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold biling-label">聯絡電話 (香港 8 位數字) <span class="biling-sub">Contact Phone (HK 8 digits)</span><span class="required-star">*</span></label>
-                        <input type="tel" id="phone" class="form-control" placeholder="e.g. 91234567" required pattern="\d{8}" maxlength="8" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
+                        <label class="form-label fw-bold biling-label">車牌號碼 <span class="biling-sub">Vehicle Registration Mark (Vehicle No.)</span><span class="required-star">*</span></label>
+                        <input type="text" id="vehicleNo" class="form-control form-control-lg plate-input" placeholder="e.g. AB1234" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold biling-label">入站目的 <span class="biling-sub">Purpose of Entry</span><span class="required-star">*</span></label>
-                        <input type="text" id="purpose" class="form-control" placeholder="e.g. Delivery / Maintenance" required>
+                        <label class="form-label fw-bold biling-label">聯絡人 <span class="biling-sub">Contact Person</span><span class="required-star">*</span></label>
+                        <input type="text" id="contactPerson" class="form-control" placeholder="e.g. Chan Tai Man" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold biling-label">預計到訪時間 <span class="text-muted small fw-normal">(選填 Optional)</span> <span class="biling-sub">Estimated Time of Arrival</span></label>
-                        <input type="text" id="visitTime" class="form-control" placeholder="e.g. 10:00 / 2:00 PM">
+                        <label class="form-label fw-bold biling-label">電話號碼 (香港 8 位數字) <span class="biling-sub">Tel. No. (HK 8 digits)</span><span class="required-star">*</span></label>
+                        <input type="tel" id="telNo" class="form-control" placeholder="e.g. 91234567" required pattern="\d{8}" maxlength="8" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold biling-label">預約類型 <span class="biling-sub">Booking Type</span><span class="required-star">*</span></label>
-                        <select id="bookingType" class="form-select" onchange="updateDatePickerConstraints()">
-                            <option value="single">只來一天 (單日預約) / Single Day Booking</option>
-                            <option value="multi">連續進出 (最多一星期) / Consecutive Days (Max 7 Days)</option>
+                        <label class="form-label fw-bold biling-label">車輛種類 <span class="biling-sub">Vehicle Type</span><span class="required-star">*</span></label>
+                        <select id="vehicleType" class="form-select" required>
+                            <option value="" disabled selected>請選擇 / Please Select</option>
+                            <option value="夾斗車 Grab Tipper">夾斗車 Grab Tipper</option>
+                            <option value="垃圾收集車 RCV">垃圾收集車 RCV</option>
+                            <option value="密斗貨車 Box Truck">密斗貨車 Box Truck</option>
+                            <option value="掛接車輛 Articulated Vehicle">掛接車輛 Articulated Vehicle</option>
+                            <option value="私家車/客貨車 Private Car/Van">私家車/客貨車 Private Car/Van</option>
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label id="dateLabel" class="form-label fw-bold biling-label">預計到訪日期 <span class="biling-sub">Expected Visit Date</span><span class="required-star">*</span></label>
-                        <input type="date" id="startDateInput" class="form-control" required>
+                        <label class="form-label fw-bold biling-label">進入目的 / 工作內容 <span class="biling-sub">Purpose of Entry / Nature of Work</span><span class="required-star">*</span></label>
+                        <input type="text" id="purpose" class="form-control" placeholder="e.g. Delivery / Sludge Hausage" required>
                     </div>
-                    <div id="multiDayBox" class="mb-3 hidden-field">
-                        <label class="form-label fw-bold text-success biling-label">最後一天入站日期 (結束日期) <span class="biling-sub text-success">Last Visit Date (End Date)</span><span class="required-star">*</span></label>
-                        <input type="date" id="endDateInput" class="form-control">
-                        <div class="form-text text-muted">⚠️ 根據截數限制，最多可連續預約 7 天。 / Max 7 consecutive days according to cut-off rules.</div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold biling-label">預計到訪時間 <span class="text-muted small fw-normal">(選填 Optional)</span> <span class="biling-sub">Estimated Time of Arrival (ETA)</span></label>
+                        <input type="text" id="visitTime" class="form-control" placeholder="e.g. 10:00 / 2:30 PM">
                     </div>
                     <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold py-2 mt-3">
                         前往預覽申請頁面 <span class="fw-normal" style="font-size: 0.85rem;"><br>Proceed to Preview Application</span>
@@ -128,13 +131,15 @@
                 <h4 class="card-title mb-1 fw-bold text-dark">請核對您的申請資料</h4>
                 <h6 class="text-secondary fw-normal mb-3" style="font-size: 0.9rem;">Please Verify Your Application Details</h6>
                 <div class="preview-box">
-                    <div class="preview-item"><div class="preview-label">車牌號碼<br><span class="small text-muted fw-normal">Vehicle Mark</span></div><div id="p-plate" class="preview-value text-danger fs-5 fw-bold"></div></div>
-                    <div class="preview-item"><div class="preview-label">司機/機構名稱<br><span class="small text-muted fw-normal">Driver/Company</span></div><div id="p-name" class="preview-value"></div></div>
-                    <div class="preview-item"><div class="preview-label">聯絡電話<br><span class="small text-muted fw-normal">Contact Phone</span></div><div id="p-phone" class="preview-value"></div></div>
-                    <div class="preview-item"><div class="preview-label">入站目的<br><span class="small text-muted fw-normal">Purpose</span></div><div id="p-purpose" class="preview-value"></div></div>
+                    <div class="preview-item"><div class="preview-label">參考編號<br><span class="small text-muted fw-normal">Reference No.</span></div><div id="p-refNo" class="preview-value text-dark fw-bold"></div></div>
+                    <div class="preview-item"><div class="preview-label">預計到訪日期<br><span class="small text-muted fw-normal">Scheduled Date</span></div><div id="p-date" class="preview-value text-success fw-bold"></div></div>
+                    <div class="preview-item"><div class="preview-label">公司名稱<br><span class="small text-muted fw-normal">Company Name</span></div><div id="p-company" class="preview-value"></div></div>
+                    <div class="preview-item"><div class="preview-label">車牌號碼<br><span class="small text-muted fw-normal">Vehicle No.</span></div><div id="p-vehicleNo" class="preview-value text-danger fs-5 fw-bold"></div></div>
+                    <div class="preview-item"><div class="preview-label">聯絡人<br><span class="small text-muted fw-normal">Contact Person</span></div><div id="p-contactPerson" class="preview-value"></div></div>
+                    <div class="preview-item"><div class="preview-label">電話號碼<br><span class="small text-muted fw-normal">Tel. No.</span></div><div id="p-telNo" class="preview-value"></div></div>
+                    <div class="preview-item"><div class="preview-label">車輛種類<br><span class="small text-muted fw-normal">Vehicle Type</span></div><div id="p-vehicleType" class="preview-value"></div></div>
+                    <div class="preview-item"><div class="preview-label">進入目的/工作內容<br><span class="small text-muted fw-normal">Purpose</span></div><div id="p-purpose" class="preview-value"></div></div>
                     <div class="preview-item"><div class="preview-label">預計到訪時間<br><span class="small text-muted fw-normal">ETA</span></div><div id="p-visitTime" class="preview-value text-primary"></div></div>
-                    <div class="preview-item"><div class="preview-label">預約類型<br><span class="small text-muted fw-normal">Booking Type</span></div><div id="p-type" class="preview-value"></div></div>
-                    <div class="preview-item"><div class="preview-label">預約期限<br><span class="small text-muted fw-normal">Period</span></div><div id="p-period" class="preview-value text-success fw-bold"></div></div>
                 </div>
                 <div class="d-flex gap-3">
                     <button type="button" class="btn btn-secondary btn-lg w-50 fw-bold py-2" onclick="hidePreviewScreen()">⬅️ 返回修改<br><span class="fw-normal small" style="font-size: 0.75rem;">Back to Edit</span></button>
@@ -147,6 +152,7 @@
                 <div class="ref-box">
                     <h3 class="text-success fw-bold mb-1">🎉 登記申請已送出</h3>
                     <h5 class="text-success fw-normal mb-3" style="font-size: 1.1rem;">Application Submitted Successfully</h5>
+                    <p class="mb-3 fs-5 text-dark">您的參考編號為 Your Reference No. is : <br><b id="finalRefNo" class="text-primary fs-3"></b></p>
                     <p class="lead mb-2 fs-6 text-dark">請截圖或保存此畫面作為核對憑證。<br><span class="text-muted small" style="font-size: 0.8rem;">Please screenshot or save this screen as proof of verification.</span></p>
                 </div>
                 <button type="button" class="btn btn-outline-primary btn-lg w-100 fw-bold py-2 mt-4" onclick="resetForm()">返回填寫新申請 <br><span class="fw-normal small" style="font-size: 0.75rem;">Back to New Application</span></button>
@@ -179,40 +185,48 @@
                 </div>
                 
                 <div class="mb-4">
-                    <input type="text" id="searchPlate" class="form-control form-control-lg plate-input" placeholder="搜尋車牌 Search Plate No. (e.g. AB1234)" oninput="filterGateTables()">
+                    <input type="text" id="searchPlate" class="form-control form-control-lg plate-input" placeholder="搜尋車牌或公司 Search Vehicle No. or Company" oninput="filterGateTables()">
                 </div>
 
-                <!-- 表格 A：申請處理中 (已更新名稱) -->
+                <!-- 表格 A：申請處理中 -->
                 <h5 class="internal-section-title">⏳ 申請處理中 / Application Under Progress</h5>
                 <div class="table-responsive">
                     <table class="table table-striped table-hover align-middle mb-0">
-                        <thead class="table-warning" style="font-size: 0.9rem; background-color: #d69e2e; color: white;">
+                        <thead class="table-warning" style="font-size: 0.85rem; background-color: #d69e2e; color: white;">
                             <tr>
-                                <th>車牌號碼 <span class="fw-normal d-block" style="font-size: 0.75rem;">Plate No.</span></th>
-                                <th>司機/機構名稱 <span class="fw-normal d-block" style="font-size: 0.75rem;">Driver/Company</span></th>
-                                <th>入站目的 <span class="fw-normal d-block" style="font-size: 0.75rem;">Purpose</span></th>
-                                <th>預計時間 <span class="fw-normal d-block" style="font-size: 0.75rem;">ETA</span></th>
+                                <th>項目<br>Item</th>
+                                <th>參考編號<br>Ref No.</th>
+                                <th>公司名稱<br>Company</th>
+                                <th>車牌號碼<br>Vehicle No.</th>
+                                <th>聯絡人<br>Contact</th>
+                                <th>電話號碼<br>Tel No.</th>
+                                <th>進入目的<br>Purpose</th>
+                                <th>車種類型<br>Vehicle Type</th>
                             </tr>
                         </thead>
-                        <tbody id="todayTableBody" style="font-size: 0.95rem;">
+                        <tbody id="todayTableBody" style="font-size: 0.9rem;">
                             <!-- 載入處理中名單 -->
                         </tbody>
                     </table>
                 </div>
 
-                <!-- 表格 B：已確認名單 (已更新名稱) -->
+                <!-- 表格 B：已確認名單 -->
                 <h5 class="internal-section-title">✅ 已確認名單 / Confirmed List</h5>
                 <div class="table-responsive">
                     <table class="table table-striped table-hover align-middle mb-0">
-                        <thead class="table-success" style="font-size: 0.9rem; background-color: #2f855a; color: white;">
+                        <thead class="table-success" style="font-size: 0.85rem; background-color: #2f855a; color: white;">
                             <tr>
-                                <th>車牌號碼 <span class="fw-normal d-block" style="font-size: 0.75rem;">Plate No.</span></th>
-                                <th>司機/機構名稱 <span class="fw-normal d-block" style="font-size: 0.75rem;">Driver/Company</span></th>
-                                <th>入站目的 <span class="fw-normal d-block" style="font-size: 0.75rem;">Purpose</span></th>
-                                <th>預計時間 <span class="fw-normal d-block" style="font-size: 0.75rem;">ETA</span></th>
+                                <th>項目<br>Item</th>
+                                <th>參考編號<br>Ref No.</th>
+                                <th>公司名稱<br>Company</th>
+                                <th>車牌號碼<br>Vehicle No.</th>
+                                <th>聯絡人<br>Contact</th>
+                                <th>電話號碼<br>Tel No.</th>
+                                <th>進入目的<br>Purpose</th>
+                                <th>車種類型<br>Vehicle Type</th>
                             </tr>
                         </thead>
-                        <tbody id="tomorrowTableBody" style="font-size: 0.95rem;">
+                        <tbody id="tomorrowTableBody" style="font-size: 0.9rem;">
                             <!-- 載入已確認名單 -->
                         </tbody>
                     </table>
@@ -224,7 +238,48 @@
 
 <!-- 引入系統邏輯 JavaScript -->
 <script>
-    let isInternalAuthenticated = false; // 紀錄密碼驗證狀態
+    let isInternalAuthenticated = false; 
+    let generatedRefNo = "";
+
+    // 🔑 雲端資料庫通道：請在雙引號內貼上你剛剛在 Google 複製得到的 exec 網址！
+    const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbz6L1lO15lIwMUcKT6Veg6RoTndla90i0pKLVTzE4qGmvHl2pZULMYhmdhnqJt-aVE9/exec"; 
+
+    // 自動計算訪客日期限制與生成隨機序號
+    function updateDatePickerConstraints() {
+        const now = new Date();
+        const hour = now.getHours();
+        let minDate = new Date();
+        
+        if (hour >= 15) {
+            minDate.setDate(now.getDate() + 2);
+        } else {
+            minDate.setDate(now.getDate() + 1);
+        }
+        
+        const minStr = minDate.toISOString().split('T')[0];
+        const startInput = document.getElementById('startDateInput');
+        if (startInput) {
+            startInput.min = minStr;
+            startInput.value = minStr; // 預設帶入最早可選日期
+            generateReferenceNumber(); // 初始化序號
+        }
+    }
+
+    function generateReferenceNumber() {
+        const dateInput = document.getElementById('startDateInput').value;
+        if (!dateInput) return;
+        
+        // 格式化日期為 YYYYMMDD
+        const cleanDate = dateInput.replace(/-/g, '');
+        // 生成 3 位隨機亂數防重複
+        const randomNum = Math.floor(100 + Math.random() * 900);
+        
+        generatedRefNo = `REF-${cleanDate}-${randomNum}`;
+    }
+
+    window.onload = function() {
+        updateDatePickerConstraints();
+    };
 
     function triggerInternalAuth() {
         if (!isInternalAuthenticated) {
@@ -239,7 +294,7 @@
 
     function verifyInternalPassword() {
         const inputPwd = document.getElementById('internalPwd').value;
-        const correctPwd = "1234"; // 🔒 內部登入密碼可在此處修改
+        const correctPwd = "1234"; // 🔒 內部登入密碼可在此處手動修改
         
         if (inputPwd === correctPwd) {
             isInternalAuthenticated = true;
@@ -250,75 +305,27 @@
             document.getElementById('authErrorMsg').classList.remove('hidden-field');
         }
     }
+
     function lockInternalPage() {
         isInternalAuthenticated = false;
         triggerInternalAuth();
     }
 
-    function switchToVisitor() {
-        // 切換回訪客頁面
-    }
-
-    // 自動計算訪客日期限制
-    function updateDatePickerConstraints() {
-        const now = new Date();
-        const hour = now.getHours();
-        let minDate = new Date();
-        
-        if (hour >= 15) {
-            minDate.setDate(now.getDate() + 2);
-        } else {
-            minDate.setDate(now.getDate() + 1);
-        }
-        
-        const minStr = minDate.toISOString().split('T');
-        const startInput = document.getElementById('startDateInput');
-        if (startInput) startInput.min = minStr;
-        
-        const bookingType = document.getElementById('bookingType').value;
-        const multiDayBox = document.getElementById('multiDayBox');
-        const endDateInput = document.getElementById('endDateInput');
-        
-        if (bookingType === 'multi') {
-            multiDayBox.classList.remove('hidden-field');
-            endDateInput.required = true;
-            
-            startInput.onchange = function() {
-                if(this.value) {
-                    let sDate = new Date(this.value);
-                    endDateInput.min = this.value;
-                    let maxDate = new Date(sDate);
-                    maxDate.setDate(sDate.getDate() + 6);
-                    endDateInput.max = maxDate.toISOString().split('T');
-                }
-            };
-        } else {
-            multiDayBox.classList.add('hidden-field');
-            endDateInput.required = false;
-            endDateInput.value = '';
-        }
-    }
-
-    window.onload = function() {
-        updateDatePickerConstraints();
-    };
+    function switchToVisitor() {}
 
     function showPreviewScreen(event) {
         event.preventDefault();
-        document.getElementById('p-plate').innerText = document.getElementById('plate').value.toUpperCase();
-        document.getElementById('p-name').innerText = document.getElementById('name').value;
-        document.getElementById('p-phone').innerText = document.getElementById('phone').value;
+        
+        document.getElementById('p-refNo').innerText = generatedRefNo;
+        document.getElementById('p-date').innerText = document.getElementById('startDateInput').value;
+        document.getElementById('p-company').innerText = document.getElementById('company').value;
+        document.getElementById('p-vehicleNo').innerText = document.getElementById('vehicleNo').value.toUpperCase();
+        document.getElementById('p-contactPerson').innerText = document.getElementById('contactPerson').value;
+        document.getElementById('p-telNo').innerText = document.getElementById('telNo').value;
+        document.getElementById('p-vehicleType').innerText = document.getElementById('vehicleType').value;
         document.getElementById('p-purpose').innerText = document.getElementById('purpose').value;
         document.getElementById('p-visitTime').innerText = document.getElementById('visitTime').value || '未填寫 / Not Specified';
         
-        const type = document.getElementById('bookingType').value;
-        if (type === 'single') {
-            document.getElementById('p-type').innerText = '只來一天 (單日預約) / Single Day';
-            document.getElementById('p-period').innerText = document.getElementById('startDateInput').value;
-        } else {
-            document.getElementById('p-type').innerText = '連續進出 (多日預約) / Consecutive Days';
-            document.getElementById('p-period').innerText = document.getElementById('startDateInput').value + ' 至 / To ' + document.getElementById('endDateInput').value;
-        }
         document.getElementById('formSection').classList.add('hidden-field');
         document.getElementById('previewSection').classList.remove('hidden-field');
     }
@@ -328,9 +335,43 @@
         document.getElementById('formSection').classList.remove('hidden-field');
     }
 
+    // 傳送最新資料至 Google 試算表雲端儲存
     function finalSubmitData() {
-        document.getElementById('previewSection').classList.add('hidden-field');
-        document.getElementById('successSection').classList.remove('hidden-field');
+        const btn = document.getElementById('confirmSubmitBtn');
+        btn.disabled = true;
+        btn.innerText = "正在傳送... Submitting...";
+
+        const payload = {
+            ref_no: generatedRefNo,
+            date: document.getElementById('startDateInput').value,
+            company: document.getElementById('company').value,
+            vehicle_no: document.getElementById('vehicleNo').value.toUpperCase(),
+            contact_person: document.getElementById('contactPerson').value,
+            tel_no: document.getElementById('telNo').value,
+            purpose: document.getElementById('purpose').value,
+            vehicle_type: document.getElementById('vehicleType').value,
+            visit_date: document.getElementById('startDateInput').value // 系統比對輔助日期
+        };
+
+        fetch(GOOGLE_API_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        })
+        .then(() => {
+            document.getElementById('finalRefNo').innerText = generatedRefNo;
+            document.getElementById('previewSection').classList.add('hidden-field');
+            document.getElementById('successSection').classList.remove('hidden-field');
+            btn.disabled = false;
+            btn.innerText = "確認提交 ➡️";
+        })
+        .catch(err => {
+            console.error(err);
+            alert("提交失敗，請檢查網絡連線。");
+            btn.disabled = false;
+            btn.innerText = "確認提交 ➡️";
+        });
     }
 
     function resetForm() {
@@ -340,61 +381,70 @@
         document.getElementById('formSection').classList.remove('hidden-field');
     }
 
-    // 讀取內部資料名單 (統一由 data.json 提供數據來源)
+    // 即時跨裝置同步讀取 Google 試算表名單
     function loadInternalDataLists() {
         const todayTbody = document.getElementById('todayTableBody');
         const tomorrowTbody = document.getElementById('tomorrowTableBody');
         
-        todayTbody.innerHTML = '<tr><td colspan="4" class="text-center">正在載入名單... Loading...</td></tr>';
-        tomorrowTbody.innerHTML = '<tr><td colspan="4" class="text-center">正在載入名單... Loading...</td></tr>';
+        todayTbody.innerHTML = '<tr><td colspan="8" class="text-center">正在同步雲端數據... Syncing...</td></tr>';
+        tomorrowTbody.innerHTML = '<tr><td colspan="8" class="text-center">正在同步雲端數據... Syncing...</td></tr>';
         
-        fetch('data.json')
-            .then(response => {
-                if (!response.ok) throw new Error('無法讀取名單檔案');
-                return response.json();
-            })
-            .then(data => {
+        fetch(GOOGLE_API_URL)
+            .then(response => response.json())
+            .then(dataList => {
                 todayTbody.innerHTML = '';
                 tomorrowTbody.innerHTML = '';
-                
-                if (!data || data.length === 0) {
-                    const emptyRow = '<tr><td colspan="4" class="text-center text-muted">目前名單內無車輛紀錄 / No vehicles found.</td></tr>';
-                    todayTbody.innerHTML = emptyRow;
-                    tomorrowTbody.innerHTML = emptyRow;
-                    return;
-                }
-                
-                data.forEach((item, index) => {
-                    const rowHTML = `
-                        <td class="fw-bold text-uppercase">${item.plate || item.車牌號碼 || ''}</td>
-                        <td>${item.name || item.司機名稱 || item.機構名稱 || ''}</td>
-                        <td>${item.purpose || item.入站目的 || ''}</td>
-                        <td>${item.visitTime || item.預計到訪時間 || '未填寫 / Not Filled'}</td>
-                    `;
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = rowHTML;
-                    
-                    // 模擬分類：奇數索引資料顯示在處理中，偶數索引資料顯示在已確認。
-                    // 實務上可改依據 item.status === 'in_progress' 等自訂欄位篩選
-                    if (index % 2 === 0) {
+
+                let inProgressCars = dataList.filter(item => item.status === "in_progress");
+                let confirmedCars = dataList.filter(item => item.status !== "in_progress");
+
+                if (inProgressCars.length === 0) {
+                    todayTbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">暫無處理中的申請 / No records.</td></tr>';
+                } else {
+                    inProgressCars.forEach(item => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${item.item}</td>
+                            <td class="small text-muted">${item.ref_no}</td>
+                            <td>${item.company}</td>
+                            <td class="fw-bold text-uppercase text-warning">${item.vehicle_no}</td>
+                            <td>${item.contact_person}</td>
+                            <td>${item.tel_no}</td>
+                            <td>${item.purpose}</td>
+                            <td><span class="badge bg-secondary">${item.vehicle_type}</span></td>
+                        `;
                         todayTbody.appendChild(tr);
-                    } else {
+                    });
+                }
+
+                if (confirmedCars.length === 0) {
+                    tomorrowTbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">暫無已確認之名單 / No records.</td></tr>';
+                } else {
+                    confirmedCars.forEach(item => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${item.item}</td>
+                            <td class="small text-muted">${item.ref_no}</td>
+                            <td>${item.company}</td>
+                            <td class="fw-bold text-uppercase text-success">${item.vehicle_no}</td>
+                            <td>${item.contact_person}</td>
+                            <td>${item.tel_no}</td>
+                            <td>${item.purpose}</td>
+                            <td><span class="badge bg-success">${item.vehicle_type}</span></td>
+                        `;
                         tomorrowTbody.appendChild(tr);
-                    }
-                });
-                
-                if(todayTbody.innerHTML === '') todayTbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">暫無處理中的申請 / No records in progress.</td></tr>';
-                if(tomorrowTbody.innerHTML === '') tomorrowTbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">暫無已確認之名單 / No confirmed records.</td></tr>';
+                    });
+                }
             })
             .catch(error => {
                 console.error(error);
-                const errHTML = `<tr><td colspan="4" class="text-center text-danger">⚠️ 讀取失敗。請確認倉庫中已上傳 data.json。<br>Load failed.</td></tr>`;
+                const errHTML = `<tr><td colspan="8" class="text-center text-danger">⚠️ 雲端讀取失敗。請檢查網絡或 Apps Script 設定。</td></tr>`;
                 todayTbody.innerHTML = errHTML;
                 tomorrowTbody.innerHTML = errHTML;
             });
     }
 
-    // 同步過濾兩個內部表格內容
+    // 內部搜尋功能
     function filterGateTables() {
         const input = document.getElementById('searchPlate').value.toUpperCase();
         const tables = [document.getElementById('todayTableBody'), document.getElementById('tomorrowTableBody')];
@@ -406,16 +456,3 @@
                 if (td.length > 0) {
                     const txtValue = rows[i].textContent || rows[i].innerText;
                     if (txtValue.toUpperCase().indexOf(input) > -1) {
-                        rows[i].style.display = "";
-                    } else {
-                        rows[i].style.display = "none";
-                    }
-                }
-            }
-        });
-    }
-</script>
-<!-- 引入 Bootstrap 的必要動態腳本套件 -->
-<script src="https://jsdelivr.net"></script>
-</body>
-</html>
