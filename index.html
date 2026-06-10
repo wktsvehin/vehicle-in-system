@@ -3,175 +3,217 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>西九龍廢物轉運站車輛登記系統</title>
-    <!-- 引入響應式 UI 樣式框架 -->
+    <title>西九龍廢物轉運站車輛登記系統 WKWTS Vehicle Registration System</title>
+    <!-- 引入正確的響應式 UI 樣式框架 Bootstrap CSS -->
     <link href="https://jsdelivr.net" rel="stylesheet">
     <style>
-        body { background-color: #f4f7f6; padding: 20px; font-family: 'Helvetica Neue', Arial, sans-serif; -webkit-user-select: none; user-select: none; }
-        .card { border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: none; margin-bottom: 20px; }
-        .nav-tabs { margin-bottom: 25px; border-bottom: 2px solid #dee2e6; }
-        .nav-link { border: none !important; color: #6c757d; font-size: 1.1rem; padding: 12px; transition: all 0.3s ease; }
-        .nav-link.active { color: #0d6efd !important; border-bottom: 3px solid #0d6efd !important; background: transparent !important; }
-        .table-responsive { background-color: #fff; border-radius: 12px; border: 1px solid #e3e6f0; }
+        body { background-color: #eef2f5; padding: 30px 20px; font-family: 'Helvetica Neue', Arial, sans-serif; -webkit-user-select: none; user-select: none; }
+        .logo-container { text-align: center; margin-bottom: 25px; padding: 10px; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+        .epd-logo { max-height: 75px; width: auto; object-fit: contain; }
+        .card { border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.06); border: none; margin-bottom: 20px; background-color: #ffffff; }
+        .nav-tabs { margin-bottom: 30px; border-bottom: 2px solid #e2e8f0; }
+        .nav-link { border: none !important; color: #718096; font-size: 1rem; padding: 14px; transition: all 0.3s ease; border-radius: 0 !important; }
+        .nav-link.active { color: #2c7a7b !important; border-bottom: 3px solid #319795 !important; background: transparent !important; }
+        .table-responsive { background-color: #fff; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 25px; }
         .hidden-field { display: none; }
-        .required-star { color: #dc3545; margin-left: 3px; }
-        .ref-box { background-color: #f4fbf7; border: 2px dashed #198754; padding: 20px; border-radius: 12px; margin-top: 20px; text-align: center; }
-        .preview-box { background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
-        .preview-item { display: flex; border-bottom: 1px solid #e9ecef; padding: 10px 0; }
+        .required-star { color: #e53e3e; margin-left: 3px; }
+        .ref-box { background-color: #f0fff4; border: 2px dashed #38a169; padding: 25px; border-radius: 14px; margin-top: 20px; text-align: center; }
+        .preview-box { background-color: #f7fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px; margin-bottom: 20px; }
+        .preview-item { display: flex; border-bottom: 1px solid #edf2f7; padding: 12px 0; flex-wrap: wrap; }
         .preview-item:last-child { border-bottom: none; }
-        .preview-label { width: 40%; font-weight: bold; color: #495057; }
-        .preview-value { width: 60%; color: #212529; font-weight: 500; }
-        .plate-input { text-transform: uppercase; font-weight: bold; letter-spacing: 1px; font-size: 1.2rem; }
-        .reminder-text { color: #dc3545; font-weight: bold; animation: blink 1.5s infinite; }
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+        .preview-label { width: 40%; font-weight: bold; color: #4a5568; min-width: 150px; }
+        .preview-value { width: 60%; color: #2d3748; font-weight: 500; min-width: 150px; }
+        .plate-input { text-transform: uppercase; font-weight: bold; letter-spacing: 1px; font-size: 1.2rem; border-radius: 10px; }
+        .form-control, .form-select { border-radius: 10px; border: 1px solid #cbd5e0; padding: 10px 12px; }
+        .form-control:focus, .form-select:focus { border-color: #4fd1c5; box-shadow: 0 0 0 3px rgba(79, 209, 197, 0.2); }
+        .btn-primary { background-color: #319795 !important; border-color: #319795 !important; border-radius: 25px; box-shadow: 0 4px 12px rgba(49, 151, 149, 0.3); transition: all 0.2s ease; }
+        .btn-primary:hover { background-color: #2c7a7b !important; border-color: #2c7a7b !important; transform: translateY(-1px); }
+        .btn-success { background-color: #38a169 !important; border-color: #38a169 !important; border-radius: 25px; box-shadow: 0 4px 12px rgba(56, 161, 105, 0.3); }
+        .btn-success:hover { background-color: #2f855a !important; border-color: #2f855a !important; }
+        .btn-secondary, .btn-outline-primary { border-radius: 25px; }
+        .biling-label { font-size: 0.95rem; display: block; color: #2d3748; }
+        .biling-sub { font-size: 0.8rem; color: #718096; font-weight: normal; display: block; }
+        .internal-section-title { color: #2c7a7b; font-weight: bold; margin-top: 15px; margin-bottom: 15px; padding-left: 5px; border-left: 4px solid #319795; }
     </style>
 </head>
 <body>
 
 <div class="container" style="max-width: 750px;">
-    <!-- 主頁面大主題標題 -->
-    <h2 class="text-center my-4 fw-bold text-primary">西九龍廢物轉運站申請車輛登記</h2>
+    <!-- 頂部政府 EPD Logo 區塊 -->
+    <div class="logo-container">
+        <img src="epd.jpg" alt="Environmental Protection Department" class="epd-logo" onerror="this.style.display='none';">
+    </div>
+
+    <!-- 主頁面大主題標題 (綠色系調) -->
+    <h3 class="text-center my-1 fw-bold" style="color: #2c7a7b;">西九龍廢物轉運站車輛登記</h3>
+    <h6 class="text-center mb-4 text-secondary text-uppercase fw-normal" style="font-size: 0.85rem; letter-spacing: 0.5px;">West Kowloon Refuse Transfer Station Vehicle Registration</h6>
     
     <!-- 功能分頁切換導覽 -->
     <ul class="nav nav-tabs nav-justified" id="systemTab" role="tablist">
         <li class="nav-item">
-            <button class="nav-tab nav-link active fw-bold" id="register-tab" data-bs-toggle="tab" data-bs-target="#register-panel" type="button">外來人登記</button>
+            <button class="nav-link active fw-bold" id="register-tab" data-bs-toggle="tab" data-bs-target="#register-panel" type="button" onclick="switchToVisitor()">
+                訪客登記<br><span class="small fw-normal text-lowercase" style="font-size: 0.75rem;">Visitor Registration</span>
+            </button>
         </li>
         <li class="nav-item">
-            <button class="nav-tab nav-link fw-bold" id="gate-tab" data-bs-toggle="tab" data-bs-target="#gate-panel" type="button" onclick="checkGateAccess()">閘口明日核對</button>
+            <button class="nav-link fw-bold" id="gate-tab" data-bs-toggle="tab" data-bs-target="#gate-panel" type="button" onclick="triggerInternalAuth()">
+                內部使用<br><span class="small fw-normal text-lowercase" style="font-size: 0.75rem;">Internal Use</span>
+            </button>
         </li>
     </ul>
 
     <div class="tab-content">
-        <!-- 1. 外來人登記及預覽介面 -->
+        <!-- 1. 訪客登記及預覽介面 -->
         <div class="tab-pane fade show active" id="register-panel" role="tabpanel">
             
             <!-- 畫面 A：填寫表格畫面 -->
             <div id="formSection" class="card p-4">
-                <h4 class="card-title mb-3 fw-bold text-dark">車輛入站申請</h4>
-                
+                <h4 class="card-title mb-3 fw-bold" style="color: #2d3748;">車輛入站申請 <span class="text-muted fw-normal" style="font-size: 1.05rem;">/ Vehicle Access Application</span></h4>
                 <!-- 官方收集個人資料聲明 -->
-                <div class="alert alert-info py-2 px-3 small fw-bold mb-3" role="alert" style="border-left: 5px solid #0dcaf0; background-color: #f0faff; color: #055160;">
-                    ⚠️ 提醒事項：所收集資料只用於檢查車輛進入本站之用，如資料不齊全或錯誤，或會影響車輛進入本站，敬請注意。
+                <div class="alert alert-info py-2 px-3 small fw-bold mb-3" role="alert" style="border-left: 5px solid #4fd1c5; background-color: #f7fafc; color: #2c7a7b;">
+                    ⚠️ <b>提醒事項 / PICS：</b>所收集資料只用於檢查車輛進入本站之用，如資料不齊全或錯誤，或會影響車輛進入本站，敬請注意。<br>
+                    <span class="fw-normal text-muted" style="font-size: 0.75rem;">The information collected is only used for checking vehicle entry. Incorrect or incomplete information may affect entry.</span>
                 </div>
 
-                <div class="alert alert-warning py-2 small" role="alert">
-                    💡 <b>預約截數提示：</b>每天下午 3:00 截數。3:00 前申請最快可預約明日入站；3:00 後申請將於後日生效。
+                <div class="alert alert-warning py-2 small" role="alert" style="background-color: #fffaf0; border-color: #feebc8; color: #dd6b20;">
+                    💡 <b>預約截數提示 / Cut-off Time Note：</b><br>
+                    每天下午 3:00 截數。3:00 前申請最快可預約明日入站；3:00 後申請將於後日生效。<br>
+                    <span class="text-muted" style="font-size: 0.75rem;">Daily cut-off time is 3:00 PM. Applications before 3:00 PM take effect tomorrow at the earliest; after 3:00 PM take effect the day after tomorrow.</span>
                 </div>
                 <form id="regForm" autocomplete="off" onsubmit="showPreviewScreen(event)">
                     <div class="mb-3">
-                        <label class="form-label fw-bold">車牌號碼<span class="required-star">*</span></label>
-                        <input type="text" id="plate" class="form-control form-control-lg plate-input" placeholder="例如: AB1234" required>
+                        <label class="form-label fw-bold biling-label">車牌號碼 <span class="biling-sub">Vehicle Registration Mark</span><span class="required-star">*</span></label>
+                        <input type="text" id="plate" class="form-control form-control-lg plate-input" placeholder="e.g. AB1234" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold">司機名稱/機構名稱<span class="required-star">*</span></label>
-                        <input type="text" id="name" class="form-control" placeholder="陳大文 / XXX工程公司" required>
+                        <label class="form-label fw-bold biling-label">司機名稱 / 機構名稱 <span class="biling-sub">Driver Name / Company Name</span><span class="required-star">*</span></label>
+                        <input type="text" id="name" class="form-control" placeholder="e.g. Chan Tai Man / ABC Engineering" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold">聯絡電話 (香港 8 位數字)<span class="required-star">*</span></label>
-                        <input type="tel" id="phone" class="form-control" placeholder="例如: 91234567" required pattern="\d{8}" maxlength="8" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
+                        <label class="form-label fw-bold biling-label">聯絡電話 (香港 8 位數字) <span class="biling-sub">Contact Phone (HK 8 digits)</span><span class="required-star">*</span></label>
+                        <input type="tel" id="phone" class="form-control" placeholder="e.g. 91234567" required pattern="\d{8}" maxlength="8" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold">入站目的<span class="required-star">*</span></label>
-                        <input type="text" id="purpose" class="form-control" placeholder="例如：送貨 / 維修" required>
+                        <label class="form-label fw-bold biling-label">入站目的 <span class="biling-sub">Purpose of Entry</span><span class="required-star">*</span></label>
+                        <input type="text" id="purpose" class="form-control" placeholder="e.g. Delivery / Maintenance" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold">預計到訪時間 <span class="text-muted small fw-normal">(選填)</span></label>
-                        <input type="text" id="visitTime" class="form-control" placeholder="例如：10:00 / 下午2點">
+                        <label class="form-label fw-bold biling-label">預計到訪時間 <span class="text-muted small fw-normal">(選填 Optional)</span> <span class="biling-sub">Estimated Time of Arrival</span></label>
+                        <input type="text" id="visitTime" class="form-control" placeholder="e.g. 10:00 / 2:00 PM">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold">預約類型<span class="required-star">*</span></label>
+                        <label class="form-label fw-bold biling-label">預約類型 <span class="biling-sub">Booking Type</span><span class="required-star">*</span></label>
                         <select id="bookingType" class="form-select" onchange="updateDatePickerConstraints()">
-                            <option value="single">只來一天 (單日預約)</option>
-                            <option value="multi">連續進出 (最多一星期)</option>
+                            <option value="single">只來一天 (單日預約) / Single Day Booking</option>
+                            <option value="multi">連續進出 (最多一星期) / Consecutive Days (Max 7 Days)</option>
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label id="dateLabel" class="form-label fw-bold">預計到訪日期<span class="required-star">*</span></label>
+                        <label id="dateLabel" class="form-label fw-bold biling-label">預計到訪日期 <span class="biling-sub">Expected Visit Date</span><span class="required-star">*</span></label>
                         <input type="date" id="startDateInput" class="form-control" required>
                     </div>
                     <div id="multiDayBox" class="mb-3 hidden-field">
-                        <label class="form-label fw-bold text-success">最後一天入站日期 (結束日期)<span class="required-star">*</span></label>
+                        <label class="form-label fw-bold text-success biling-label">最後一天入站日期 (結束日期) <span class="biling-sub text-success">Last Visit Date (End Date)</span><span class="required-star">*</span></label>
                         <input type="date" id="endDateInput" class="form-control">
-                        <div class="form-text text-muted">⚠️ 根據截數限制，最多可連續預約 7 天。</div>
+                        <div class="form-text text-muted">⚠️ 根據截數限制，最多可連續預約 7 天。 / Max 7 consecutive days according to cut-off rules.</div>
                     </div>
-                    <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold py-3 mt-2">前往預覽申請頁面</button>
+                    <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold py-2 mt-3">
+                        前往預覽申請頁面 <span class="fw-normal" style="font-size: 0.85rem;"><br>Proceed to Preview Application</span>
+                    </button>
                 </form>
             </div>
 
             <!-- 畫面 B：獨立申請預覽確認頁面 -->
             <div id="previewSection" class="card p-4 hidden-field">
-                <h4 class="card-title mb-3 fw-bold text-dark">請核對您的申請資料</h4>
-                <p class="text-muted small">請仔細核對以下資料是否正確，確認無誤後請點擊下方「確認提交」按鈕。</p>
-                
+                <h4 class="card-title mb-1 fw-bold text-dark">請核對您的申請資料</h4>
+                <h6 class="text-secondary fw-normal mb-3" style="font-size: 0.9rem;">Please Verify Your Application Details</h6>
                 <div class="preview-box">
-                    <div class="preview-item"><div class="preview-label">車牌號碼</div><div id="p-plate" class="preview-value text-danger fs-5 fw-bold"></div></div>
-                    <div class="preview-item"><div class="preview-label">司機/機構名稱</div><div id="p-name" class="preview-value"></div></div>
-                    <div class="preview-item"><div class="preview-label">聯絡電話</div><div id="p-phone" class="preview-value"></div></div>
-                    <div class="preview-item"><div class="preview-label">入站目的</div><div id="p-purpose" class="preview-value"></div></div>
-                    <div class="preview-item"><div class="preview-label">預計到訪時間</div><div id="p-visitTime" class="preview-value text-primary"></div></div>
-                    <div class="preview-item"><div class="preview-label">預約類型</div><div id="p-type" class="preview-value"></div></div>
-                    <div class="preview-item"><div class="preview-label">預約期限</div><div id="p-period" class="preview-value text-success fw-bold"></div></div>
+                    <div class="preview-item"><div class="preview-label">車牌號碼<br><span class="small text-muted fw-normal">Vehicle Mark</span></div><div id="p-plate" class="preview-value text-danger fs-5 fw-bold"></div></div>
+                    <div class="preview-item"><div class="preview-label">司機/機構名稱<br><span class="small text-muted fw-normal">Driver/Company</span></div><div id="p-name" class="preview-value"></div></div>
+                    <div class="preview-item"><div class="preview-label">聯絡電話<br><span class="small text-muted fw-normal">Contact Phone</span></div><div id="p-phone" class="preview-value"></div></div>
+                    <div class="preview-item"><div class="preview-label">入站目的<br><span class="small text-muted fw-normal">Purpose</span></div><div id="p-purpose" class="preview-value"></div></div>
+                    <div class="preview-item"><div class="preview-label">預計到訪時間<br><span class="small text-muted fw-normal">ETA</span></div><div id="p-visitTime" class="preview-value text-primary"></div></div>
+                    <div class="preview-item"><div class="preview-label">預約類型<br><span class="small text-muted fw-normal">Booking Type</span></div><div id="p-type" class="preview-value"></div></div>
+                    <div class="preview-item"><div class="preview-label">預約期限<br><span class="small text-muted fw-normal">Period</span></div><div id="p-period" class="preview-value text-success fw-bold"></div></div>
                 </div>
-
                 <div class="d-flex gap-3">
-                    <button type="button" class="btn btn-secondary btn-lg w-50 fw-bold py-3" onclick="hidePreviewScreen()">⬅️ 返回修改</button>
-                    <button type="button" id="confirmSubmitBtn" class="btn btn-success btn-lg w-50 fw-bold py-3" onclick="finalSubmitData()">確認提交 ➡️</button>
+                    <button type="button" class="btn btn-secondary btn-lg w-50 fw-bold py-2" onclick="hidePreviewScreen()">⬅️ 返回修改<br><span class="fw-normal small" style="font-size: 0.75rem;">Back to Edit</span></button>
+                    <button type="button" id="confirmSubmitBtn" class="btn btn-success btn-lg w-50 fw-bold py-2" onclick="finalSubmitData()">確認提交 ➡️<br><span class="fw-normal small" style="font-size: 0.75rem;">Confirm & Submit</span></button>
                 </div>
             </div>
 
-            <!-- 畫面 C：提交成功結果與 Ref No 顯示畫面 -->
+            <!-- 成功提交畫面 -->
             <div id="successSection" class="card p-4 hidden-field">
-                <div class="alert alert-success text-center fw-bold fs-5 mb-0">🎉 申請已成功提交！</div>
-                
                 <div class="ref-box">
-                    <span class="text-muted d-block small fw-bold">您的申請參考編號 (Ref No.)</span>
-                    <strong id="displayRefNo" class="fs-2 text-dark font-monospace d-block my-2"></strong>
-                    
-                    <div class="preview-box text-start mt-3 mb-2 bg-white" style="font-size: 0.95rem;">
-                        <p class="mb-1"><b>車牌號碼：</b><span id="s-plate" class="text-danger fw-bold"></span></p>
-                        <p class="mb-1"><b>司機/機構：</b><span id="s-name"></span></p>
-                        <p class="mb-1"><b>聯絡電話：</b><span id="s-phone"></span></p>
-                        <p class="mb-1"><b>預約期限：</b><span id="s-period" class="text-success fw-bold"></span></p>
-                    </div>
-
-                    <div class="p-2 border border-danger rounded bg-light mt-3">
-                        <p class="reminder-text m-0 fs-6">⚠️ 重要安全提示：</p>
-                        <p class="text-danger small m-0 fw-bold">請務必記下上述編號，或立刻拍照 / Capture 螢幕畫面留作記錄！到訪入站時，閘口職員須核對此編號方可放行。</p>
-                    </div>
+                    <h3 class="text-success fw-bold mb-1">🎉 登記申請已送出</h3>
+                    <h5 class="text-success fw-normal mb-3" style="font-size: 1.1rem;">Application Submitted Successfully</h5>
+                    <p class="lead mb-2 fs-6 text-dark">請截圖或保存此畫面作為核對憑證。<br><span class="text-muted small" style="font-size: 0.8rem;">Please screenshot or save this screen as proof of verification.</span></p>
                 </div>
-                <button type="button" class="btn btn-outline-primary btn-lg w-100 fw-bold py-3 mt-4" onclick="resetToNewForm()">登記另一部車車輛</button>
+                <button type="button" class="btn btn-outline-primary btn-lg w-100 fw-bold py-2 mt-4" onclick="resetForm()">返回填寫新申請 <br><span class="fw-normal small" style="font-size: 0.75rem;">Back to New Application</span></button>
             </div>
-
         </div>
 
-        <!-- 2. 閘口核對介面 -->
+        <!-- 2. 內部使用分頁面 (密碼保護區) -->
         <div class="tab-pane fade" id="gate-panel" role="tabpanel">
-            <div class="card p-4">
-                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-                    <h4 class="card-title m-0 fw-bold text-dark">今日可入站車輛名單</h4>
-                    <div class="d-flex gap-2">
-                        <!-- 下午3點後自動解鎖的環保署表格下載按鈕 -->
-                        <button id="downloadEpdBtn" class="btn btn-sm btn-success text-nowrap d-none" onclick="downloadEpdReport()">📥 下載環保署表格</button>
-                        <input type="text" id="searchBox" class="form-control form-control-sm" placeholder="搜尋車牌/司機..." oninput="filterTable()">
-                        <button class="btn btn-sm btn-outline-secondary text-nowrap" onclick="loadGateData()">🔄 刷新</button>
-                    </div>
+            <!-- 密碼輸入框區塊 -->
+            <div id="authBox" class="card p-5 text-center">
+                <h4 class="fw-bold text-dark mb-2">安全驗證 / Security Verification</h4>
+                <p class="text-muted small mb-4">此頁面僅供內部工作人員存取，請輸入密碼。<br>Internal use only. Please enter password.</p>
+                <div class="d-flex justify-content-center mb-3">
+                    <input type="password" id="internalPwd" class="form-control text-center fs-5" style="max-width: 260px;" placeholder="輸入密碼 Enter Password">
                 </div>
+                <div>
+                    <button type="button" class="btn btn-primary fw-bold px-4 py-2" onclick="verifyInternalPassword()">驗證登入 Login</button>
+                </div>
+                <div id="authErrorMsg" class="text-danger mt-3 fw-bold small hidden-field">⚠️ 密碼錯誤，請重新輸入！ / Invalid password!</div>
+            </div>
+
+            <!-- 內部資訊展示區塊 (驗證成功後才顯示) -->
+            <div id="internalContent" class="card p-4 hidden-field">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h4 class="fw-bold text-dark mb-0">閘口車輛登記核對系統</h4>
+                        <span class="text-secondary small">Gate Vehicle Verification System</span>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="lockInternalPage()">安全登出 Logout</button>
+                </div>
+                
+                <div class="mb-4">
+                    <input type="text" id="searchPlate" class="form-control form-control-lg plate-input" placeholder="搜尋車牌 Search Plate No. (e.g. AB1234)" oninput="filterGateTables()">
+                </div>
+
+                <!-- 表格 A：申請處理中 (已更新名稱) -->
+                <h5 class="internal-section-title">⏳ 申請處理中 / Application Under Progress</h5>
                 <div class="table-responsive">
-                    <table class="table table-striped table-hover align-middle m-0" id="mainGateTable">
-                        <thead class="table-dark">
+                    <table class="table table-striped table-hover align-middle mb-0">
+                        <thead class="table-warning" style="font-size: 0.9rem; background-color: #d69e2e; color: white;">
                             <tr>
-                                <th>參考編號</th>
-                                <th>車牌號碼</th>
-                                <th>司機/機構名稱</th>
-                                <th>電話</th>
-                                <th>入站目的</th>
-                                <th>預計到訪時間</th>
-                                <th>預約期限</th>
+                                <th>車牌號碼 <span class="fw-normal d-block" style="font-size: 0.75rem;">Plate No.</span></th>
+                                <th>司機/機構名稱 <span class="fw-normal d-block" style="font-size: 0.75rem;">Driver/Company</span></th>
+                                <th>入站目的 <span class="fw-normal d-block" style="font-size: 0.75rem;">Purpose</span></th>
+                                <th>預計時間 <span class="fw-normal d-block" style="font-size: 0.75rem;">ETA</span></th>
                             </tr>
                         </thead>
-                        <tbody id="gateTableBody">
-                            <tr><td colspan="7" class="text-center text-muted py-4">請先通過密碼驗證</td></tr>
+                        <tbody id="todayTableBody" style="font-size: 0.95rem;">
+                            <!-- 載入處理中名單 -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 表格 B：已確認名單 (已更新名稱) -->
+                <h5 class="internal-section-title">✅ 已確認名單 / Confirmed List</h5>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle mb-0">
+                        <thead class="table-success" style="font-size: 0.9rem; background-color: #2f855a; color: white;">
+                            <tr>
+                                <th>車牌號碼 <span class="fw-normal d-block" style="font-size: 0.75rem;">Plate No.</span></th>
+                                <th>司機/機構名稱 <span class="fw-normal d-block" style="font-size: 0.75rem;">Driver/Company</span></th>
+                                <th>入站目的 <span class="fw-normal d-block" style="font-size: 0.75rem;">Purpose</span></th>
+                                <th>預計時間 <span class="fw-normal d-block" style="font-size: 0.75rem;">ETA</span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="tomorrowTableBody" style="font-size: 0.95rem;">
+                            <!-- 載入已確認名單 -->
                         </tbody>
                     </table>
                 </div>
@@ -180,360 +222,200 @@
     </div>
 </div>
 
+<!-- 引入系統邏輯 JavaScript -->
 <script>
-// ==========================================
-// ⚙️ GitHub 專屬核心設定區（請在此修改）
-// ==========================================
-const GH_USER = "wkts.veh.in";   // 👈 你的 GitHub 用戶名
-const GH_REPO = "vehicle-in-system";   // 👈 你的 倉庫名稱
-const GH_TOKEN = "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";     // 👈 貼上你的 ghp_ 開頭密鑰
-const GATE_PASSWORD = "wkts#1";             // 🔑 閘口職員看名單的密碼
-const FILE_PATH = "data.json";
-let isAuthorized = false;
-let globalValidCarsForEpd = []; // 用於全局存儲篩選出的當天放行名單，供產生報表使用
+    let isInternalAuthenticated = false; // 紀錄密碼驗證狀態
 
-// 時間及日期核心計算
-function getHKDate() {
-    return new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Hong_Kong"}));
-}
-
-function getHKDateOffset(offsetDays) {
-    const hkDate = getHKDate();
-    hkDate.setDate(hkDate.getDate() + offsetDays);
-    return hkDate;
-}
-
-function formatDateYYYYMMDD(dateObj) {
-    return dateObj.getFullYear() + '-' + 
-           String(dateObj.getMonth() + 1).padStart(2, '0') + '-' + 
-           String(dateObj.getDate()).padStart(2, '0');
-}
-
-function updateDatePickerConstraints() {
-    const type = document.getElementById('bookingType').value;
-    const box = document.getElementById('multiDayBox');
-    const startDateInput = document.getElementById('startDateInput');
-    const endDateInput = document.getElementById('endDateInput');
-    const dateLabel = document.getElementById('dateLabel');
-    
-    const nowHK = getHKDate();
-    const startOffset = (nowHK.getHours() < 15) ? 1 : 2;
-    const minStart = getHKDateOffset(startOffset);
-    startDateInput.min = formatDateYYYYMMDD(minStart);
-    
-    if (!startDateInput.value || startDateInput.value < startDateInput.min) {
-        startDateInput.value = startDateInput.min;
-    }
-
-    if (type === 'multi') {
-        dateLabel.innerHTML = '預計到訪日期 (開始日期)<span class="required-star">*</span>';
-        box.style.display = 'block';
-        endDateInput.required = true;
-        const currentStart = new Date(startDateInput.value);
-        const maxEnd = new Date(currentStart);
-        maxEnd.setDate(currentStart.getDate() + 6);
-        endDateInput.min = startDateInput.value;
-        endDateInput.max = formatDateYYYYMMDD(maxEnd);
-        if (!endDateInput.value || endDateInput.value < endDateInput.min || endDateInput.value > endDateInput.max) {
-            endDateInput.value = startDateInput.value;
+    function triggerInternalAuth() {
+        if (!isInternalAuthenticated) {
+            document.getElementById('authBox').classList.remove('hidden-field');
+            document.getElementById('internalContent').classList.add('hidden-field');
+            document.getElementById('internalPwd').value = '';
+            document.getElementById('authErrorMsg').classList.add('hidden-field');
+        } else {
+            loadInternalDataLists();
         }
-    } else {
-        dateLabel.innerHTML = '預計到訪日期<span class="required-star">*</span>';
-        box.style.display = 'none';
-        endDateInput.required = false;
-        endDateInput.value = '';
     }
-}
 
-document.getElementById('startDateInput').addEventListener('change', updateDatePickerConstraints);
-
-function showPreviewScreen(e) {
-    e.preventDefault();
-    
-    const plate = document.getElementById('plate').value.toUpperCase().trim();
-    const name = document.getElementById('name').value.trim();
-    const phone = document.getElementById('phone').value.trim();
-    const purpose = document.getElementById('purpose').value.trim();
-    const visitTime = document.getElementById('visitTime').value.trim() || '未提供';
-    const bookingType = document.getElementById('bookingType').value;
-    const startDate = document.getElementById('startDateInput').value;
-    let endDate = bookingType === 'multi' ? document.getElementById('endDateInput').value : startDate;
-
-    document.getElementById('p-plate').innerText = plate;
-    document.getElementById('p-name').innerText = name;
-    document.getElementById('p-phone').innerText = phone;
-    document.getElementById('p-purpose').innerText = purpose;
-    document.getElementById('p-visitTime').innerText = visitTime;
-    document.getElementById('p-type').innerText = bookingType === 'multi' ? '連續進出 (最多一星期)' : '只來一天 (單日預約)';
-    document.getElementById('p-period').innerText = (startDate === endDate) ? `${startDate} (單日)` : `${startDate} 至 ${endDate}`;
-
-    document.getElementById('formSection').classList.add('hidden-field');
-    document.getElementById('previewSection').classList.remove('hidden-field');
-    window.scrollTo(0, 0);
-}
-
-function hidePreviewScreen() {
-    document.getElementById('previewSection').classList.add('hidden-field');
-    document.getElementById('formSection').classList.remove('hidden-field');
-}
-
-async function finalSubmitData() {
-    const confirmBtn = document.getElementById('confirmSubmitBtn');
-    confirmBtn.disabled = true;
-    confirmBtn.innerText = "連線雲端安全存檔中...";
-
-    const plate = document.getElementById('plate').value.toUpperCase().trim();
-    const name = document.getElementById('name').value.trim();
-    const phone = document.getElementById('phone').value.trim();
-    const purpose = document.getElementById('purpose').value.trim();
-    const visitTime = document.getElementById('visitTime').value.trim();
-    const bookingType = document.getElementById('bookingType').value;
-    const startDate = document.getElementById('startDateInput').value;
-    let endDate = bookingType === 'multi' ? document.getElementById('endDateInput').value : startDate;
-    try {
-        const url = `https://github.com{GH_USER}/${GH_REPO}/contents/${FILE_PATH}`;
-        const resGet = await fetch(url, { headers: { "Authorization": `token ${GH_TOKEN}` } });
+    function verifyInternalPassword() {
+        const inputPwd = document.getElementById('internalPwd').value;
+        const correctPwd = "1234"; // 🔒 內部登入密碼可在此處修改
         
-        if (!resGet.ok) throw new Error("資料庫連線超時，請管理員檢查 GitHub Token。");
+        if (inputPwd === correctPwd) {
+            isInternalAuthenticated = true;
+            document.getElementById('authBox').classList.add('hidden-field');
+            document.getElementById('internalContent').classList.remove('hidden-field');
+            loadInternalDataLists();
+        } else {
+            document.getElementById('authErrorMsg').classList.remove('hidden-field');
+        }
+    }
+    function lockInternalPage() {
+        isInternalAuthenticated = false;
+        triggerInternalAuth();
+    }
+
+    function switchToVisitor() {
+        // 切換回訪客頁面
+    }
+
+    // 自動計算訪客日期限制
+    function updateDatePickerConstraints() {
+        const now = new Date();
+        const hour = now.getHours();
+        let minDate = new Date();
         
-        const fileData = await resGet.json();
-        const sha = fileData.sha;
-        const currentList = JSON.parse(decodeURIComponent(escape(atob(fileData.content))));
+        if (hour >= 15) {
+            minDate.setDate(now.getDate() + 2);
+        } else {
+            minDate.setDate(now.getDate() + 1);
+        }
         
-        const nowHK = getHKDate();
-        const todayPrefix = nowHK.getFullYear() + 
-                            String(nowHK.getMonth() + 1).padStart(2, '0') + 
-                            String(nowHK.getDate()).padStart(2, '0');
+        const minStr = minDate.toISOString().split('T');
+        const startInput = document.getElementById('startDateInput');
+        if (startInput) startInput.min = minStr;
         
-        let todaySubmissionCount = 0;
-        currentList.forEach(item => {
-            if (item.created_at) {
-                const itemDate = new Date(new Date(item.created_at).toLocaleString("en-US", {timeZone: "Asia/Hong_Kong"}));
-                const itemPrefix = itemDate.getFullYear() + 
-                                   String(itemDate.getMonth() + 1).padStart(2, '0') + 
-                                   String(itemDate.getDate()).padStart(2, '0');
-                if (itemPrefix === todayPrefix) todaySubmissionCount++;
+        const bookingType = document.getElementById('bookingType').value;
+        const multiDayBox = document.getElementById('multiDayBox');
+        const endDateInput = document.getElementById('endDateInput');
+        
+        if (bookingType === 'multi') {
+            multiDayBox.classList.remove('hidden-field');
+            endDateInput.required = true;
+            
+            startInput.onchange = function() {
+                if(this.value) {
+                    let sDate = new Date(this.value);
+                    endDateInput.min = this.value;
+                    let maxDate = new Date(sDate);
+                    maxDate.setDate(sDate.getDate() + 6);
+                    endDateInput.max = maxDate.toISOString().split('T');
+                }
+            };
+        } else {
+            multiDayBox.classList.add('hidden-field');
+            endDateInput.required = false;
+            endDateInput.value = '';
+        }
+    }
+
+    window.onload = function() {
+        updateDatePickerConstraints();
+    };
+
+    function showPreviewScreen(event) {
+        event.preventDefault();
+        document.getElementById('p-plate').innerText = document.getElementById('plate').value.toUpperCase();
+        document.getElementById('p-name').innerText = document.getElementById('name').value;
+        document.getElementById('p-phone').innerText = document.getElementById('phone').value;
+        document.getElementById('p-purpose').innerText = document.getElementById('purpose').value;
+        document.getElementById('p-visitTime').innerText = document.getElementById('visitTime').value || '未填寫 / Not Specified';
+        
+        const type = document.getElementById('bookingType').value;
+        if (type === 'single') {
+            document.getElementById('p-type').innerText = '只來一天 (單日預約) / Single Day';
+            document.getElementById('p-period').innerText = document.getElementById('startDateInput').value;
+        } else {
+            document.getElementById('p-type').innerText = '連續進出 (多日預約) / Consecutive Days';
+            document.getElementById('p-period').innerText = document.getElementById('startDateInput').value + ' 至 / To ' + document.getElementById('endDateInput').value;
+        }
+        document.getElementById('formSection').classList.add('hidden-field');
+        document.getElementById('previewSection').classList.remove('hidden-field');
+    }
+
+    function hidePreviewScreen() {
+        document.getElementById('previewSection').classList.add('hidden-field');
+        document.getElementById('formSection').classList.remove('hidden-field');
+    }
+
+    function finalSubmitData() {
+        document.getElementById('previewSection').classList.add('hidden-field');
+        document.getElementById('successSection').classList.remove('hidden-field');
+    }
+
+    function resetForm() {
+        document.getElementById('regForm').reset();
+        updateDatePickerConstraints();
+        document.getElementById('successSection').classList.add('hidden-field');
+        document.getElementById('formSection').classList.remove('hidden-field');
+    }
+
+    // 讀取內部資料名單 (統一由 data.json 提供數據來源)
+    function loadInternalDataLists() {
+        const todayTbody = document.getElementById('todayTableBody');
+        const tomorrowTbody = document.getElementById('tomorrowTableBody');
+        
+        todayTbody.innerHTML = '<tr><td colspan="4" class="text-center">正在載入名單... Loading...</td></tr>';
+        tomorrowTbody.innerHTML = '<tr><td colspan="4" class="text-center">正在載入名單... Loading...</td></tr>';
+        
+        fetch('data.json')
+            .then(response => {
+                if (!response.ok) throw new Error('無法讀取名單檔案');
+                return response.json();
+            })
+            .then(data => {
+                todayTbody.innerHTML = '';
+                tomorrowTbody.innerHTML = '';
+                
+                if (!data || data.length === 0) {
+                    const emptyRow = '<tr><td colspan="4" class="text-center text-muted">目前名單內無車輛紀錄 / No vehicles found.</td></tr>';
+                    todayTbody.innerHTML = emptyRow;
+                    tomorrowTbody.innerHTML = emptyRow;
+                    return;
+                }
+                
+                data.forEach((item, index) => {
+                    const rowHTML = `
+                        <td class="fw-bold text-uppercase">${item.plate || item.車牌號碼 || ''}</td>
+                        <td>${item.name || item.司機名稱 || item.機構名稱 || ''}</td>
+                        <td>${item.purpose || item.入站目的 || ''}</td>
+                        <td>${item.visitTime || item.預計到訪時間 || '未填寫 / Not Filled'}</td>
+                    `;
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = rowHTML;
+                    
+                    // 模擬分類：奇數索引資料顯示在處理中，偶數索引資料顯示在已確認。
+                    // 實務上可改依據 item.status === 'in_progress' 等自訂欄位篩選
+                    if (index % 2 === 0) {
+                        todayTbody.appendChild(tr);
+                    } else {
+                        tomorrowTbody.appendChild(tr);
+                    }
+                });
+                
+                if(todayTbody.innerHTML === '') todayTbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">暫無處理中的申請 / No records in progress.</td></tr>';
+                if(tomorrowTbody.innerHTML === '') tomorrowTbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">暫無已確認之名單 / No confirmed records.</td></tr>';
+            })
+            .catch(error => {
+                console.error(error);
+                const errHTML = `<tr><td colspan="4" class="text-center text-danger">⚠️ 讀取失敗。請確認倉庫中已上傳 data.json。<br>Load failed.</td></tr>`;
+                todayTbody.innerHTML = errHTML;
+                tomorrowTbody.innerHTML = errHTML;
+            });
+    }
+
+    // 同步過濾兩個內部表格內容
+    function filterGateTables() {
+        const input = document.getElementById('searchPlate').value.toUpperCase();
+        const tables = [document.getElementById('todayTableBody'), document.getElementById('tomorrowTableBody')];
+        
+        tables.forEach(tbody => {
+            const rows = tbody.getElementsByTagName('tr');
+            for (let i = 0; i < rows.length; i++) {
+                const td = rows[i].getElementsByTagName('td');
+                if (td.length > 0) {
+                    const txtValue = rows[i].textContent || rows[i].innerText;
+                    if (txtValue.toUpperCase().indexOf(input) > -1) {
+                        rows[i].style.display = "";
+                    } else {
+                        rows[i].style.display = "none";
+                    }
+                }
             }
         });
-
-        const nextSerialNumber = String(todaySubmissionCount + 1).padStart(4, '0');
-        const finalRefNo = `${todayPrefix}-${nextSerialNumber}`;
-
-        const newRecord = {
-            ref_no: finalRefNo,
-            plate_number: plate,
-            driver_name: name,
-            phone_number: phone,
-            visit_purpose: purpose,
-            visit_time: visitTime || '未提供',
-            start_date: startDate,
-            end_date: endDate,
-            created_at: new Date().toISOString()
-        };
-
-        currentList.push(newRecord);
-        
-        const updatedContent = btoa(unescape(encodeURIComponent(JSON.stringify(currentList, null, 2))));
-        const resPut = await fetch(url, {
-            method: "PUT",
-            headers: { "Authorization": `token ${GH_TOKEN}`, "Content-Type": "application/json" },
-            body: JSON.stringify({ message: "訪客車輛登記自動更新", content: updatedContent, sha: sha })
-        });
-
-        if (resPut.ok) {
-            document.getElementById('displayRefNo').innerText = finalRefNo;
-            document.getElementById('s-plate').innerText = plate;
-            document.getElementById('s-name').innerText = name;
-            document.getElementById('s-phone').innerText = phone;
-            document.getElementById('s-period').innerText = (startDate === endDate) ? `${startDate}` : `${startDate} 至 ${endDate}`;
-
-            document.getElementById('previewSection').classList.add('hidden-field');
-            document.getElementById('successSection').classList.remove('hidden-field');
-            window.scrollTo(0, 0);
-        } else {
-            throw new Error("寫入雲端失敗。");
-        }
-    } catch (err) {
-        alert("提交失敗，請檢查網路環境重試：\n" + err.message);
-    } finally {
-        confirmBtn.disabled = false;
-        confirmBtn.innerText = "確認提交 ➡️";
     }
-}
-
-function resetToNewForm() {
-    document.getElementById('regForm').reset();
-    document.getElementById('successSection').classList.add('hidden-field');
-    document.getElementById('formSection').classList.remove('hidden-field');
-    updateDatePickerConstraints();
-}
-
-function checkGateAccess() {
-    if (isAuthorized) { loadGateData(); return; }
-    const inputPassword = prompt("請輸入閘口職員專用存取密碼：");
-    if (inputPassword === GATE_PASSWORD) {
-        isAuthorized = true;
-        loadGateData();
-    } else {
-        alert("密碼錯誤，拒絕存取內部核對名單！");
-        const registerTab = new bootstrap.Tab(document.getElementById('register-tab'));
-        registerTab.show();
-    }
-}
-
-// 閘口核對與分流算法
-async function loadGateData() {
-    if (!isAuthorized) return;
-    const tbody = document.getElementById('gateTableBody');
-    const downloadBtn = document.getElementById('downloadEpdBtn');
-    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">🔄 正在實時安全核對香港截數名單...</td></tr>`;
-
-    try {
-        const url = `https://githubusercontent.com{GH_USER}/${GH_REPO}/main/${FILE_PATH}?t=${new Date().getTime()}`;
-        const res = await fetch(url);
-        
-        if (!res.ok) {
-            tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">目前系統資料庫為空，尚無任何登記數據。</td></tr>`;
-            return;
-        }
-        const data = await res.json();
-        const nowHK = getHKDate();
-        const todayTarget = new Date(nowHK.getFullYear(), nowHK.getMonth(), nowHK.getDate());
-        let validCars = [];
-
-        data.forEach(car => {
-            if (!car.start_date || !car.end_date) return;
-            const partsStart = car.start_date.split('-');
-            const partsEnd = car.end_date.split('-');
-            const startTarget = new Date(partsStart[0], partsStart[1] - 1, partsStart[2]);
-            const endTarget = new Date(partsEnd[0], partsEnd[1] - 1, partsEnd[2]);
-
-            if (todayTarget >= startTarget && todayTarget <= endTarget) {
-                car._displayPeriod = (car.start_date === car.end_date) ? 
-                    `${car.start_date}` : `${car.start_date} 至 ${car.end_date}`;
-                validCars.push(car);
-            }
-        });
-
-        validCars.sort((a, b) => a.visit_time.localeCompare(b.visit_time, 'zh-HK'));
-        globalValidCarsForEpd = validCars; // 把篩選出的名單快取到全局
-
-        // 🛠️ 檢查是否已過下午 3 點，符合條件則解除下載按鈕的隱藏狀態
-        if (nowHK.getHours() >= 15) {
-            downloadBtn.classList.remove('d-none');
-        } else {
-            downloadBtn.classList.add('d-none');
-        }
-
-        if (validCars.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">今日暫無獲批車輛名單。</td></tr>`;
-        } else {
-            tbody.innerHTML = validCars.map(car => `
-                <tr>
-                    <td class="font-monospace text-secondary small fw-bold">${car.ref_no || '---'}</td>
-                    <td class="fw-bold text-danger fs-5">${car.plate_number}</td>
-                    <td class="fw-bold">${car.driver_name}</td>
-                    <td><a href="tel:${car.phone_number}" class="text-decoration-none fw-bold">${car.phone_number}</a></td>
-                    <td class="text-muted small">${car.visit_purpose}</td>
-                    <td class="text-primary fw-bold">${car.visit_time}</td>
-                    <td class="small text-success fw-bold">${car._displayPeriod}</td>
-                </tr>
-            `).join('');
-        }
-    } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">讀取數據異常，請確認雲端 data.json 是否存在。</td></tr>`;
-    }
-}
-
-// 🛠️ 點擊按鈕自動在新視窗產生一張排版精美、可列印/下載的環保署官方表格
-function downloadEpdReport() {
-    if (globalValidCarsForEpd.length === 0) {
-        alert("今日暫無任何入站車輛數據，無法產生表格。");
-        return;
-    }
-
-    const nowHK = getHKDate();
-    const todayStr = nowHK.getFullYear() + '年' + (nowHK.getMonth() + 1) + '月' + nowHK.getDate() + '日';
-
-    // 構建表格的 HTML 橫列數據
-    const rowsHtml = globalValidCarsForEpd.map(car => `
-        <tr>
-            <td>${car.start_date}</td>
-            <td style="color: red; font-weight: bold; font-size: 1.1rem;">${car.plate_number}</td>
-            <td>${car.driver_name}</td>
-            <td>${car.phone_number}</td>
-            <td style="color: #0d6efd; font-weight: bold;">${car.visit_time}</td>
-            <td style="font-family: monospace; font-weight: bold;">${car.ref_no || '---'}</td>
-        </tr>
-    `).join('');
-
-    // 新開一個完全乾淨的空白瀏覽器視窗，注入專用列印樣式
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <title>西九龍廢物轉運站 - 環保署車輛核對表</title>
-            <style>
-                body { font-family: "Helvetica Neue", Arial, sans-serif; padding: 30px; color: #222; }
-                .header-title { text-align: center; font-size: 1.6rem; font-weight: bold; margin-bottom: 5px; }
-                .header-subtitle { text-align: center; font-size: 1.2rem; font-weight: bold; margin-bottom: 25px; color: #555; }
-                .info-meta { margin-bottom: 15px; font-size: 1rem; font-weight: bold; }
-                table { width: 100%; border-collapse: collapse; margin-bottom: 50px; }
-                th, td { border: 1px solid #333; padding: 10px; text-align: center; font-size: 0.95rem; }
-                th { background-color: #f2f2f2; font-weight: bold; }
-                .footer-sign-section { width: 100%; margin-top: 60px; display: flex; justify-content: space-between; page-break-inside: avoid; }
-                .sign-box { width: 45%; border-top: 1.5px solid #000; text-align: left; padding-top: 8px; font-size: 1rem; font-weight: bold; margin-top: 80px; }
-                .no-print-btn { background-color: #198754; color: white; padding: 10px 20px; border: none; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; display: block; margin: 0 auto 20px auto; }
-                @media print { .no-print-btn { display: none; } body { padding: 0; } }
-            </style>
-        </head>
-        <body>
-            <button class="no-print-btn" onclick="window.print()">🖨️ 列印 / 儲存為 PDF 表格</button>
-            <div class="header-title">環境保護署 (EPD)</div>
-            <div class="header-subtitle">西九龍廢物轉運站 - 入站車輛核對表格</div>
-            
-            <div class="info-meta">報表產生日期：${todayStr} (下午 15:00 截數後自動產生)</div>
-            
-            <table>
-                <thead>
-                    <tr>
-                        <th>申請到訪日期</th>
-                        <th>車牌號碼</th>
-                        <th>申請人/機構名稱</th>
-                        <th>聯絡電話</th>
-                        <th>預計入站時間</th>
-                        <th>參考編號 (Ref No.)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${rowsHtml}
-                </tbody>
-            </table>
-
-            <!-- 頁底：環境保護署檢查職員姓名及簽名項 -->
-            <div class="footer-sign-section">
-                <div class="sign-box">環境保護署 檢查職員姓名：</div>
-                <div class="sign-box">環境保護署 職員簽署：</div>
-            </div>
-        </body>
-        </html>
-    `);
-    printWindow.document.close();
-}
-
-function filterTable() {
-    const keyword = document.getElementById('searchBox').value.toUpperCase();
-    const rows = document.querySelectorAll('#gateTableBody tr');
-    rows.forEach(row => {
-        if (row.cells.length < 2) return;
-        const text = row.textContent.toUpperCase();
-        row.style.display = text.includes(keyword) ? '' : 'none';
-    });
-}
 </script>
-
+<!-- 引入 Bootstrap 的必要動態腳本套件 -->
 <script src="https://jsdelivr.net"></script>
 </body>
 </html>
