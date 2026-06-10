@@ -14,15 +14,10 @@
         .nav-tabs { margin-bottom: 30px; border-bottom: 2px solid #e2e8f0; }
         .nav-link { border: none !important; color: #718096; font-size: 1rem; padding: 14px; transition: all 0.3s ease; border-radius: 0 !important; }
         .nav-link.active { color: #2c7a7b !important; border-bottom: 3px solid #319795 !important; background: transparent !important; }
-        
-        /* 核心排版修復：強制將滾動條限制在白色卡片內部，不再超出外框 */
         .table-responsive { background-color: #fff; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 25px; overflow-x: auto !important; width: 100%; }
-        
-        /* 保持表格內文字置中與基本寬度，防止嚴重變形擠壓 */
         .table th, .table td { min-width: 90px; text-align: center; vertical-align: middle; white-space: nowrap; }
-        .table th:nth-child(3), .table td:nth-child(3) { min-width: 140px; } /* 公司名稱空間 */
-        .table th:nth-child(2), .table td:nth-child(2) { min-width: 140px; } /* 參考編號空間 */
-        
+        .table th:nth-child(3), .table td:nth-child(3) { min-width: 140px; }
+        .table th:nth-child(2), .table td:nth-child(2) { min-width: 140px; }
         .hidden-field { display: none; }
         .required-star { color: #e53e3e; margin-left: 3px; }
         .ref-box { background-color: #f0fff4; border: 2px dashed #38a169; padding: 25px; border-radius: 14px; margin-top: 20px; text-align: center; }
@@ -43,23 +38,60 @@
         .biling-sub { font-size: 0.8rem; color: #718096; font-weight: normal; display: block; }
         .internal-section-title { color: #2c7a7b; font-weight: bold; margin-top: 15px; margin-bottom: 15px; padding-left: 5px; border-left: 4px solid #319795; }
     </style>
-    <!-- 引入高解析度虛擬 PDF 畫布與表格生成核心套件 -->
-    <script src="https://cloudflare.com"></script>
-    <script src="https://cloudflare.com"></script>
 </head>
 <body>
 
+<!-- ⚡ 頂層優先載入初始化：100% 確保生成下拉選單選項，拒絕空白 ⚡ -->
+<script>
+    function forceInitDropdowns() {
+        const dateSelect = document.getElementById('visit_date');
+        const hourSelect = document.getElementById('visitHour');
+        const minSelect = document.getElementById('visitMin');
+        
+        if (dateSelect && hourSelect && minSelect) {
+            dateSelect.innerHTML = '<option value="" disabled selected>-- 請選擇日期 Select Date --</option>';
+            hourSelect.innerHTML = '<option value="" disabled selected>時 Hour</option>';
+            minSelect.innerHTML = '<option value="" disabled selected>分 Min</option>';
+            
+            for (let i = 0; i < 7; i++) {
+                const targetDate = new Date();
+                targetDate.setDate(targetDate.getDate() + i);
+                const yyyy = targetDate.getFullYear();
+                const mm = String(targetDate.getMonth() + 1).padStart(2, '0');
+                const dd = String(targetDate.getDate()).padStart(2, '0');
+                const formattedDate = yyyy + "-" + mm + "-" + dd;
+                
+                const option = document.createElement('option');
+                option.value = formattedDate;
+                option.innerText = formattedDate;
+                dateSelect.appendChild(option);
+            }
+            for (let h = 0; h < 24; h++) {
+                const hourStr = String(h).padStart(2, '0');
+                const option = document.createElement('option');
+                option.value = hourStr;
+                option.innerText = hourStr;
+                hourSelect.appendChild(option);
+            }
+            for (let m = 0; m < 60; m++) {
+                const minStr = String(m).padStart(2, '0');
+                const option = document.createElement('option');
+                option.value = minStr;
+                option.innerText = minStr;
+                minSelect.appendChild(option);
+            }
+        }
+    }
+    document.addEventListener('DOMContentLoaded', forceInitDropdowns);
+</script>
+
 <div class="container" style="max-width: 750px;">
-    <!-- 頂部政府 EPD Logo 區塊 -->
     <div class="logo-container">
         <img src="epd.jpg" alt="Environmental Protection Department" class="epd-logo" onerror="this.style.display='none';">
     </div>
-
-    <!-- 主頁面大主題標題 -->
     <h3 class="text-center my-1 fw-bold" style="color: #2c7a7b;">西九龍廢物轉運站車輛登記</h3>
     <h6 class="text-center mb-4 text-secondary text-uppercase fw-normal" style="font-size: 0.85rem; letter-spacing: 0.5px;">West Kowloon Refuse Transfer Station Vehicle Registration</h6>
     
-    <!-- 功能分頁切換導覽 -->
     <ul class="nav nav-tabs nav-justified" id="systemTab" role="tablist">
         <li class="nav-item">
             <button class="nav-link active fw-bold" id="register-tab" data-bs-toggle="tab" data-bs-target="#register-panel" type="button" onclick="switchToVisitor()">
@@ -72,15 +104,12 @@
             </button>
         </li>
     </ul>
+
     <div class="tab-content">
-        <!-- 1. 訪客登記及預覽介面 -->
         <div class="tab-pane fade show active" id="register-panel" role="tabpanel">
-            
-            <!-- 畫面 A：填寫表格畫面 -->
             <div id="formSection" class="card">
                 <h4 class="card-title mb-3 fw-bold" style="color: #2d3748;">車輛入站申請 <span class="text-muted fw-normal" style="font-size: 1.05rem;">/ Vehicle Access Application</span></h4>
                 
-                <!-- 官方收集個人資料聲明 -->
                 <div class="alert alert-info py-2 px-3 small fw-bold mb-3" role="alert" style="border-left: 5px solid #4fd1c5; background-color: #f7fafc; color: #2c7a7b;">
                     ⚠️ <b>提醒事項 / Reminder：</b>所收集資料只用於檢查車輛進入本站之用，如資料不齊全或錯誤，或會影響車輛進入本站，敬請注意。<br>
                     <span class="fw-normal text-muted" style="font-size: 0.75rem;">The information collected is only used for checking vehicle entry. Incorrect or incomplete information may affect entry.</span>
@@ -126,9 +155,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold biling-label">預計到訪日期 <span class="biling-sub">Expected Visit Date</span><span class="required-star">*</span></label>
-                        <select id="visit_date" class="form-select" required>
-                            <!-- 由 JavaScript 自動生成 -->
-                        </select>
+                        <select id="visit_date" class="form-select" required></select>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold biling-label">預計到訪時間 <span class="biling-sub">Estimated Time of Arrival (24h)</span><span class="required-star">*</span></label>
@@ -144,7 +171,6 @@
                 </form>
             </div>
 
-            <!-- 畫面 B：獨立申請預覽確認頁面 -->
             <div id="previewSection" class="card hidden-field">
                 <h4 class="card-title mb-1 fw-bold text-dark">請核對您的申請資料</h4>
                 <h6 class="text-secondary fw-normal mb-3" style="font-size: 0.9rem;">Please Verify Your Application Details</h6>
@@ -164,8 +190,7 @@
                 </div>
             </div>
 
-            <!-- 成功提交畫面 -->
-            <div id="successSection" class="card hidden-field">
+            <div id="successSection" class="card p-4 hidden-field">
                 <div class="ref-box">
                     <h3 class="text-success fw-bold mb-1">🎉 登記申請已送出</h3>
                     <h5 class="text-success fw-normal mb-3" style="font-size: 1.1rem;">Application Submitted Successfully</h5>
@@ -178,9 +203,7 @@
                 <button type="button" class="btn btn-outline-primary btn-lg w-100 fw-bold py-2 mt-4" onclick="resetForm()">返回填寫新申請 <br><span class="fw-normal small" style="font-size: 0.75rem;">Back to New Application</span></button>
             </div>
         </div>
-        <!-- 2. 內部使用分頁面 (密碼保護區) -->
         <div class="tab-pane fade" id="gate-panel" role="tabpanel">
-            <!-- 密碼輸入框區塊 -->
             <div id="authBox" class="card p-5 text-center">
                 <h4 class="fw-bold text-dark mb-2">安全驗證 / Security Verification</h4>
                 <p class="text-muted small mb-4">此頁面僅供內部工作人員存取，請輸入密碼。<br>Internal use only. Please enter password.</p>
@@ -193,7 +216,6 @@
                 <div id="authErrorMsg" class="text-danger mt-3 fw-bold small hidden-field">⚠️ 密碼錯誤！ / Invalid password!</div>
             </div>
 
-            <!-- 內部資訊展示區塊 (驗證成功後才顯示) -->
             <div id="internalContent" class="card hidden-field">
                 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                     <div>
@@ -201,9 +223,8 @@
                         <span class="text-secondary small">Gate Vehicle Verification System</span>
                     </div>
                     <div class="d-flex gap-2">
-                        <!-- 綠色 PDF 紙本自動匯出下載按鈕 -->
-                        <button type="button" class="btn btn-success fw-bold px-3" onclick="exportTomorrowListToPDF()">🖨️ 導出明天車輛名單 (PDF) / Export Tomorrow Log</button>
-                        <button type="button" class="btn btn-outline-danger fw-bold" onclick="lockInternalPage()">安全登出 Logout</button>
+                        <button type="button" class="btn btn-success fw-bold btn-sm shadow-sm" onclick="exportTomorrowListToPDF()">🖨️ 導出明天車輛名單 (PDF) / Export Tomorrow Log</button>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="lockInternalPage()">安全登出 Logout</button>
                     </div>
                 </div>
                 
@@ -211,44 +232,24 @@
                     <input type="text" id="searchPlate" class="form-control form-control-lg plate-input" placeholder="搜尋車牌 Search Plate No. (e.g. AB1234)" oninput="filterGateTables()">
                 </div>
 
-                <!-- 表格 A：申請處理中 -->
                 <h5 class="internal-section-title">⏳ 申請處理中 / Application Under Progress</h5>
                 <div class="table-responsive">
-                    <table class="table table-striped table-hover align-middle mb-0" style="min-width: 850px;">
+                    <table class="table table-striped table-hover align-middle mb-0">
                         <thead class="table-warning" style="font-size: 0.85rem; background-color: #d69e2e; color: white;">
                             <tr>
-                                <th>項目<br>Item</th>
-                                <th>參考編號<br>Ref No.</th>
-                                <th>公司名稱<br>Company</th>
-                                <th>車牌號碼<br>Vehicle No.</th>
-                                <th>聯絡人<br>Contact</th>
-                                <th>電話號碼<br>Tel No.</th>
-                                <th>進入時間<br>Time In</th>
-                                <th>離開時間<br>Time Out</th>
-                                <th>進入目的<br>Purpose</th>
-                                <th>車輛種類<br>Vehicle Type</th>
+                                <th>Item</th><th>Ref No.</th><th>Company</th><th>Vehicle No.</th><th>Contact</th><th>Tel No.</th><th>Time In</th><th>Time Out</th><th>Purpose</th><th>Vehicle Type</th>
                             </tr>
                         </thead>
                         <tbody id="todayTableBody" style="font-size: 0.9rem;"></tbody>
                     </table>
                 </div>
 
-                <!-- 表格 B：已確認名單 -->
                 <h5 class="internal-section-title">✅ 已確認名單 / Confirmed List</h5>
                 <div class="table-responsive">
-                    <table class="table table-striped table-hover align-middle mb-0" style="min-width: 850px;">
+                    <table class="table table-striped table-hover align-middle mb-0">
                         <thead class="table-success" style="font-size: 0.85rem; background-color: #2f855a; color: white;">
                             <tr>
-                                <th>項目<br>Item</th>
-                                <th>參考編號<br>Ref No.</th>
-                                <th>公司名稱<br>Company</th>
-                                <th>車牌號碼<br>Vehicle No.</th>
-                                <th>聯絡人<br>Contact</th>
-                                <th>電話號碼<br>Tel No.</th>
-                                <th>進入時間<br>Time In</th>
-                                <th>離開時間<br>Time Out</th>
-                                <th>進入目的<br>Purpose</th>
-                                <th>車輛種類<br>Vehicle Type</th>
+                                <th>Item</th><th>Ref No.</th><th>Company</th><th>Vehicle No.</th><th>Contact</th><th>Tel No.</th><th>Time In</th><th>Time Out</th><th>Purpose</th><th>Vehicle Type</th>
                             </tr>
                         </thead>
                         <tbody id="tomorrowTableBody" style="font-size: 0.9rem;"></tbody>
@@ -259,63 +260,20 @@
     </div>
 </div>
 
-<!-- 引入系統邏輯 JavaScript -->
+<!-- 引入第三方高解析度 PDF 生成庫與表格插件 -->
+<script src="https://cloudflare.com"></script>
+<script src="https://cloudflare.com"></script>
+
 <script>
-    // 雲端 Google 試算表 Web App URL 通道連結
+    // ☁️ 雲端 Google 試算表 Web App URL 通道連結
     const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbz6L1lO15lIwMUcKT6Veg6RoTndla90i0pKLVTzE4qGmvHl2pZULMYhmdhnqJt-aVE9/exec";
-
-    // 載入下拉式選單選項
-    function initDropdownSelectionBoxes() {
-        const dateSelect = document.getElementById('visit_date');
-        const hourSelect = document.getElementById('visitHour');
-        const minSelect = document.getElementById('visitMin');
-        if (!dateSelect || !hourSelect || !minSelect) return;
-        
-        dateSelect.innerHTML = '<option value="" disabled selected>-- 請選擇日期 Select Date --</option>';
-        hourSelect.innerHTML = '<option value="" disabled selected>時 Hour</option>';
-        minSelect.innerHTML = '<option value="" disabled selected>分 Min</option>';
-        
-        for (let i = 0; i < 7; i++) {
-            const targetDate = new Date();
-            targetDate.setDate(targetDate.getDate() + i);
-            const yyyy = targetDate.getFullYear();
-            const mm = String(targetDate.getMonth() + 1).padStart(2, '0');
-            const dd = String(targetDate.getDate()).padStart(2, '0');
-            const formattedDate = yyyy + "-" + mm + "-" + dd;
-            
-            const option = document.createElement('option');
-            option.value = formattedDate;
-            option.innerText = formattedDate;
-            dateSelect.appendChild(option);
-        }
-        for (let h = 0; h < 24; h++) {
-            const hourStr = String(h).padStart(2, '0');
-            const option = document.createElement('option');
-            option.value = hourStr;
-            option.innerText = hourStr;
-            hourSelect.appendChild(option);
-        }
-        for (let m = 0; m < 60; m++) {
-            const minStr = String(m).padStart(2, '0');
-            const option = document.createElement('option');
-            option.value = minStr;
-            option.innerText = minStr;
-            minSelect.appendChild(option);
-        }
-    }
-
-    window.addEventListener('DOMContentLoaded', function() {
-        initDropdownSelectionBoxes();
-    });
 
     let isInternalAuthenticated = false;
 
     function triggerInternalAuth() {
         const gateTab = document.getElementById('gate-tab');
-        if (gateTab) {
-            const tabTrigger = new bootstrap.Tab(gateTab);
-            tabTrigger.show();
-        }
+        if (gateTab) { new bootstrap.Tab(gateTab).show(); }
+        
         if (!isInternalAuthenticated) {
             document.getElementById('authBox').classList.remove('hidden-field');
             document.getElementById('internalContent').classList.add('hidden-field');
@@ -327,37 +285,11 @@
             loadInternalDataLists();
         }
     }
-    function verifyInternalPassword() {
-        const inputPwd = document.getElementById('internalPwd').value;
-        const correctPwd = "wkts001"; // 🔒 變更後的專屬內部密碼
-        
-        if (inputPwd === correctPwd) {
-            isInternalAuthenticated = true;
-            document.getElementById('authBox').classList.add('hidden-field');
-            document.getElementById('internalContent').classList.remove('hidden-field');
-            loadInternalDataLists();
-        } else {
-            document.getElementById('authErrorMsg').classList.remove('hidden-field');
-        }
-    }
-
-    function lockInternalPage() {
-        isInternalAuthenticated = false;
-        document.getElementById('internalPwd').value = '';
-        triggerInternalAuth();
-    }
-
-    function switchToVisitor() {
-        const regTab = document.getElementById('register-tab');
-        if (regTab) {
-            const tabTrigger = new bootstrap.Tab(regTab);
-            tabTrigger.show();
-        }
-    }
-
+    // 顯示預覽確認畫面
     function showPreviewScreen(event) {
         event.preventDefault();
         
+        // 抓取前台各欄位的輸入內容並帶入預覽區
         document.getElementById('p-company').innerText = document.getElementById('company').value;
         document.getElementById('p-vehicle_no').innerText = document.getElementById('vehicle_no').value.toUpperCase();
         document.getElementById('p-contact_person').innerText = document.getElementById('contact_person').value;
@@ -365,6 +297,7 @@
         document.getElementById('p-purpose').innerText = document.getElementById('purpose').value;
         document.getElementById('p-vehicle_type').innerText = document.getElementById('vehicle_type').value;
         
+        // 抓取重新排列後的「日期」與「24小時制時間」下拉選單數值
         const selectedDate = document.getElementById('visit_date').value;
         const selectedHour = document.getElementById('visitHour').value;
         const selectedMin = document.getElementById('visitMin').value;
@@ -372,39 +305,47 @@
         document.getElementById('p-visit_date').innerText = selectedDate;
         document.getElementById('p-visitTime').innerText = selectedHour + ":" + selectedMin;
         
+        // 切換畫面：隱藏填表畫面，顯示預覽核對畫面
         document.getElementById('formSection').classList.add('hidden-field');
         document.getElementById('previewSection').classList.remove('hidden-field');
     }
 
+    // 隱藏預覽畫面，返回原表單修改資料
     function hidePreviewScreen() {
         document.getElementById('previewSection').classList.add('hidden-field');
         document.getElementById('formSection').classList.remove('hidden-field');
     }
 
+    // 核心雲端儲存：生成純淨版 4 位數當天流水號，並發送至資料庫
     function finalSubmitData() {
         const btn = document.getElementById('confirmSubmitBtn');
         btn.disabled = true;
         btn.innerText = "正在傳送... Submitting...";
 
+        // 📅 自動計算當天日期標記 (例如 "20260610")
         const dateObj = new Date();
         const yyyy = dateObj.getFullYear();
         const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
         const dd = String(dateObj.getDate()).padStart(2, '0');
         const todayKey = yyyy + mm + dd;
 
+        // 從本機暫存器讀取當天序號計數器
         let lastDateTrack = localStorage.getItem('last_submission_date');
         let currentSequence = parseInt(localStorage.getItem('last_sequence_number')) || 0;
 
+        // 🔄 跨天重設：若判定日期不同，序號立刻強制回歸歸零
         if (lastDateTrack !== todayKey) {
             currentSequence = 0;
             localStorage.setItem('last_submission_date', todayKey);
         }
 
+        // 序號加 1 並自動補零成 4 位數 (e.g. 0001, 0002)
         currentSequence += 1;
         localStorage.setItem('last_sequence_number', currentSequence);
         const sequenceStr = String(currentSequence).padStart(4, '0');
-        const generatedRefNo = todayKey + "-" + sequenceStr;
 
+        // 🆔 組裝成無 "REF-" 標籤的純淨對照號碼 (YYYYMMDD-0001)
+        const generatedRefNo = todayKey + "-" + sequenceStr;
         const selectedHour = document.getElementById('visitHour').value;
         const selectedMin = document.getElementById('visitMin').value;
 
@@ -428,6 +369,7 @@
             body: JSON.stringify(payload)
         })
         .then(() => {
+            // 提交成功，在畫面展示序號
             document.getElementById('displayRefNo').innerText = generatedRefNo;
             document.getElementById('previewSection').classList.add('hidden-field');
             document.getElementById('successSection').classList.remove('hidden-field');
@@ -442,8 +384,182 @@
         });
     }
 
+    // 🔄 完全修復：「返回填寫新申請」按鈕重置功能
     function resetForm() {
         document.getElementById('regForm').reset();
-        initDropdownSelectionBoxes();
+        forceInitDropdowns(); // 重新呼叫最頂層強制腳本，刷出空白選單選項
         document.getElementById('successSection').classList.add('hidden-field');
-        document.getElementById('formSection').classList
+        document.getElementById('formSection').classList.remove('hidden-field');
+    }
+    // 全球唯一快取記憶體變數，儲存目前從雲端拉下來的所有車牌大名單
+    let globalCachedDataList = [];
+
+    // 跨裝置同步：向資料庫拉取最新數據
+    function loadInternalDataLists() {
+        const todayTbody = document.getElementById('todayTableBody');
+        const tomorrowTbody = document.getElementById('tomorrowTableBody');
+        
+        todayTbody.innerHTML = '<tr><td colspan="10" class="text-center py-3 text-secondary">正在同步雲端數據... Syncing cloud data...</td></tr>';
+        tomorrowTbody.innerHTML = '<tr><td colspan="10" class="text-center py-3 text-secondary">正在同步雲端數據... Syncing cloud data...</td></tr>';
+        
+        fetch(GOOGLE_API_URL)
+            .then(response => response.json())
+            .then(dataList => {
+                globalCachedDataList = dataList; // 將名單快取到記憶體，供 PDF 導出工具隨時使用
+                todayTbody.innerHTML = '';
+                tomorrowTbody.innerHTML = '';
+
+                let inProgressCars = dataList.filter(item => item.status === "in_progress");
+                let confirmedCars = dataList.filter(item => item.status !== "in_progress");
+
+                if (inProgressCars.length === 0) {
+                    todayTbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-3">暫無處理中的申請 / No records in progress.</td></tr>';
+                } else {
+                    inProgressCars.forEach(item => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${item.item || '-'}</td>
+                            <td class="fw-bold text-secondary" style="font-size:0.8rem;">${item.ref_no || '-'}</td>
+                            <td>${item.company || '-'}</td>
+                            <td class="fw-bold text-uppercase text-warning">${item.vehicle_no || '-'}</td>
+                            <td>${item.contact_person || '-'}</td>
+                            <td>${item.tel_no || '-'}</td>
+                            <td>${item.time_in || '---'}</td>
+                            <td>${item.time_out || '---'}</td>
+                            <td>${item.purpose || '-'}</td>
+                            <td><span class="badge bg-secondary">${item.vehicle_type || '-'}</span></td>
+                        `;
+                        todayTbody.appendChild(tr);
+                    });
+                }
+
+                if (confirmedCars.length === 0) {
+                    tomorrowTbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-3">暫無已確認之名單 / No confirmed records.</td></tr>';
+                } else {
+                    confirmedCars.forEach(item => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${item.item || '-'}</td>
+                            <td class="fw-bold text-secondary" style="font-size:0.8rem;">${item.ref_no || '-'}</td>
+                            <td>${item.company || '-'}</td>
+                            <td class="fw-bold text-uppercase text-success">${item.vehicle_no || '-'}</td>
+                            <td>${item.contact_person || '-'}</td>
+                            <td>${item.tel_no || '-'}</td>
+                            <td>${item.time_in || '---'}</td>
+                            <td>${item.time_out || '---'}</td>
+                            <td>${item.purpose || '-'}</td>
+                            <td><span class="badge bg-success">${item.vehicle_type || '-'}</span></td>
+                        `;
+                        tomorrowTbody.appendChild(tr);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                const errHTML = `<tr><td colspan="10" class="text-center text-danger py-3">⚠️ 雲端連線失敗，請檢查網路連線或 Web App URL 是否正確。</td></tr>`;
+                todayTbody.innerHTML = errHTML;
+                tomorrowTbody.innerHTML = errHTML;
+            });
+    }
+
+    // 🖨️ 核心 PDF 導出引擎：自動篩選明天(Today+1)名單並生成對齊紙本的日誌檔案
+    function exportTomorrowListToPDF() {
+        // 1. 自動計算明天的 YYYY-MM-DD 日期標籤
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const yyyy = tomorrow.getFullYear();
+        const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
+        const dd = String(tomorrow.getDate()).padStart(2, '0');
+        const tomorrowString = yyyy + "-" + mm + "-" + dd;
+
+        // 2. 從全局記憶體中精準篩選出預約明天到訪的所有車輛數據
+        let tomorrowCars = globalCachedDataList.filter(item => {
+            return String(item.visit_date).trim() === tomorrowString;
+        });
+
+        if (tomorrowCars.length === 0) {
+            alert("雲端資料庫中，目前沒有任何預約在明天 (" + tomorrowString + ") 到訪的車輛紀錄，因此無法生成空報表。");
+            return;
+        }
+
+        // 3. 呼叫 window.jspdf 快取物件，啟動高解度虛擬畫布
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('l', 'mm', 'a4'); // 設定為 A4 橫向排版 (Landscape)
+
+        // 4. 繪製紙本官方抬頭、與簽名欄位 (已隱藏預覽畫面的 EPD Approval 欄，保留於此列印白紙上)
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(16);
+        doc.text("WEST KOWLOON REFUSE TRANSFER STATION", 14, 15);
+        doc.setFont("Helvetica", "normal");
+        doc.setFontSize(12);
+        doc.text("Registered Vehicle Log Log Date: " + tomorrowString, 14, 21);
+        doc.text("EPD Approval: ________________________", 200, 15);
+
+        // 5. 將車輛數據動態轉換為對齊官方紙本欄位的二維陣列
+        let tableRows = [];
+        tomorrowCars.forEach((car, index) => {
+            tableRows.push([
+                index + 1,                     // 項目 Item
+                car.company || '',             // 公司名稱 Company
+                String(car.vehicle_no).toUpperCase(), // 車牌號碼 Vehicle No.
+                car.contact_person || '',      // 聯絡人 Contact Person
+                car.tel_no || '',              // 電話號碼 Tel. No.
+                car.time_in === '---' ? '' : car.time_in,   // 進入時間 Time In
+                car.time_out === '---' ? '' : car.time_out, // 離開時間 Time Out
+                car.purpose || '',             // 進入目的 Purpose
+                car.vehicle_type || ''         // 車輛種類 Vehicle Type
+            ]);
+        });
+
+        // 6. 驅動 AutoTable 套件，在 PDF 內部生成無變形且高度精美的實體表格
+        doc.autoTable({
+            startY: 28,
+            head: [['Item', 'Company', 'Vehicle No.', 'Contact Person', 'Tel. No.', 'Time In', 'Time Out', 'Purpose / Work Content', 'Vehicle Type']],
+            body: tableRows,
+            theme: 'grid',
+            headStyles: { fillColor:, textColor:, fontStyle: 'bold', halign: 'center' },
+            bodyStyles: { textColor:, halign: 'center' },
+            styles: { fontSize: 9, cellPadding: 3 },
+            columnStyles: {
+                0: { cellWidth: 12 },  // Item
+                1: { cellWidth: 40 },  // Company
+                2: { cellWidth: 26 },  // Vehicle No.
+                3: { cellWidth: 30 },  // Contact Person
+                4: { cellWidth: 26 },  // Tel. No.
+                5: { cellWidth: 22 },  // Time In
+                6: { cellWidth: 22 },  // Time Out
+                7: { cellWidth: 50 },  // Purpose
+                8: { cellWidth: 35 }   // Vehicle Type
+            }
+        });
+
+        // 7. 自動觸發設備下載：以明天日期命名檔案並儲存至密碼持有人的裝置
+        const fileName = tomorrowString + "_Log.pdf";
+        doc.save(fileName);
+    }
+
+    // 閘口人員專用：過濾兩個表格內的車牌關鍵字
+    function filterGateTables() {
+        const input = document.getElementById('searchPlate').value.toUpperCase();
+        const tables = [document.getElementById('todayTableBody'), document.getElementById('tomorrowTableBody')];
+        
+        tables.forEach(tbody => {
+            const rows = tbody.getElementsByTagName('tr');
+            for (let i = 0; i < rows.length; i++) {
+                const td = rows[i].getElementsByTagName('td');
+                if (td.length > 0) {
+                    const txtValue = rows[i].textContent || rows[i].innerText;
+                    if (txtValue.toUpperCase().indexOf(input) > -1) {
+                        rows[i].style.display = "";
+                    } else {
+                        rows[i].style.display = "none";
+                    }
+                }
+            }
+        });
+    }
+</script>
+<!-- 引入 Bootstrap 驅動套件 -->
+<script src="https://jsdelivr.net"></script>
+</body>
+</html>
