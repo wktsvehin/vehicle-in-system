@@ -1,0 +1,539 @@
+﻿<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>西九龍廢物轉運站車輛登記系統</title>
+    <!-- 引入響應式 UI 樣式框架 -->
+    <link href="https://jsdelivr.net" rel="stylesheet">
+    <style>
+        body { background-color: #f4f7f6; padding: 20px; font-family: 'Helvetica Neue', Arial, sans-serif; -webkit-user-select: none; user-select: none; }
+        .card { border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: none; margin-bottom: 20px; }
+        .nav-tabs { margin-bottom: 25px; border-bottom: 2px solid #dee2e6; }
+        .nav-link { border: none !important; color: #6c757d; font-size: 1.1rem; padding: 12px; transition: all 0.3s ease; }
+        .nav-link.active { color: #0d6efd !important; border-bottom: 3px solid #0d6efd !important; background: transparent !important; }
+        .table-responsive { background-color: #fff; border-radius: 12px; border: 1px solid #e3e6f0; }
+        .hidden-field { display: none; }
+        .required-star { color: #dc3545; margin-left: 3px; }
+        .ref-box { background-color: #f4fbf7; border: 2px dashed #198754; padding: 20px; border-radius: 12px; margin-top: 20px; text-align: center; }
+        .preview-box { background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+        .preview-item { display: flex; border-bottom: 1px solid #e9ecef; padding: 10px 0; }
+        .preview-item:last-child { border-bottom: none; }
+        .preview-label { width: 40%; font-weight: bold; color: #495057; }
+        .preview-value { width: 60%; color: #212529; font-weight: 500; }
+        .plate-input { text-transform: uppercase; font-weight: bold; letter-spacing: 1px; font-size: 1.2rem; }
+        .reminder-text { color: #dc3545; font-weight: bold; animation: blink 1.5s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+<div class="container" style="max-width: 750px;">
+    <!-- 主頁面大主題標題 -->
+    <h2 class="text-center my-4 fw-bold text-primary">西九龍廢物轉運站申請車輛登記</h2>
+    
+    <!-- 功能分頁切換導覽 -->
+    <ul class="nav nav-tabs nav-justified" id="systemTab" role="tablist">
+        <li class="nav-item">
+            <button class="nav-tab nav-link active fw-bold" id="register-tab" data-bs-toggle="tab" data-bs-target="#register-panel" type="button">外來人登記</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-tab nav-link fw-bold" id="gate-tab" data-bs-toggle="tab" data-bs-target="#gate-panel" type="button" onclick="checkGateAccess()">閘口明日核對</button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <!-- 1. 外來人登記及預覽介面 -->
+        <div class="tab-pane fade show active" id="register-panel" role="tabpanel">
+            
+            <!-- 畫面 A：填寫表格畫面 -->
+            <div id="formSection" class="card p-4">
+                <h4 class="card-title mb-3 fw-bold text-dark">車輛入站申請</h4>
+                
+                <!-- 官方收集個人資料聲明 -->
+                <div class="alert alert-info py-2 px-3 small fw-bold mb-3" role="alert" style="border-left: 5px solid #0dcaf0; background-color: #f0faff; color: #055160;">
+                    ⚠️ 提醒事項：所收集資料只用於檢查車輛進入本站之用，如資料不齊全或錯誤，或會影響車輛進入本站，敬請注意。
+                </div>
+
+                <div class="alert alert-warning py-2 small" role="alert">
+                    💡 <b>預約截數提示：</b>每天下午 3:00 截數。3:00 前申請最快可預約明日入站；3:00 後申請將於後日生效。
+                </div>
+                <form id="regForm" autocomplete="off" onsubmit="showPreviewScreen(event)">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">車牌號碼<span class="required-star">*</span></label>
+                        <input type="text" id="plate" class="form-control form-control-lg plate-input" placeholder="例如: AB1234" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">司機名稱/機構名稱<span class="required-star">*</span></label>
+                        <input type="text" id="name" class="form-control" placeholder="陳大文 / XXX工程公司" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">聯絡電話 (香港 8 位數字)<span class="required-star">*</span></label>
+                        <input type="tel" id="phone" class="form-control" placeholder="例如: 91234567" required pattern="\d{8}" maxlength="8" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">入站目的<span class="required-star">*</span></label>
+                        <input type="text" id="purpose" class="form-control" placeholder="例如：送貨 / 維修" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">預計到訪時間 <span class="text-muted small fw-normal">(選填)</span></label>
+                        <input type="text" id="visitTime" class="form-control" placeholder="例如：10:00 / 下午2點">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">預約類型<span class="required-star">*</span></label>
+                        <select id="bookingType" class="form-select" onchange="updateDatePickerConstraints()">
+                            <option value="single">只來一天 (單日預約)</option>
+                            <option value="multi">連續進出 (最多一星期)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label id="dateLabel" class="form-label fw-bold">預計到訪日期<span class="required-star">*</span></label>
+                        <input type="date" id="startDateInput" class="form-control" required>
+                    </div>
+                    <div id="multiDayBox" class="mb-3 hidden-field">
+                        <label class="form-label fw-bold text-success">最後一天入站日期 (結束日期)<span class="required-star">*</span></label>
+                        <input type="date" id="endDateInput" class="form-control">
+                        <div class="form-text text-muted">⚠️ 根據截數限制，最多可連續預約 7 天。</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold py-3 mt-2">前往預覽申請頁面</button>
+                </form>
+            </div>
+
+            <!-- 畫面 B：獨立申請預覽確認頁面 -->
+            <div id="previewSection" class="card p-4 hidden-field">
+                <h4 class="card-title mb-3 fw-bold text-dark">請核對您的申請資料</h4>
+                <p class="text-muted small">請仔細核對以下資料是否正確，確認無誤後請點擊下方「確認提交」按鈕。</p>
+                
+                <div class="preview-box">
+                    <div class="preview-item"><div class="preview-label">車牌號碼</div><div id="p-plate" class="preview-value text-danger fs-5 fw-bold"></div></div>
+                    <div class="preview-item"><div class="preview-label">司機/機構名稱</div><div id="p-name" class="preview-value"></div></div>
+                    <div class="preview-item"><div class="preview-label">聯絡電話</div><div id="p-phone" class="preview-value"></div></div>
+                    <div class="preview-item"><div class="preview-label">入站目的</div><div id="p-purpose" class="preview-value"></div></div>
+                    <div class="preview-item"><div class="preview-label">預計到訪時間</div><div id="p-visitTime" class="preview-value text-primary"></div></div>
+                    <div class="preview-item"><div class="preview-label">預約類型</div><div id="p-type" class="preview-value"></div></div>
+                    <div class="preview-item"><div class="preview-label">預約期限</div><div id="p-period" class="preview-value text-success fw-bold"></div></div>
+                </div>
+
+                <div class="d-flex gap-3">
+                    <button type="button" class="btn btn-secondary btn-lg w-50 fw-bold py-3" onclick="hidePreviewScreen()">⬅️ 返回修改</button>
+                    <button type="button" id="confirmSubmitBtn" class="btn btn-success btn-lg w-50 fw-bold py-3" onclick="finalSubmitData()">確認提交 ➡️</button>
+                </div>
+            </div>
+
+            <!-- 畫面 C：提交成功結果與 Ref No 顯示畫面 -->
+            <div id="successSection" class="card p-4 hidden-field">
+                <div class="alert alert-success text-center fw-bold fs-5 mb-0">🎉 申請已成功提交！</div>
+                
+                <div class="ref-box">
+                    <span class="text-muted d-block small fw-bold">您的申請參考編號 (Ref No.)</span>
+                    <strong id="displayRefNo" class="fs-2 text-dark font-monospace d-block my-2"></strong>
+                    
+                    <div class="preview-box text-start mt-3 mb-2 bg-white" style="font-size: 0.95rem;">
+                        <p class="mb-1"><b>車牌號碼：</b><span id="s-plate" class="text-danger fw-bold"></span></p>
+                        <p class="mb-1"><b>司機/機構：</b><span id="s-name"></span></p>
+                        <p class="mb-1"><b>聯絡電話：</b><span id="s-phone"></span></p>
+                        <p class="mb-1"><b>預約期限：</b><span id="s-period" class="text-success fw-bold"></span></p>
+                    </div>
+
+                    <div class="p-2 border border-danger rounded bg-light mt-3">
+                        <p class="reminder-text m-0 fs-6">⚠️ 重要安全提示：</p>
+                        <p class="text-danger small m-0 fw-bold">請務必記下上述編號，或立刻拍照 / Capture 螢幕畫面留作記錄！到訪入站時，閘口職員須核對此編號方可放行。</p>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-outline-primary btn-lg w-100 fw-bold py-3 mt-4" onclick="resetToNewForm()">登記另一部車車輛</button>
+            </div>
+
+        </div>
+
+        <!-- 2. 閘口核對介面 -->
+        <div class="tab-pane fade" id="gate-panel" role="tabpanel">
+            <div class="card p-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                    <h4 class="card-title m-0 fw-bold text-dark">今日可入站車輛名單</h4>
+                    <div class="d-flex gap-2">
+                        <!-- 下午3點後自動解鎖的環保署表格下載按鈕 -->
+                        <button id="downloadEpdBtn" class="btn btn-sm btn-success text-nowrap d-none" onclick="downloadEpdReport()">📥 下載環保署表格</button>
+                        <input type="text" id="searchBox" class="form-control form-control-sm" placeholder="搜尋車牌/司機..." oninput="filterTable()">
+                        <button class="btn btn-sm btn-outline-secondary text-nowrap" onclick="loadGateData()">🔄 刷新</button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle m-0" id="mainGateTable">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>參考編號</th>
+                                <th>車牌號碼</th>
+                                <th>司機/機構名稱</th>
+                                <th>電話</th>
+                                <th>入站目的</th>
+                                <th>預計到訪時間</th>
+                                <th>預約期限</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gateTableBody">
+                            <tr><td colspan="7" class="text-center text-muted py-4">請先通過密碼驗證</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ==========================================
+// ⚙️ GitHub 專屬核心設定區（請在此修改）
+// ==========================================
+const GH_USER = "wkts.veh.in";   // 👈 你的 GitHub 用戶名
+const GH_REPO = "vehicle-in-system";   // 👈 你的 倉庫名稱
+const GH_TOKEN = "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";     // 👈 貼上你的 ghp_ 開頭密鑰
+const GATE_PASSWORD = "wkts#1";             // 🔑 閘口職員看名單的密碼
+const FILE_PATH = "data.json";
+let isAuthorized = false;
+let globalValidCarsForEpd = []; // 用於全局存儲篩選出的當天放行名單，供產生報表使用
+
+// 時間及日期核心計算
+function getHKDate() {
+    return new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Hong_Kong"}));
+}
+
+function getHKDateOffset(offsetDays) {
+    const hkDate = getHKDate();
+    hkDate.setDate(hkDate.getDate() + offsetDays);
+    return hkDate;
+}
+
+function formatDateYYYYMMDD(dateObj) {
+    return dateObj.getFullYear() + '-' + 
+           String(dateObj.getMonth() + 1).padStart(2, '0') + '-' + 
+           String(dateObj.getDate()).padStart(2, '0');
+}
+
+function updateDatePickerConstraints() {
+    const type = document.getElementById('bookingType').value;
+    const box = document.getElementById('multiDayBox');
+    const startDateInput = document.getElementById('startDateInput');
+    const endDateInput = document.getElementById('endDateInput');
+    const dateLabel = document.getElementById('dateLabel');
+    
+    const nowHK = getHKDate();
+    const startOffset = (nowHK.getHours() < 15) ? 1 : 2;
+    const minStart = getHKDateOffset(startOffset);
+    startDateInput.min = formatDateYYYYMMDD(minStart);
+    
+    if (!startDateInput.value || startDateInput.value < startDateInput.min) {
+        startDateInput.value = startDateInput.min;
+    }
+
+    if (type === 'multi') {
+        dateLabel.innerHTML = '預計到訪日期 (開始日期)<span class="required-star">*</span>';
+        box.style.display = 'block';
+        endDateInput.required = true;
+        const currentStart = new Date(startDateInput.value);
+        const maxEnd = new Date(currentStart);
+        maxEnd.setDate(currentStart.getDate() + 6);
+        endDateInput.min = startDateInput.value;
+        endDateInput.max = formatDateYYYYMMDD(maxEnd);
+        if (!endDateInput.value || endDateInput.value < endDateInput.min || endDateInput.value > endDateInput.max) {
+            endDateInput.value = startDateInput.value;
+        }
+    } else {
+        dateLabel.innerHTML = '預計到訪日期<span class="required-star">*</span>';
+        box.style.display = 'none';
+        endDateInput.required = false;
+        endDateInput.value = '';
+    }
+}
+
+document.getElementById('startDateInput').addEventListener('change', updateDatePickerConstraints);
+
+function showPreviewScreen(e) {
+    e.preventDefault();
+    
+    const plate = document.getElementById('plate').value.toUpperCase().trim();
+    const name = document.getElementById('name').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const purpose = document.getElementById('purpose').value.trim();
+    const visitTime = document.getElementById('visitTime').value.trim() || '未提供';
+    const bookingType = document.getElementById('bookingType').value;
+    const startDate = document.getElementById('startDateInput').value;
+    let endDate = bookingType === 'multi' ? document.getElementById('endDateInput').value : startDate;
+
+    document.getElementById('p-plate').innerText = plate;
+    document.getElementById('p-name').innerText = name;
+    document.getElementById('p-phone').innerText = phone;
+    document.getElementById('p-purpose').innerText = purpose;
+    document.getElementById('p-visitTime').innerText = visitTime;
+    document.getElementById('p-type').innerText = bookingType === 'multi' ? '連續進出 (最多一星期)' : '只來一天 (單日預約)';
+    document.getElementById('p-period').innerText = (startDate === endDate) ? `${startDate} (單日)` : `${startDate} 至 ${endDate}`;
+
+    document.getElementById('formSection').classList.add('hidden-field');
+    document.getElementById('previewSection').classList.remove('hidden-field');
+    window.scrollTo(0, 0);
+}
+
+function hidePreviewScreen() {
+    document.getElementById('previewSection').classList.add('hidden-field');
+    document.getElementById('formSection').classList.remove('hidden-field');
+}
+
+async function finalSubmitData() {
+    const confirmBtn = document.getElementById('confirmSubmitBtn');
+    confirmBtn.disabled = true;
+    confirmBtn.innerText = "連線雲端安全存檔中...";
+
+    const plate = document.getElementById('plate').value.toUpperCase().trim();
+    const name = document.getElementById('name').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const purpose = document.getElementById('purpose').value.trim();
+    const visitTime = document.getElementById('visitTime').value.trim();
+    const bookingType = document.getElementById('bookingType').value;
+    const startDate = document.getElementById('startDateInput').value;
+    let endDate = bookingType === 'multi' ? document.getElementById('endDateInput').value : startDate;
+    try {
+        const url = `https://github.com{GH_USER}/${GH_REPO}/contents/${FILE_PATH}`;
+        const resGet = await fetch(url, { headers: { "Authorization": `token ${GH_TOKEN}` } });
+        
+        if (!resGet.ok) throw new Error("資料庫連線超時，請管理員檢查 GitHub Token。");
+        
+        const fileData = await resGet.json();
+        const sha = fileData.sha;
+        const currentList = JSON.parse(decodeURIComponent(escape(atob(fileData.content))));
+        
+        const nowHK = getHKDate();
+        const todayPrefix = nowHK.getFullYear() + 
+                            String(nowHK.getMonth() + 1).padStart(2, '0') + 
+                            String(nowHK.getDate()).padStart(2, '0');
+        
+        let todaySubmissionCount = 0;
+        currentList.forEach(item => {
+            if (item.created_at) {
+                const itemDate = new Date(new Date(item.created_at).toLocaleString("en-US", {timeZone: "Asia/Hong_Kong"}));
+                const itemPrefix = itemDate.getFullYear() + 
+                                   String(itemDate.getMonth() + 1).padStart(2, '0') + 
+                                   String(itemDate.getDate()).padStart(2, '0');
+                if (itemPrefix === todayPrefix) todaySubmissionCount++;
+            }
+        });
+
+        const nextSerialNumber = String(todaySubmissionCount + 1).padStart(4, '0');
+        const finalRefNo = `${todayPrefix}-${nextSerialNumber}`;
+
+        const newRecord = {
+            ref_no: finalRefNo,
+            plate_number: plate,
+            driver_name: name,
+            phone_number: phone,
+            visit_purpose: purpose,
+            visit_time: visitTime || '未提供',
+            start_date: startDate,
+            end_date: endDate,
+            created_at: new Date().toISOString()
+        };
+
+        currentList.push(newRecord);
+        
+        const updatedContent = btoa(unescape(encodeURIComponent(JSON.stringify(currentList, null, 2))));
+        const resPut = await fetch(url, {
+            method: "PUT",
+            headers: { "Authorization": `token ${GH_TOKEN}`, "Content-Type": "application/json" },
+            body: JSON.stringify({ message: "訪客車輛登記自動更新", content: updatedContent, sha: sha })
+        });
+
+        if (resPut.ok) {
+            document.getElementById('displayRefNo').innerText = finalRefNo;
+            document.getElementById('s-plate').innerText = plate;
+            document.getElementById('s-name').innerText = name;
+            document.getElementById('s-phone').innerText = phone;
+            document.getElementById('s-period').innerText = (startDate === endDate) ? `${startDate}` : `${startDate} 至 ${endDate}`;
+
+            document.getElementById('previewSection').classList.add('hidden-field');
+            document.getElementById('successSection').classList.remove('hidden-field');
+            window.scrollTo(0, 0);
+        } else {
+            throw new Error("寫入雲端失敗。");
+        }
+    } catch (err) {
+        alert("提交失敗，請檢查網路環境重試：\n" + err.message);
+    } finally {
+        confirmBtn.disabled = false;
+        confirmBtn.innerText = "確認提交 ➡️";
+    }
+}
+
+function resetToNewForm() {
+    document.getElementById('regForm').reset();
+    document.getElementById('successSection').classList.add('hidden-field');
+    document.getElementById('formSection').classList.remove('hidden-field');
+    updateDatePickerConstraints();
+}
+
+function checkGateAccess() {
+    if (isAuthorized) { loadGateData(); return; }
+    const inputPassword = prompt("請輸入閘口職員專用存取密碼：");
+    if (inputPassword === GATE_PASSWORD) {
+        isAuthorized = true;
+        loadGateData();
+    } else {
+        alert("密碼錯誤，拒絕存取內部核對名單！");
+        const registerTab = new bootstrap.Tab(document.getElementById('register-tab'));
+        registerTab.show();
+    }
+}
+
+// 閘口核對與分流算法
+async function loadGateData() {
+    if (!isAuthorized) return;
+    const tbody = document.getElementById('gateTableBody');
+    const downloadBtn = document.getElementById('downloadEpdBtn');
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">🔄 正在實時安全核對香港截數名單...</td></tr>`;
+
+    try {
+        const url = `https://githubusercontent.com{GH_USER}/${GH_REPO}/main/${FILE_PATH}?t=${new Date().getTime()}`;
+        const res = await fetch(url);
+        
+        if (!res.ok) {
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">目前系統資料庫為空，尚無任何登記數據。</td></tr>`;
+            return;
+        }
+        const data = await res.json();
+        const nowHK = getHKDate();
+        const todayTarget = new Date(nowHK.getFullYear(), nowHK.getMonth(), nowHK.getDate());
+        let validCars = [];
+
+        data.forEach(car => {
+            if (!car.start_date || !car.end_date) return;
+            const partsStart = car.start_date.split('-');
+            const partsEnd = car.end_date.split('-');
+            const startTarget = new Date(partsStart[0], partsStart[1] - 1, partsStart[2]);
+            const endTarget = new Date(partsEnd[0], partsEnd[1] - 1, partsEnd[2]);
+
+            if (todayTarget >= startTarget && todayTarget <= endTarget) {
+                car._displayPeriod = (car.start_date === car.end_date) ? 
+                    `${car.start_date}` : `${car.start_date} 至 ${car.end_date}`;
+                validCars.push(car);
+            }
+        });
+
+        validCars.sort((a, b) => a.visit_time.localeCompare(b.visit_time, 'zh-HK'));
+        globalValidCarsForEpd = validCars; // 把篩選出的名單快取到全局
+
+        // 🛠️ 檢查是否已過下午 3 點，符合條件則解除下載按鈕的隱藏狀態
+        if (nowHK.getHours() >= 15) {
+            downloadBtn.classList.remove('d-none');
+        } else {
+            downloadBtn.classList.add('d-none');
+        }
+
+        if (validCars.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">今日暫無獲批車輛名單。</td></tr>`;
+        } else {
+            tbody.innerHTML = validCars.map(car => `
+                <tr>
+                    <td class="font-monospace text-secondary small fw-bold">${car.ref_no || '---'}</td>
+                    <td class="fw-bold text-danger fs-5">${car.plate_number}</td>
+                    <td class="fw-bold">${car.driver_name}</td>
+                    <td><a href="tel:${car.phone_number}" class="text-decoration-none fw-bold">${car.phone_number}</a></td>
+                    <td class="text-muted small">${car.visit_purpose}</td>
+                    <td class="text-primary fw-bold">${car.visit_time}</td>
+                    <td class="small text-success fw-bold">${car._displayPeriod}</td>
+                </tr>
+            `).join('');
+        }
+    } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">讀取數據異常，請確認雲端 data.json 是否存在。</td></tr>`;
+    }
+}
+
+// 🛠️ 點擊按鈕自動在新視窗產生一張排版精美、可列印/下載的環保署官方表格
+function downloadEpdReport() {
+    if (globalValidCarsForEpd.length === 0) {
+        alert("今日暫無任何入站車輛數據，無法產生表格。");
+        return;
+    }
+
+    const nowHK = getHKDate();
+    const todayStr = nowHK.getFullYear() + '年' + (nowHK.getMonth() + 1) + '月' + nowHK.getDate() + '日';
+
+    // 構建表格的 HTML 橫列數據
+    const rowsHtml = globalValidCarsForEpd.map(car => `
+        <tr>
+            <td>${car.start_date}</td>
+            <td style="color: red; font-weight: bold; font-size: 1.1rem;">${car.plate_number}</td>
+            <td>${car.driver_name}</td>
+            <td>${car.phone_number}</td>
+            <td style="color: #0d6efd; font-weight: bold;">${car.visit_time}</td>
+            <td style="font-family: monospace; font-weight: bold;">${car.ref_no || '---'}</td>
+        </tr>
+    `).join('');
+
+    // 新開一個完全乾淨的空白瀏覽器視窗，注入專用列印樣式
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>西九龍廢物轉運站 - 環保署車輛核對表</title>
+            <style>
+                body { font-family: "Helvetica Neue", Arial, sans-serif; padding: 30px; color: #222; }
+                .header-title { text-align: center; font-size: 1.6rem; font-weight: bold; margin-bottom: 5px; }
+                .header-subtitle { text-align: center; font-size: 1.2rem; font-weight: bold; margin-bottom: 25px; color: #555; }
+                .info-meta { margin-bottom: 15px; font-size: 1rem; font-weight: bold; }
+                table { width: 100%; border-collapse: collapse; margin-bottom: 50px; }
+                th, td { border: 1px solid #333; padding: 10px; text-align: center; font-size: 0.95rem; }
+                th { background-color: #f2f2f2; font-weight: bold; }
+                .footer-sign-section { width: 100%; margin-top: 60px; display: flex; justify-content: space-between; page-break-inside: avoid; }
+                .sign-box { width: 45%; border-top: 1.5px solid #000; text-align: left; padding-top: 8px; font-size: 1rem; font-weight: bold; margin-top: 80px; }
+                .no-print-btn { background-color: #198754; color: white; padding: 10px 20px; border: none; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; display: block; margin: 0 auto 20px auto; }
+                @media print { .no-print-btn { display: none; } body { padding: 0; } }
+            </style>
+        </head>
+        <body>
+            <button class="no-print-btn" onclick="window.print()">🖨️ 列印 / 儲存為 PDF 表格</button>
+            <div class="header-title">環境保護署 (EPD)</div>
+            <div class="header-subtitle">西九龍廢物轉運站 - 入站車輛核對表格</div>
+            
+            <div class="info-meta">報表產生日期：${todayStr} (下午 15:00 截數後自動產生)</div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>申請到訪日期</th>
+                        <th>車牌號碼</th>
+                        <th>申請人/機構名稱</th>
+                        <th>聯絡電話</th>
+                        <th>預計入站時間</th>
+                        <th>參考編號 (Ref No.)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rowsHtml}
+                </tbody>
+            </table>
+
+            <!-- 頁底：環境保護署檢查職員姓名及簽名項 -->
+            <div class="footer-sign-section">
+                <div class="sign-box">環境保護署 檢查職員姓名：</div>
+                <div class="sign-box">環境保護署 職員簽署：</div>
+            </div>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+}
+
+function filterTable() {
+    const keyword = document.getElementById('searchBox').value.toUpperCase();
+    const rows = document.querySelectorAll('#gateTableBody tr');
+    rows.forEach(row => {
+        if (row.cells.length < 2) return;
+        const text = row.textContent.toUpperCase();
+        row.style.display = text.includes(keyword) ? '' : 'none';
+    });
+}
+</script>
+
+<script src="https://jsdelivr.net"></script>
+</body>
+</html>
