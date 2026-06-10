@@ -1,2 +1,14 @@
-json
-[]
+﻿[
+  {
+    "plate": "AB1234",
+    "name": "陳大文 Chan Tai Man",
+    "purpose": "送貨 Delivery",
+    "visitTime": "10:00 AM"
+  },
+  {
+    "plate": "XY9876",
+    "name": "陳小明 Engineering Co.",
+    "purpose": "維修 Maintenance",
+    "visitTime": "02:30 PM"
+  }
+]
