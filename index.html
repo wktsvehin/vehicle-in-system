@@ -601,36 +601,71 @@ function finalSubmitData() {
 let isInternalAuthenticated = false; 
 let globalCachedDataList = [];
 
-// 5.1 【分頁點擊防護機制】
-function triggerInternalAuth() {
-    const gateTab = document.getElementById('gate-tab'); 
-    if (gateTab) {
-        const tabTrigger = new bootstrap.Tab(gateTab); 
-        tabTrigger.show(); 
-    }
-    if (!isInternalAuthenticated) { 
-        document.getElementById('authBox').classList.remove('hidden-field'); 
-        document.getElementById('internalContent').classList.add('hidden-field'); 
-        document.getElementById('startAuthBtnWrapper').classList.remove('hidden-field');
-        document.getElementById('passwordInputWrapper').classList.add('hidden-field');
-        document.getElementById('internalPwd').value = ''; 
-        document.getElementById('authErrorMsg').classList.add('hidden-field'); 
-    } else { 
-        document.getElementById('authBox').classList.add('hidden-field'); 
-        document.getElementById('internalContent').classList.remove('hidden-field'); 
-        if (typeof loadInternalDataLists === 'function') { loadInternalDataLists(); }
-    }
-}
+ /**
+  * 🆕 新增 5.0.2【跳轉至內部員工登入頁面】：點擊頂部右側獨立按鈕時觸發
+  */
+ function goToInternalLoginPage() {
+     // 1. 隱藏訪客登記的所有子畫面 (填表、預覽、成功卡片)
+     const formSec = document.getElementById('formSection');
+     const previewSec = document.getElementById('previewSection');
+     const successSec = document.getElementById('successSection');
+     
+     if (formSec) formSec.classList.add('hidden-field');
+     if (previewSec) previewSec.classList.add('hidden-field');
+     if (successSec) successSec.classList.add('hidden-field');
+     
+     // 2. 切換頂部選單標籤的 active 狀態
+     document.getElementById('register-tab').classList.remove('active');
+     document.getElementById('gate-tab').classList.add('active');
+     
+     // 3. 呼叫底層防護，解鎖內部面板並將密碼畫面重置還原為初始大按鈕狀態
+     triggerInternalAuth();
+ }
 
-// 🆕 5.1.2【按鈕動態展開密碼框】
-function showPasswordInputField() {
-    document.getElementById('startAuthBtnWrapper').classList.add('hidden-field');
-    document.getElementById('passwordInputWrapper').classList.remove('hidden-field');
-    setTimeout(() => { 
-        const pwdInput = document.getElementById('internalPwd');
-        if(pwdInput) pwdInput.focus(); 
-    }, 100);
-}
+ /**
+  * 5.1 【分頁點擊防護機制】(已優化相容獨立按鈕跳轉)
+  */
+ function triggerInternalAuth() {
+     // 顯示內部使用總面板，並隱藏訪客面板
+     const gatePanel = document.getElementById('gate-panel');
+     if (gatePanel) {
+         gatePanel.classList.add('show', 'active');
+     }
+     const regPanel = document.getElementById('register-panel');
+     if (regPanel) {
+         regPanel.classList.remove('show', 'active');
+     }
+     
+     // 🔒 核心隱私安全判定
+     if (!isInternalAuthenticated) { 
+         document.getElementById('authBox').classList.remove('hidden-field'); 
+         document.getElementById('internalContent').classList.add('hidden-field'); 
+         
+         document.getElementById('startAuthBtnWrapper').classList.remove('hidden-field');
+         document.getElementById('passwordInputWrapper').classList.add('hidden-field');
+         
+         document.getElementById('internalPwd').value = ''; 
+         document.getElementById('authErrorMsg').classList.add('hidden-field'); 
+     } else { 
+         document.getElementById('authBox').classList.add('hidden-field'); 
+         document.getElementById('internalContent').classList.remove('hidden-field'); 
+         if (typeof loadInternalDataLists === 'function') { loadInternalDataLists(); }
+     }
+     window.scrollTo({ top: 0, behavior: 'smooth' });
+ }
+
+ /**
+  * 5.1.2【按鈕動態展開密碼框】(重新編排保留)
+  */
+ function showPasswordInputField() {
+     document.getElementById('startAuthBtnWrapper').classList.add('hidden-field');
+     document.getElementById('passwordInputWrapper').classList.remove('hidden-field');
+     setTimeout(() => { 
+         const pwdInput = document.getElementById('internalPwd');
+         if(pwdInput) pwdInput.focus(); 
+     }, 100);
+ }
+
 
 // 5.2 【安全密碼核對】
 function verifyInternalPassword() {
