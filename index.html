@@ -102,29 +102,30 @@
  <!-- ======================================================================== -->
  <!-- 2.3 功能分頁切換導覽標籤 (已全面升級為高級雙獨立引導按鈕) -->
  <!-- ======================================================================== -->
- <ul class="nav nav-tabs row g-2 border-0 mb-4 px-1" id="systemTab" role="tablist">
+ <ul class="nav nav-tabs row g-2 border-0 mb-4 px-1" id="systemTab" role="tablist" style="list-style-type: none;">
    <!-- 左側：全新升級訪客登記獨立引導大按鈕 -->
    <li class="nav-item col-6 m-0"> 
-     <button class="btn fw-bold w-100 h-100 d-flex flex-column justify-content-center align-items-center px-3 py-2" id="register-tab" type="button" onclick="switchToVisitor()" style="border-radius: 12px !important; background: linear-gradient(135deg, #ffffff 0%, #f7fafc 100%) !important; color: #2d3748 !important; border: 1px solid #e2e8f0 !important; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+     <button class="btn fw-bold w-100 d-flex flex-column justify-content-center align-items-center px-3 py-2" id="register-tab" type="button" onclick="switchToVisitor()" style="border-radius: 12px !important; background: linear-gradient(135deg, #ffffff 0%, #f7fafc 100%) !important; color: #2d3748 !important; border: 1px solid #e2e8f0 !important; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
        📝 訪客登記<br><span class="small fw-normal text-lowercase text-muted" style="font-size: 0.72rem;">Visitor Registration</span>
      </button>
    </li>
    
    <!-- 右側：完全獨立的內部員工登入深青色引導按鈕 -->
    <li class="nav-item col-6 m-0"> 
-     <button class="btn fw-bold w-100 h-100 d-flex flex-column justify-content-center align-items-center px-3 py-2" id="gate-tab" type="button" onclick="goToInternalLoginPage()" style="border-radius: 12px !important; background: linear-gradient(135deg, #2c7a7b 0%, #236162 100%) !important; color: #ffffff !important; border: none !important; box-shadow: 0 4px 12px rgba(35, 97, 98, 0.25);">
+     <button class="btn fw-bold w-100 d-flex flex-column justify-content-center align-items-center px-3 py-2" id="gate-tab" type="button" onclick="goToInternalLoginPage()" style="border-radius: 12px !important; background: linear-gradient(135deg, #2c7a7b 0%, #236162 100%) !important; color: #ffffff !important; border: none !important; box-shadow: 0 4px 12px rgba(35, 97, 98, 0.25);">
        🔒 內部使用<br><span class="small fw-normal text-lowercase text-white-50" style="font-size: 0.72rem;">Internal Use</span>
      </button>
    </li>
  </ul>
 
- <!-- 2.4 所有分頁實體內容的總容器 -->
- <div class="tab-content"> 
+ <!-- 2.4 所有分頁實體內容的總容器 (這個漏掉的標籤會強行吞噬後面的卡片) -->
+ <div class="tab-content" id="systemTabContent"> 
  
- <!-- ================================================================== -->
- <!-- 【分頁面板一】：訪客登記介面（包含：填表、預覽、成功 三大子畫面） -->
- <!-- ================================================================== -->
- <div class="tab-pane fade show active" id="register-panel" role="tabpanel">
+   <!-- ================================================================== -->
+   <!-- 【分頁面板一】：訪客登記介面（包含：填表、預覽、成功 三大子畫面） -->
+   <!-- ================================================================== -->
+   <div class="tab-pane fade show active" id="register-panel" role="tabpanel">
+
  <!-- 【子畫面 A】：訪客填寫表單畫面 (Form Section) -->
  <div id="formSection" class="card">
  <h4 class="card-title mb-3 fw-bold" style="color: #2d3748;">
