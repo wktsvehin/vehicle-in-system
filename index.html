@@ -96,19 +96,32 @@
     West Kowloon Transfer Station Vehicle Registration
   </h6>
   
-  <!-- 2.3 功能分頁切換導覽標籤 -->
-  <ul class="nav nav-tabs row g-2 border-0 mb-4 px-1" id="systemTab" role="tablist" style="list-style-type: none;">
-    <li class="nav-item col-6 m-0"> 
-      <button class="btn fw-bold w-100 d-flex flex-column justify-content-center align-items-center px-3 py-2" id="register-tab" type="button" onclick="switchToVisitor()" style="border-radius: 12px !important; background: linear-gradient(135deg, #ffffff 0%, #f7fafc 100%) !important; color: #2d3748 !important; border: 1px solid #e2e8f0 !important; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
-        📝 訪客登記<br><span class="small fw-normal text-lowercase text-muted" style="font-size: 0.72rem;">Visitor Registration</span>
+  <!-- 2.3 功能分頁切換導覽標籤（全新按鈕質感與等寬設計） -->
+  <div class="row g-3 mb-4 px-1" style="max-width: 100%; margin: 0 auto; list-style-type: none;">
+    <!-- 左側：訪客登記按鈕 -->
+    <div class="col-6">
+      <button class="btn w-100 py-3 d-flex flex-column align-items-center justify-content-center" 
+              id="register-tab" 
+              type="button" 
+              onclick="switchToVisitor()" 
+              style="border-radius: 12px; border: 2px solid #cbd5e0; background-color: #ffffff; color: #2d3748; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: all 0.2s ease; font-weight: 700;">
+        <span style="font-size: 1.1rem; display: block; margin-bottom: 2px;">📝 訪客登記</span>
+        <span class="small fw-normal text-muted text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">Visitor Registration</span>
       </button>
-    </li>
-    <li class="nav-item col-6 m-0"> 
-      <button class="btn fw-bold w-100 d-flex flex-column justify-content-center align-items-center px-3 py-2" id="gate-tab" type="button" onclick="goToInternalLoginPage()" style="border-radius: 12px !important; background: linear-gradient(135deg, #2c7a7b 0%, #236162 100%) !important; color: #ffffff !important; border: none !important; box-shadow: 0 4px 12px rgba(35, 97, 98, 0.25);">
-        🔒 內部使用<br><span class="small fw-normal text-lowercase text-white-50" style="font-size: 0.72rem;">Internal Use</span>
+    </div>
+    
+    <!-- 右側：內部使用按鈕 -->
+    <div class="col-6">
+      <button class="btn w-100 py-3 d-flex flex-column align-items-center justify-content-center" 
+              id="gate-tab" 
+              type="button" 
+              onclick="goToInternalLoginPage()" 
+              style="border-radius: 12px; border: 2px solid #236162; background: linear-gradient(135deg, #2c7a7b 0%, #236162 100%); color: #ffffff; box-shadow: 0 4px 12px rgba(35, 97, 98, 0.2); transition: all 0.2s ease; font-weight: 700;">
+        <span style="font-size: 1.1rem; display: block; margin-bottom: 2px;">🔒 內部使用</span>
+        <span class="text-white-50 text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px; font-weight: 400;">Internal Use</span>
       </button>
-    </li>
-  </ul>
+    </div>
+  </div>
   
   <!-- 2.4 所有分頁實體內容的總容器 -->
   <div class="tab-content" id="systemTabContent"> 
