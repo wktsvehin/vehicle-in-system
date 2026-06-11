@@ -305,31 +305,29 @@
  <!-- ================================================================== -->
  <div class="tab-pane fade" id="gate-panel" role="tabpanel">
  
-  <!-- 🔑 2.5 內部驗證主卡片 (完美塞入分頁容器，徹底修正底部殘影) -->
-  <div id="authBox" class="card p-5 text-center">
-    <h4 class="fw-bold text-dark mb-2">安全驗證 / Security Verification</h4>
-    <p class="text-muted small mb-4">此頁面僅供內部工作人員存取。<br>Internal use only.</p>
-    
-    <!-- 🟢 初始狀態：只顯示這個引導按鈕，點擊後才會彈出密碼框 -->
-    <div id="startAuthBtnWrapper">
-      <button type="button" class="btn btn-primary fw-bold px-4 py-3 fs-5" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" onclick="showPasswordInputField()">
-        🔐 進入內部系統 / Enter System
-      </button>
-    </div>
-    
-    <!-- 🟡 隱藏狀態：點擊上方按鈕後，才會透過 JavaScript 展開 -->
-    <div id="passwordInputWrapper" class="hidden-field mt-3">
-      <div class="d-flex justify-content-center mb-3">
-        <!-- 密碼輸入框：強制文字居中、大字體，限定寬度 -->
-        <input type="password" id="internalPwd" class="form-control text-center fs-5" style="max-width: 260px;" placeholder="輸入密碼 Enter Password"> 
-      </div>
-      <div>
-        <button type="button" class="btn btn-success fw-bold px-4 py-2" onclick="verifyInternalPassword()">驗證登入 Login</button>
-      </div>
-      <!-- 紅色密碼出錯警告（預設隱藏） -->
-      <div id="authErrorMsg" class="text-danger mt-3 fw-bold small hidden-field">⚠️ 密碼錯誤！ / Invalid password!</div> 
-    </div>
-  </div> <!-- 【安全驗證卡片結束】 -->
+ <!-- 🔑 2.5 內部驗證主卡片 (完美修復損壞編碼，徹底消除底部殘影) -->
+ <div id="authBox" class="card p-5 text-center">
+   <h4 class="fw-bold text-dark mb-2">安全驗證 / Security Verification</h4>
+   <p class="text-muted small mb-4">此頁面僅供內部工作人員存取。<br>Internal use only.</p>
+ 
+   <!-- 🟢 初始狀態：只顯示這個引導按鈕，點擊後才會透過底部模組 5 展開密碼框 -->
+   <div id="startAuthBtnWrapper">
+     <button type="button" class="btn btn-primary fw-bold px-4 py-3 fs-5" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" onclick="showPasswordInputField()">
+       🔐 進入內部系統 / Enter System
+     </button>
+   </div>
+ 
+   <!-- 🟡 隱藏狀態：點擊上方大按鈕後解鎖展開 -->
+   <div id="passwordInputWrapper" class="hidden-field mt-3">
+     <div class="d-flex justify-content-center mb-3">
+       <input type="password" id="internalPwd" class="form-control text-center fs-5" style="max-width: 260px;" placeholder="輸入密碼 Enter Password"> 
+     </div>
+     <div>
+       <button type="button" class="btn btn-success fw-bold px-4 py-2" onclick="verifyInternalPassword()">驗證登入 Login</button>
+     </div>
+     <div id="authErrorMsg" class="text-danger mt-3 fw-bold small hidden-field">⚠️ 密碼錯誤！ / Invalid password!</div> 
+   </div>
+ </div> <!-- 【安全驗證卡片結束】 -->
 
    <!-- 【子畫面 B】：內部管理資訊展示區 (必須在密碼驗證成功後才解除鎖定秀出) -->
    <div id="internalContent" class="card hidden-field">
