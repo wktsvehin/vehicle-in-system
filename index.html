@@ -636,8 +636,8 @@
             head: [['Item', 'Company', 'Vehicle No.', 'Contact Person', 'Tel. No.', 'Time In', 'Time Out', 'Purpose / Work Content', 'Vehicle Type']], // 注入完全對齊紙本的 9 大中英對照標頭列
             body: tableRows, // 注入剛剛整理好的明天車牌數據
             theme: 'grid', // 採用 grid 主題，強制繪製出清晰的網格虛線框，方便老前輩拿筆在紙上對齊勾選
-            headStyles: { fillColor:, textColor:, fontStyle: 'bold', halign: 'center' }, // 標頭背景色設定為專業主題深綠色、文字純白、粗體、水平居中
-            bodyStyles: { textColor:, halign: 'center' }, // 表格內容字體設定為深灰色、水平居中對齊
+            headStyles: { fillColor: '#2f855a', textColor: '#ffffff', fontStyle: 'bold', halign: 'center' }, 
+            bodyStyles: { textColor: '#2d3748', halign: 'center' }, 
             styles: { fontSize: 9, cellPadding: 3 }, // 限制字型大小為 9 級（最適合 A4 橫向寬度），格子內邊距四周留白 3 毫米
             columnStyles: { // 🎨 核心技術：依據紙本圖片比例，用毫米 (mm) 微調限制這 9 個欄位的實體寬度，確保橫向不擠壓、不爆表
                 0: { cellWidth: 12 },  // 項目 Item 欄寬
