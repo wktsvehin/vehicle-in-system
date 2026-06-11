@@ -99,20 +99,20 @@
  West Kowloon Transfer Station Vehicle Registration
  </h6>
 
-  <!-- ======================================================================== -->
- <!-- 2.3 功能分頁切換導覽標籤 (已優化為獨立員工按鈕導線) -->
+ <!-- ======================================================================== -->
+ <!-- 2.3 功能分頁切換導覽標籤 (已全面升級為高級雙獨立引導按鈕) -->
  <!-- ======================================================================== -->
  <ul class="nav nav-tabs row g-2 border-0 mb-4 px-1" id="systemTab" role="tablist">
-   <!-- 左側：訪客登記分頁 -->
-   <li class="nav-item col-7 m-0"> 
-     <button class="nav-link active fw-bold w-100 text-start px-3 py-2" id="register-tab" data-bs-toggle="tab" data-bs-target="#register-panel" type="button" onclick="switchToVisitor()" style="border-radius: 10px !important; background-color: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
-       📝 訪客登記<br><span class="small fw-normal text-lowercase" style="font-size: 0.72rem;">Visitor Registration</span>
+   <!-- 左側：全新升級訪客登記獨立引導大按鈕 -->
+   <li class="nav-item col-6 m-0"> 
+     <button class="btn fw-bold w-100 h-100 d-flex flex-column justify-content-center align-items-center px-3 py-2" id="register-tab" type="button" onclick="switchToVisitor()" style="border-radius: 12px !important; background: linear-gradient(135deg, #ffffff 0%, #f7fafc 100%) !important; color: #2d3748 !important; border: 1px solid #e2e8f0 !important; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+       📝 訪客登記<br><span class="small fw-normal text-lowercase text-muted" style="font-size: 0.72rem;">Visitor Registration</span>
      </button>
    </li>
    
-   <!-- 右側：完全獨立的內部員工登入「深青色引導按鈕」 -->
-   <li class="nav-item col-5 m-0"> 
-     <button class="btn btn-warning fw-bold w-100 h-100 d-flex flex-column justify-content-center align-items-center px-2 py-2" id="gate-tab" type="button" onclick="goToInternalLoginPage()" style="border-radius: 10px !important; background: linear-gradient(135deg, #2c7a7b 0%, #236162 100%) !important; color: #ffffff !important; border: none !important; box-shadow: 0 4px 12px rgba(35, 97, 98, 0.25);">
+   <!-- 右側：完全獨立的內部員工登入深青色引導按鈕 -->
+   <li class="nav-item col-6 m-0"> 
+     <button class="btn fw-bold w-100 h-100 d-flex flex-column justify-content-center align-items-center px-3 py-2" id="gate-tab" type="button" onclick="goToInternalLoginPage()" style="border-radius: 12px !important; background: linear-gradient(135deg, #2c7a7b 0%, #236162 100%) !important; color: #ffffff !important; border: none !important; box-shadow: 0 4px 12px rgba(35, 97, 98, 0.25);">
        🔒 內部使用<br><span class="small fw-normal text-lowercase text-white-50" style="font-size: 0.72rem;">Internal Use</span>
      </button>
    </li>
@@ -689,13 +689,33 @@ function lockInternalPage() {
 }
 
 // 5.4 【切換回訪客】
-function switchToVisitor() {
-    const regTab = document.getElementById('register-tab'); 
-    if (regTab) {
-        const tabTrigger = new bootstrap.Tab(regTab); 
-        tabTrigger.show(); 
-    }
-}
+ /**
+  * 🔄 5.4 【彈回訪客申請頁面】：當訪客誤觸內部使用後，點擊左側「訪客登記」按鈕時觸發
+  */
+ function switchToVisitor() {
+     // 1. 切換頂部獨立按鈕的 active 觸控狀態
+     document.getElementById('gate-tab').classList.remove('active');
+     document.getElementById('register-tab').classList.add('active');
+     
+     // 2. 顯示訪客使用總面板，隱藏內部人員總面板
+     const regPanel = document.getElementById('register-panel');
+     if (regPanel) { regPanel.classList.add('show', 'active'); }
+     const gatePanel = document.getElementById('gate-panel');
+     if (gatePanel) { gatePanel.classList.remove('show', 'active'); }
+     
+     // 3. 🎯 核心修復：解鎖訪客表單卡片 (移除 hidden-field)，讓先前填寫到一半的資料重見天日
+     const formSec = document.getElementById('formSection');
+     if (formSec) { formSec.classList.remove('hidden-field'); }
+     
+     // 4. 確保多餘的預覽與成功畫面維持隱藏
+     const previewSec = document.getElementById('previewSection');
+     const successSec = document.getElementById('successSection');
+     if (previewSec) previewSec.classList.add('hidden-field');
+     if (successSec) successSec.classList.add('hidden-field');
+     
+     // 5. 手機與電腦畫面平滑捲動置頂，方便訪客繼續輸入欄位
+     window.scrollTo({ top: 0, behavior: 'smooth' });
+ }
 
 // 5.5 【數據即時抓取】
 function loadInternalDataLists() {
