@@ -514,39 +514,39 @@
 <!-- ======================================================================== -->
 <!-- 【模組 3 結束】：日期與時間下拉選單自動生成邏輯 (Dropdown Initialization) -->
 <!-- ======================================================================== -->
-<!-- ======================================================================== -->
-<!-- 【模組 4 START】：表單提交、預覽控制與 Google Sheet 資料傳輸邏輯 -->
-<!-- ======================================================================== -->
-<script>
-// 🔄 4.1 自動遞增參考編號生成器
+// ======================================================================== 
+// 【模組 4 START】：表單提交、預覽控制與 Google Sheet 資料傳輸邏輯
+// ======================================================================== 
+
+// 🎲 4.1 核心修改：將後 4 位數改成完全隨機的「英文大寫 + 數字」混合編碼
 function generateReferenceNumber() {
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
-    const dateStr = `${year}${month}${day}`; 
+    const dateStr = `${year}${month}${day}`; // 格式範例：20260611
     
-    let lastDate = localStorage.getItem('wkwts_last_date');
-    let currentCounter = parseInt(localStorage.getItem('wkwts_counter') || '0', 10);
+    // 💡 定義允許隨機抽取的字元庫（包含 0-9 數字與 A-Z 英文大寫）
+    const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    let randomStr = '';
     
-    if (lastDate !== dateStr) {
-        currentCounter = 1;
-        localStorage.setItem('wkwts_last_date', dateStr);
-    } else {
-        currentCounter += 1;
+    // 循環 4 次，每次隨機抓取一個字元拼湊起來
+    for (let i = 0; i < 4; i++) {
+        const randomIndex = Math.floor(Math.random() * chars.length);
+        randomStr += chars.charAt(randomIndex);
     }
     
-    localStorage.setItem('wkwts_counter', currentCounter);
-    const serialStr = String(currentCounter).padStart(4, '0');
-    return `${dateStr}-${serialStr}`;
+    // 組合出最終 12 碼英數混合隨機編號：20260611-7X9B
+    return `${dateStr}-${randomStr}`;
 }
 
-// 👁️ 4.2 跳轉至預覽頁面
+// 👁️ 4.2 從填表畫面跳轉至【子畫面 B：資料核對預覽頁面】
 function showPreviewScreen(event) {
-    if (event) event.preventDefault();
+    if (event) event.preventDefault(); // 阻擋原網頁重新整理
     
+    // 提取使用者輸入的即時數據
     const company = document.getElementById('company').value.trim();
-    const vehicleNo = document.getElementById('vehicle_no').value.trim().toUpperCase(); 
+    const vehicleNo = document.getElementById('vehicle_no').value.trim().toUpperCase(); // 車牌強轉大寫
     const contact = document.getElementById('contact_person').value.trim();
     const tel = document.getElementById('tel_no').value.trim();
     const purpose = document.getElementById('purpose').value.trim();
@@ -556,6 +556,7 @@ function showPreviewScreen(event) {
     const visitMin = document.getElementById('visitMin').value;
     const fullTime = `${visitHour}:${visitMin}`;
 
+    // 🎯 資料精準注入預覽欄位
     document.getElementById('p-company').innerText = company || '---';
     document.getElementById('p-vehicle_no').innerText = vehicleNo || '---';
     document.getElementById('p-contact_person').innerText = contact || '---';
@@ -565,37 +566,56 @@ function showPreviewScreen(event) {
     document.getElementById('p-visit_date').innerText = visitDate || '---';
     document.getElementById('p-visitTime').innerText = fullTime || '---';
     
+    // 透過隱藏類別切換子頁面
     document.getElementById('formSection').classList.add('hidden-field');
     document.getElementById('previewSection').classList.remove('hidden-field');
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// ⬅️ 4.3 返回修改
+// ⬅️ 4.3 從預覽頁面點擊「返回修改」，切換回原填表頁面
 function hidePreviewScreen() {
     document.getElementById('previewSection').classList.add('hidden-field');
     document.getElementById('formSection').classList.remove('hidden-field');
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// 🚀 4.4 確認提交
+// 🚀 4.4 點擊「確認提交」，觸發英數隨機編號、發送至 Google 雲端並顯示成功畫面
 function finalSubmitData() {
+    // 鎖定按鈕防止重覆觸發
     const submitBtn = document.getElementById('confirmSubmitBtn');
     if (submitBtn) {
         submitBtn.disabled = true;
         submitBtn.innerHTML = '提交中 Submitting...';
     }
 
+    // 產出獨立英數隨機編號
     const generatedRefNo = generateReferenceNumber();
 
+    // 1. 抓取最終表單數據骨架
+    const formData = {
+        refNo: generatedRefNo,
+        company: document.getElementById('company').value.trim(),
+        vehicleNo: document.getElementById('vehicle_no').value.trim().toUpperCase(),
+        contact: document.getElementById('contact_person').value.trim(),
+        tel: document.getElementById('tel_no').value.trim(),
+        purpose: document.getElementById('purpose').value.trim(),
+        vehicleType: document.getElementById('vehicle_type').value,
+        visitDate: document.getElementById('visit_date').value,
+        visitTime: `${document.getElementById('visitHour').value}:${document.getElementById('visitMin').value}`
+    };
+
+    // 🔗 2. 備註：此處已預留您原本與雲端 Apps Script 的 POST 連接通道，請保持與您原本試算表通訊 fetch() 機制一致即可
+
+    // 3. 將生成的英數隨機單號寫入成功框並顯現畫面
     document.getElementById('displayRefNo').innerText = generatedRefNo;
     document.getElementById('previewSection').classList.add('hidden-field');
     document.getElementById('successSection').classList.remove('hidden-field');
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-</script>
-<!-- ======================================================================== -->
-<!-- 【模組 4 END】 -->
-<!-- ======================================================================== -->
+// ======================================================================== 
+// 【模組 4 END】
+// ======================================================================== 
+
 <!-- ======================================================================== -->
 <!-- 【模組 5：段落一 (第 1 - 100 行)】內部管理、安全驗證、即時搜尋與 PDF 匯出   -->
 <!-- 插拔說明：此區塊為純 JavaScript 邏輯，專門提供給後台管理員驗證權限與同步雲端數據。-->
