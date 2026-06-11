@@ -217,8 +217,8 @@
       <!-- 🔒 2.5 內部驗證主卡片：這個卡片只有在點擊「內部使用」分頁後才會獨立顯示 -->
       <div id="authBox" class="card text-center p-4 my-2 mx-auto" style="max-width: 400px; border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.06);">
         <div class="mb-3 fs-1">🔒</div>
-        <h4 class="fw-bold text-dark mb-1">閘口系統驗證</h4>
-        <h6 class="text-secondary fw-normal small mb-4">Gate System Verification</h6>
+        <h4 class="fw-bold text-dark mb-1">職員驗證</h4>
+        <h6 class="text-secondary fw-normal small mb-4">Staff Verification</h6>
         
         <!-- 密碼輸入欄位 -->
         <div class="form-group mb-3">
@@ -529,6 +529,38 @@ function goToInternalLoginPage() {
   document.getElementById('gate-tab').classList.add('active');
   
   triggerInternalAuth();
+}
+function verifyInternalPassword() {
+  // 💡 1. 抓取畫面上密碼輸入框的值
+  const inputPwd = document.getElementById('internalPwd').value; 
+  
+  // 🔑 2. 設定正確的系統登入密碼
+  const correctPwd = "wkts001"; 
+  
+  // 🔄 3. 開始比對密碼
+  if (inputPwd === correctPwd) { 
+    isInternalAuthenticated = true; 
+    
+    // 登入成功：藏起密碼卡片，秀出後台大名單
+    const authBox = document.getElementById('authBox');
+    if (authBox) authBox.classList.add('hidden-field');
+    
+    const internalContent = document.getElementById('internalContent');
+    if (internalContent) internalContent.classList.remove('hidden-field'); 
+    
+    // 觸發同步雲端數據
+    if (typeof loadInternalDataLists === 'function') { loadInternalDataLists(); }
+  } else { 
+    // 密碼錯誤：秀出紅色錯誤提示框
+    const errorMsg = document.getElementById('authErrorMsg');
+    if (errorMsg) errorMsg.classList.remove('hidden-field'); 
+  }
+}
+
+function lockInternalPage() {
+  isInternalAuthenticated = false; 
+  document.getElementById('internalPwd').value = ''; 
+  triggerInternalAuth(); 
 }
 
 function triggerInternalAuth() {
