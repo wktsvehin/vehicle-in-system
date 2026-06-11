@@ -298,12 +298,35 @@
  <p class="lead mb-2 fs-6 text-dark">請截圖或保存此畫面作為核對憑證。<br><span class="text-muted small" style="font-size: 0.8rem;">Please screenshot or save this screen as proof of verification.</span></p>
  </div>
  
- <!-- 返回填寫新申請按鈕 (點擊後徹底重置表單並重新整理下拉選單) -->
- <button type="button" class="btn btn-outline-primary btn-lg w-100 fw-bold py-2 mt-4" onclick="resetForm()">
- 返回填寫新申請 <br><span class="fw-normal small" style="font-size: 0.75rem;">Back to New Application</span>
+ <!-- 返回填寫新申請按鈕 (已改為手機直通版，繞過腳本衝突) -->
+ <button type="button" class="btn btn-outline-primary btn-lg w-100 fw-bold py-3 mt-4" 
+         onclick="
+            /* 1. 一鍵清空表單所有輸入格 */
+            var form = document.getElementById('regForm');
+            if (form) { form.reset(); }
+            
+            /* 2. 恢復確認提交按鈕的點擊功能與預設文字 */
+            var submitBtn = document.getElementById('confirmSubmitBtn');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '確認提交 ➡️<br><span class=\'fw-normal small\' style=\'font-size: 0.75rem;\'>Confirm & Submit</span>';
+            }
+            
+            /* 3. 手動觸發模組 3 的時間重新初始化 (相容兩種常見命名) */
+            if (typeof initializeDateTimeOptions === 'function') { initializeDateTimeOptions(); }
+            else if (typeof initDateTime === 'function') { initDateTime(); }
+            
+            /* 4. 切換網頁顯示區塊：隱藏成功畫面，重新解鎖填表畫面 */
+            document.getElementById('successSection').classList.add('hidden-field');
+            document.getElementById('previewSection').classList.add('hidden-field');
+            document.getElementById('formSection').classList.remove('hidden-field');
+            
+            /* 5. 手機螢幕平滑滾動置頂 */
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+         ">
+   返回填寫新申請 <br>
+   <span class="fw-normal small" style="font-size: 0.75rem;">Back to New Application</span>
  </button>
- </div> <!-- 【子畫面 C 結束】 -->
- </div> <!-- 【分頁面板一結束】 -->
 
  <!-- ================================================================== -->
  <!-- 【分頁面板二】：內部使用分頁面 (安全密碼保護隔離與閘口核對區) -->
