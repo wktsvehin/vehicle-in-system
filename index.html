@@ -305,7 +305,35 @@
  <!-- 【分頁面板二】：內部使用分頁面 (安全密碼保護隔離與閘口核對區) -->
  <!-- ================================================================== -->
  <div class="tab-pane fade" id="gate-panel" role="tabpanel">
- 
+   <!-- 🔑 內部驗證密碼鎖盒 (authBox) -->
+  <div id="authBox" class="card text-center p-4 my-4 mx-auto" style="max-width: 400px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
+    <div class="mb-3 fs-1">🔒</div>
+    <h5 class="fw-bold text-dark mb-1">內部人員驗證</h5>
+    <p class="text-muted small mb-4">此區域僅供閘口管理人員使用<br><span style="font-size: 0.75rem;">Internal Personnel Only</span></p>
+    
+    <!-- 狀態 A：初始藍色引導大按鈕 -->
+    <div id="startAuthBtnWrapper">
+      <button type="button" class="btn btn-primary btn-lg w-100 fw-bold py-3" style="border-radius: 12px; background: #2c7a7b; border: none;" onclick="showPasswordInputField()">
+        🔑 點擊輸入密碼登入
+      </button>
+    </div>
+    
+    <!-- 狀態 B：點擊後展開的密碼輸入格子 (預設隱藏) -->
+    <div id="passwordInputWrapper" class="hidden-field">
+      <div class="form-group mb-3">
+        <input type="password" id="internalPwd" class="form-control text-center" placeholder="請輸入安全密碼 Pwd" style="font-size: 1.1rem; letter-spacing: 2px; padding: 12px;">
+      </div>
+      <button type="button" class="btn btn-success w-100 fw-bold py-2 mb-2" style="border-radius: 10px;" onclick="verifyInternalPassword()">
+        確認驗證 Submit
+      </button>
+      
+      <!-- 錯誤訊息提示框 (預設隱藏) -->
+      <div id="authErrorMsg" class="alert alert-danger p-2 small mt-2 hidden-field" role="alert">
+        ❌ 密碼錯誤，請重新輸入！
+      </div>
+    </div>
+  </div>
+
  <!-- 🔑 2.5 內部驗證主卡片 (完美修復損壞編碼，徹底消除底部殘影) -->
 
    <!-- 【子畫面 B】：內部管理資訊展示區 (必須在密碼驗證成功後才解除鎖定秀出) -->
