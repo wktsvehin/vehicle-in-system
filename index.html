@@ -1,285 +1,328 @@
-<!DOCTYPE html> <!-- 宣告這是一份 HTML5 的標準網頁文件 -->
-<html lang="zh-HK"> <!-- 設定網頁預設語言為香港繁體中文 -->
-<head> <!-- 網頁標頭區，用來放置載入檔案、字型與樣式設定 -->
-    <meta charset="UTF-8"> <!-- 設定網頁編碼為 UTF-8，確保中文字絕對不會變亂碼 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 支援手機排版，網頁寬度自動對齊手機螢幕 -->
-    <title>西九龍廢物轉運站車輛登記系統 WKWTS Vehicle Registration System</title> <!-- 瀏覽器最上方顯示的網頁標題 -->
-    <!-- 引入正確的響應式 UI 樣式框架 Bootstrap CSS --> <!-- 載入微軟通常放行的官方網頁樣式套件，美化介面 -->
-    <link href="https://jsdelivr.net" rel="stylesheet"> 
-    <style> <!-- 網頁專屬設計樣式區 (CSS) -->
-        body { background-color: #eef2f5; padding: 30px 20px; font-family: 'Helvetica Neue', Arial, sans-serif; -webkit-user-select: none; user-select: none; } /* 背景灰藍色，四周留白，文字字型優化並防止複製 */
-        .logo-container { text-align: center; margin-bottom: 25px; padding: 10px; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); } /* 商標外框白色圓角帶微影子 */
-        .epd-logo { max-height: 75px; width: auto; object-fit: contain; } /* 設定環保署商標最高為 75 像素，防止變形 */
-        .card { border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.06); border: none; margin-bottom: 20px; background-color: #ffffff; padding: 25px; overflow: hidden; } /* 白色主卡片圓角、陰影與邊界限制 */
-        .nav-tabs { margin-bottom: 30px; border-bottom: 2px solid #e2e8f0; } /* 功能分頁標籤與下方的分隔線樣式 */
-        .nav-link { border: none !important; color: #718096; font-size: 1rem; padding: 14px; transition: all 0.3s ease; border-radius: 0 !important; } /* 未選中的分頁顏色與平滑切換特效 */
-        .nav-link.active { color: #2c7a7b !important; border-bottom: 3px solid #319795 !important; background: transparent !important; } /* 選中分頁切換為主題綠色與粗底線 */
-        .table-responsive { background-color: #fff; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 25px; overflow-x: auto !important; width: 100%; } /* 🛡️ 關鍵排版修復：強制將滾動條限制在白色卡片內部，不再超出外框 */
-        .table th, .table td { min-width: 90px; text-align: center; vertical-align: middle; white-space: nowrap; } /* 保持表格內文字置中與基本寬度，防止嚴重變形擠壓 */
-        .table th:nth-child(3), .table td:nth-child(3) { min-width: 140px; } /* 針對「公司名稱」欄位給予較寬的橫向空間 */
-        .table th:nth-child(2), .table td:nth-child(2) { min-width: 140px; } /* 針對「參考編號」欄位給予較寬的橫向空間 */
-        .hidden-field { display: none; } /* 用來在背後隱藏畫面的特殊樣式 */
-        .required-star { color: #e53e3e; margin-left: 3px; } /* 必填欄位紅色星號的顏色設定 */
-        .ref-box { background-color: #f0fff4; border: 2px dashed #38a169; padding: 25px; border-radius: 14px; margin-top: 20px; text-align: center; } /* 成功畫面參考編號的外框樣式 */
-        .preview-box { background-color: #f7fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px; margin-bottom: 20px; } /* 預覽畫面的精美包裝灰底外框 */
-        .preview-item { display: flex; border-bottom: 1px solid #edf2f7; padding: 12px 0; flex-wrap: wrap; } /* 預覽資料左右排列並帶灰色底線 */
-        .preview-item:last-child { border-bottom: none; } /* 預覽區最後一行取消灰色底線，維持美觀 */
-        .preview-label { width: 40%; font-weight: bold; color: #4a5568; min-width: 150px; } /* 預覽畫面左側欄位名稱的字體寬度與顏色 */
-        .preview-value { width: 60%; color: #2d3748; font-weight: 500; min-width: 150px; } /* 預覽畫面右側顯示數值的字體顏色 */
-        .plate-input { text-transform: uppercase; font-weight: bold; letter-spacing: 1px; font-size: 1.2rem; border-radius: 10px; } /* 前台輸入車牌時強制轉大寫、粗體與字距優化 */
-        .form-control, .form-select { border-radius: 10px; border: 1px solid #cbd5e0; padding: 10px 12px; } /* 輸入框與下拉選單的通用精美圓角 */
-        .form-control:focus, .form-select:focus { border-color: #4fd1c5; box-shadow: 0 0 0 3px rgba(79, 209, 197, 0.2); } /* 當鼠標點擊輸入框時跳出青綠色外發光特效 */
-        .btn-primary { background-color: #319795 !important; border-color: #319795 !important; border-radius: 25px; box-shadow: 0 4px 12px rgba(49, 151, 149, 0.3); transition: all 0.2s ease; } /* 前往預覽按鈕的主題綠色、圓角與微影子 */
-        .btn-primary:hover { background-color: #2c7a7b !important; border-color: #2c7a7b !important; transform: translateY(-1px); } /* 鼠標移到按鈕上時顏色變深並微幅往上飄，增加立體感 */
-        .btn-success { background-color: #38a169 !important; border-color: #38a169 !important; border-radius: 25px; box-shadow: 0 4px 12px rgba(56, 161, 105, 0.3); } /* 確認提交按鈕的草綠色、圓角與微影子 */
-        .btn-success:hover { background-color: #2f855a !important; border-color: #2f855a !important; } /* 鼠標移到提交按鈕上時顏色變深 */
-        .btn-secondary, .btn-outline-primary { border-radius: 25px; } /* 返回修改與返回新申請按鈕的圓角外觀 */
-        .biling-label { font-size: 0.95rem; display: block; color: #2d3748; } /* 前台填表區中文名稱的排版格式 */
-        .biling-sub { font-size: 0.8rem; color: #718096; font-weight: normal; display: block; } /* 前台填表區英文細字的排版格式 */
-        .internal-section-title { color: #2c7a7b; font-weight: bold; margin-top: 15px; margin-bottom: 15px; padding-left: 5px; border-left: 4px solid #319795; } /* 內部使用表格上方小標題的左側綠色粗線條 */
-    </style> <!-- 樣式區結束 -->
-</head> <!-- 網頁標頭區結束 -->
-<body> <!-- 網頁實體內容區開始 -->
+<!-- ======================================================================== -->
+<!-- 【MODULE 1 START】：外部套件與自訂樣式表 (CSS & External Libraries) -->
+<!-- ======================================================================== -->
+<!-- 1.1 設定網頁基本資訊與手機響應式排版支援 -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>西九龍廢物轉運站車輛登記系統 WKWTS Vehicle Registration System</title>
 
-<!-- ⚡ 頂層優先載入腳本：確保瀏覽器讀取到這行時，100% 成功注入選單選項，絕不再變空白 ⚡ --> <!-- 核心修復選單空白的指令區 -->
-<script>
-    function forceInitDropdowns() { // 宣告一個用來強制生成下拉選單內容的專屬功能 (函數)
-        const dateSelect = document.getElementById('visit_date'); // 抓取 HTML 中對訪日期的下拉方框
-        const hourSelect = document.getElementById('visitHour'); // 抓取 HTML 中對小時的下拉方框
-        const minSelect = document.getElementById('visitMin'); // 抓取 HTML 中對分鐘的下拉方框
-        
-        if (dateSelect && hourSelect && minSelect) { // 安全驗證：確定這三個格子都在畫面上，才開始執行
-            dateSelect.innerHTML = '<option value="" disabled selected>-- 請選擇日期 Select Date --</option>'; // 填入日期選單的預設空白提示字
-            hourSelect.innerHTML = '<option value="" disabled selected>時 Hour</option>'; // 填入小時選單的預設空白提示字
-            minSelect.innerHTML = '<option value="" disabled selected>分 Min</option>'; // 填入分鐘選單的預設空白提示字
-            
-            // 📅 1. 自動循環生成未來 7 天的日期選項
-            for (let i = 0; i < 7; i++) { // 讓電腦重複執行 7 次
-                const targetDate = new Date(); // 建立一個目前的日期時間物件
-                targetDate.setDate(targetDate.getDate() + i); // 每次依序加上 0 天、1 天、2 天... 直到 6 天後
-                const yyyy = targetDate.getFullYear(); // 取得西元年份 (例如 2026)
-                const mm = String(targetDate.getMonth() + 1).padStart(2, '0'); // 取得月份並補零成 2 位數 (例如 06)
-                const dd = String(targetDate.getDate()).padStart(2, '0'); // 取得日期並補零成 2 位數 (例如 10)
-                const formattedDate = yyyy + "-" + mm + "-" + dd; // 組裝成 YYYY-MM-DD 的標準日期格式
-                
-                const option = document.createElement('option'); // 在網頁背後建立一個新選項標籤
-                option.value = formattedDate; // 設定這個選項傳送給 Google 的實際數值
-                option.innerText = formattedDate; // 設定這個選項顯示在畫面上的中英字樣
-                dateSelect.appendChild(option); // 將這個做好的日期選項塞入下拉框內
-            }
-            // ⏰ 2. 自動循環生成 24 小時制 (00 到 23) 的小時數字選單
-            for (let h = 0; h < 24; h++) { // 讓電腦從 0 重複跑到 23
-                const hourStr = String(h).padStart(2, '0'); // 將數字自動補零成兩位數字串 (例如 00, 01, 02)
-                const option = document.createElement('option'); // 在背後建立一個新選項標籤
-                option.value = hourStr; // 設定這個小時選項的背後數值
-                option.innerText = hourStr; // 設定畫面顯示的小時數字
-                hourSelect.appendChild(option); // 將小時塞入小時下拉框內
-            }
-            // ⏱️ 3. 自動循環生成 60 分鐘 (00 到 59) 的分鐘數字選單
-            for (let m = 0; m < 60; m++) { // 讓電腦從 0 重複跑到 59
-                const minStr = String(m).padStart(2, '0'); // 將數字自動補零成兩位數字串 (例如 00, 05, 30)
-                const option = document.createElement('option'); // 在背後建立一個新選項標籤
-                option.value = minStr; // 設定這個分鐘選項的背後數值
-                option.innerText = minStr; // 設定畫面顯示的分鐘數字
-                minSelect.appendChild(option); // 將分鐘塞入分鐘下拉框內
-            }
-        }
-    }
-    document.addEventListener('DOMContentLoaded', forceInitDropdowns); // 當瀏覽器一載入完網頁骨架，不論網路快慢，立刻優先執行上面這個選項生成指令
-</script>
+<!-- 1.2 載入正確、完整的官方穩定版 Bootstrap CSS 樣式庫 (修復原本 404 報錯) -->
+<link href="https://jsdelivr.net" rel="stylesheet">
 
+<!-- 1.3 載入官方標準 jsPDF 核心套件 (負責在前端記憶體中建立虛擬 PDF 畫布) -->
+<script src="https://cloudflare.com"></script>
+
+<!-- 1.4 載入官方標準 autoTable 表格外掛 (負責在 PDF 內精確繪製對齊的格線數據表格) -->
+<script src="https://cloudflare.com"></script>
+
+<!-- 1.5 專案專屬自訂外觀設計樣式表 (CSS Style) -->
+<style>
+    /* 設定網頁背景為舒服的灰藍色，四周適度留白，並防止使用者在畫面上不小心複製選取文字 */
+    body { background-color: #eef2f5; padding: 30px 20px; font-family: 'Helvetica Neue', Arial, sans-serif; -webkit-user-select: none; user-select: none; }
+    /* 環保署商標外框：白色圓角卡片，帶微細黑影子 */
+    .logo-container { text-align: center; margin-bottom: 25px; padding: 10px; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+    /* 設定環保署商標最高為 75 像素，避免圖片拉伸變形 */
+    .epd-logo { max-height: 75px; width: auto; object-fit: contain; }
+    /* 白色主工作卡片：大圓角、深邃立體陰影，溢出隱藏限制 */
+    .card { border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.06); border: none; margin-bottom: 20px; background-color: #ffffff; padding: 25px; overflow: hidden; }
+    /* 功能分頁切換導覽列的底部粗分隔線樣式 */
+    .nav-tabs { margin-bottom: 30px; border-bottom: 2px solid #e2e8f0; }
+    /* 未選中的分頁標籤外觀與平滑顏色過渡動畫 */
+    .nav-link { border: none !important; color: #718096; font-size: 1rem; padding: 14px; transition: all 0.3s ease; border-radius: 0 !important; }
+    /* 當前被選中的分頁：自動換成主題青綠色與加粗底線 */
+    .nav-link.active { color: #2c7a7b !important; border-bottom: 3px solid #319795 !important; background: transparent !important; }
+    /* ⚡ 核心排版修復：強制將表格的橫向滾動條安全限制在卡片內部，絕不再超出白色外框 */
+    .table-responsive { background-color: #fff; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 25px; overflow-x: auto !important; width: 100%; }
+    /* 保持後台表格內文字水平垂直置中，且文字強制不換行以防止嚴重擠壓變形 */
+    .table th, .table td { min-width: 90px; text-align: center; vertical-align: middle; white-space: nowrap; }
+    /* 針對「公司名稱」與「參考編號」欄位給予較寬的 140px 橫向延伸空間 */
+    .table th:nth-child(2), .table td:nth-child(2), .table th:nth-child(3), .table td:nth-child(3) { min-width: 140px; }
+    /* 用來在背後隱藏指定畫面的控制樣式 */
+    .hidden-field { display: none !important; }
+    /* 必填欄位右側紅色 * 星號的顏色樣式 */
+    .required-star { color: #e53e3e; margin-left: 3px; }
+    /* 成功畫面中，包裹 12 碼純淨參考編號的外框樣式 */
+    .ref-box { background-color: #f0fff4; border: 2px dashed #38a169; padding: 25px; border-radius: 14px; margin-top: 20px; text-align: center; }
+    /* 預覽覆核畫面中，包裝資料的精美灰底外框 */
+    .preview-box { background-color: #f7fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px; margin-bottom: 20px; }
+    /* 預覽資料每行左右排列，並帶精緻的淺灰色分隔底線 */
+    .preview-item { display: flex; border-bottom: 1px solid #edf2f7; padding: 12px 0; flex-wrap: wrap; }
+    /* 預覽區最後一行取消灰色底線，維持整體美觀 */
+    .preview-item:last-child { border-bottom: none; }
+    /* 預覽畫面左側欄位抬頭（例如公司名稱）的粗體字與寬度設定 */
+    .preview-label { width: 40%; font-weight: bold; color: #4a5568; min-width: 150px; }
+    /* 預覽畫面右側欄位實際數值的字體顏色與粗細度 */
+    .preview-value { width: 60%; color: #2d3748; font-weight: 500; min-width: 150px; }
+    /* 前台輸入車牌時強制轉英文大寫、加粗、拉開字距與加大字體 */
+    .plate-input { text-transform: uppercase; font-weight: bold; letter-spacing: 1px; font-size: 1.2rem; border-radius: 10px; }
+    /* 表單普通輸入框與下拉選單的通用圓角 */
+    .form-control, .form-select { border-radius: 10px; border: 1px solid #cbd5e0; padding: 10px 12px; }
+    /* 當滑鼠點擊點選輸入框時，跳出青綠色高質感的「外發光」特效 */
+    .form-control:focus, .form-select:focus { border-color: #4fd1c5; box-shadow: 0 0 0 3px rgba(79, 209, 197, 0.2); }
+    /* 「前往預覽」按鈕的主題綠色、大圓角與按鈕微影子 */
+    .btn-primary { background-color: #319795 !important; border-color: #319795 !important; border-radius: 25px; box-shadow: 0 4px 12px rgba(49, 151, 149, 0.3); transition: all 0.2s ease; }
+    /* 鼠標移到按鈕上時顏色變深，並產生微微向上飄移的 3D 立體感點擊特效 */
+    .btn-primary:hover { background-color: #2c7a7b !important; border-color: #2c7a7b !important; transform: translateY(-1px); }
+    /* 「確認提交」按鈕的草綠色、大圓角與微影子樣式 */
+    .btn-success { background-color: #38a169 !important; border-color: #38a169 !important; border-radius: 25px; box-shadow: 0 4px 12px rgba(56, 161, 105, 0.3); }
+    /* 鼠標移到確認提交按鈕上時顏色加深 */
+    .btn-success:hover { background-color: #2f855a !important; border-color: #2f855a !important; }
+    /* 返回修改按鈕的圓角外觀 */
+    .btn-secondary, .btn-outline-primary { border-radius: 25px; }
+    /* 填表區主要中文標題的排版格式 */
+    .biling-label { font-size: 0.95rem; display: block; color: #2d3748; }
+    /* 填表區下方英文細字的排版格式 */
+    .biling-sub { font-size: 0.8rem; color: #718096; font-weight: normal; display: block; }
+    /* 後台管理頁面表格上方標題的左側綠色裝飾粗線條 */
+    .internal-section-title { color: #2c7a7b; font-weight: bold; margin-top: 15px; margin-bottom: 15px; padding-left: 5px; border-left: 4px solid #319795; }
+</style>
+<!-- ======================================================================== -->
+<!-- 【MODULE 1 END】 -->
+<!-- ======================================================================== -->
+<!-- ======================================================================== -->
+<!-- 【模組 2：段落一 (第 1 - 100 行)】網頁畫面佈局與使用者輸入表單               -->
+<!-- 插拔說明：此區塊為純 HTML 骨架，負責畫畫面左側/頂部大標題、功能標籤切換與填表格子 -->
+<!-- ======================================================================== -->
 <div class="container" style="max-width: 750px;"> <!-- 主網頁容器，限制最寬為 750 像素，維持舒適視覺 -->
-    <!-- 頂部政府 EPD Logo 區塊 --> <!-- 預留放置香港環保署標誌的區塊 -->
+
+    <!-- 2.1 頂部政府 EPD Logo 區塊 -->
     <div class="logo-container"> 
-        <img src="epd.png" alt="Environmental Protection Department" class="epd-logo" onerror="this.style.display='none';"> <!-- 讀取倉庫中的 epd.png，萬一沒放圖片，系統會自動隱藏，不會顯示醜醜的叉叉 -->
+        <img src="epd.png" alt="Environmental Protection Department" class="epd-logo" onerror="this.style.display='none';"> 
+        <!-- 備註：讀取您倉庫中的 epd.png，萬一沒放圖片，系統會自動隱藏，不會顯示醜醜的叉叉 -->
     </div>
-    <!-- 主頁面大主題標題 (綠色系調) --> <!-- 系統的中英文大標題 -->
-    <h3 class="text-center my-1 fw-bold" style="color: #2c7a7b;">西九龍廢物轉運站車輛登記</h3> <!-- 中文系統大標題 -->
-    <h6 class="text-center mb-4 text-secondary text-uppercase fw-normal" style="font-size: 0.85rem; letter-spacing: 0.5px;">West Kowloon Refuse Transfer Station Vehicle Registration</h6> <!-- 英文系統大標題 -->
-    
-    <!-- 功能分頁切換導覽 --> <!-- 外來人填表與內部人員查核的功能切換按鈕區 -->
-    <ul class="nav nav-tabs nav-justified" id="systemTab" role="tablist"> <!-- 使用網格平分寬度的標籤列 -->
-        <li class="nav-item"> <!-- 第一個分頁標籤：訪客登記 -->
-            <button class="nav-link active fw-bold" id="register-tab" data-bs-toggle="tab" data-bs-target="#register-panel" type="button" onclick="switchToVisitor()"> <!-- 點擊時呼叫 JavaScript 切換回填表畫面 -->
-                訪客登記<br><span class="small fw-normal text-lowercase" style="font-size: 0.75rem;">Visitor Registration</span> <!-- 按鈕中英雙語對照文字 -->
-            </button> <!-- 按鈕結束 -->
-        </li> <!-- 標籤結束 -->
-        <li class="nav-item"> <!-- 第二個分頁標籤：內部使用 -->
-            <button class="nav-link fw-bold" id="gate-tab" data-bs-toggle="tab" data-bs-target="#gate-panel" type="button" onclick="triggerInternalAuth()"> <!-- 點擊時立刻跳出密碼輸入框進行安全驗證 -->
-                內部使用<br><span class="small fw-normal text-lowercase" style="font-size: 0.75rem;">Internal Use</span> <!-- 按鈕中英雙語對照文字 -->
-            </button> <!-- 按鈕結束 -->
-        </li> <!-- 標籤結束 -->
-    </ul> <!-- 標籤列結束 -->
 
-    <div class="tab-content"> <!-- 所有分頁實體內容的總容器開始 -->
-        <!-- 1. 訪客登記及預覽介面 --> <!-- 訪客專用的第一分頁面板 -->
-        <div class="tab-pane fade show active" id="register-panel" role="tabpanel"> <!-- 預設為顯示並帶有漸入動畫 -->
-            
-            <!-- 畫面 A：填寫表格畫面 --> <!-- 使用者最先看到的填表卡片外框 -->
-            <div id="formSection" class="card"> <!-- 綁定 ID 供 JavaScript 控制顯示或隱藏 -->
-                <h4 class="card-title mb-3 fw-bold" style="color: #2d3748;">車輛入站申請 <span class="text-muted fw-normal" style="font-size: 1.05rem;">/ Vehicle Access Application</span></h4> <!-- 填表區小標題 -->
-                
-                <!-- 官方收集個人資料聲明 (已照要求修改為 Reminder) --> <!-- 溫馨提示警告框 -->
-                <div class="alert alert-info py-2 px-3 small fw-bold mb-3" role="alert" style="border-left: 5px solid #4fd1c5; background-color: #f7fafc; color: #2c7a7b;"> <!-- 藍綠色邊條的淡色提示框 -->
-                    ⚠️ <b>提醒事項 / Reminder：</b>所收集資料只用於檢查車輛進入本站之用，如資料不齊全或錯誤，或會影響車輛進入本站，敬請注意。<br> <!-- 中文聲明 -->
-                    <span class="fw-normal text-muted" style="font-size: 0.75rem;">The information collected is only used for checking vehicle entry. Incorrect or incomplete information may affect entry.</span> <!-- 英文聲明 -->
-                </div> <!-- 提示框結束 -->
+    <!-- 2.2 系統大主題標題 (中英文雙語對照) -->
+    <h3 class="text-center my-1 fw-bold" style="color: #2c7a7b;">西九龍廢物轉運站車輛登記</h3>
+    <h6 class="text-center mb-4 text-secondary text-uppercase fw-normal" style="font-size: 0.85rem; letter-spacing: 0.5px;">
+        West Kowloon Refuse Transfer Station Vehicle Registration
+    </h6>
+ 
+    <!-- 2.3 功能分頁切換導覽標籤 (Tabs) -->
+    <!-- 說明：提供外來訪客填表與內部人員查核的功能切換按鈕區 -->
+    <ul class="nav nav-tabs nav-justified" id="systemTab" role="tablist">
+        <li class="nav-item"> <!-- 分頁標籤一：訪客登記 -->
+            <button class="nav-link active fw-bold" id="register-tab" data-bs-toggle="tab" data-bs-target="#register-panel" type="button" onclick="switchToVisitor()">
+                訪客登記<br><span class="small fw-normal text-lowercase" style="font-size: 0.75rem;">Visitor Registration</span>
+            </button>
+        </li>
+        <li class="nav-item"> <!-- 分頁標籤二：內部使用 -->
+            <button class="nav-link fw-bold" id="gate-tab" data-bs-toggle="tab" data-bs-target="#gate-panel" type="button" onclick="triggerInternalAuth()">
+                內部使用<br><span class="small fw-normal text-lowercase" style="font-size: 0.75rem;">Internal Use</span>
+            </button>
+        </li>
+    </ul>
 
-                <!-- 預約截數規則說明框 -->
-                <div class="alert alert-warning py-2 small" role="alert" style="background-color: #fffaf0; border-color: #feebc8; color: #dd6b20;"> <!-- 橘黃色的截數提示框 -->
-                    💡 <b>預約截數提示 / Cut-off Time Note：</b><br> <!-- 標題 -->
-                    每天下午 3:00 截數。3:00 前申請最快可預約明日入站；3:00 後申請將於後日生效。<br> <!-- 中文規則 -->
-                    <span class="text-muted" style="font-size: 0.75rem;">Daily cut-off time is 3:00 PM. Applications before 3:00 PM take effect tomorrow at the earliest; after 3:00 PM take effect the day after tomorrow.</span> <!-- 英文規則 -->
-                </div> <!-- 提示框結束 -->
+    <!-- 2.4 所有分頁實體內容的總容器 -->
+    <div class="tab-content"> 
+        
+        <!-- ================================================================== -->
+        <!-- 【分頁面板一】：訪客登記介面（包含：填表、預覽、成功 三大子畫面）        -->
+        <!-- ================================================================== -->
+        <div class="tab-pane fade show active" id="register-panel" role="tabpanel">
+ 
+            <!-- 【子畫面 A】：訪客填寫表單畫面 (Form Section) -->
+            <div id="formSection" class="card">
+                <h4 class="card-title mb-3 fw-bold" style="color: #2d3748;">
+                    車輛入站申請 <span class="text-muted fw-normal" style="font-size: 1.05rem;">/ Vehicle Access Application</span>
+                </h4>
+ 
+                <!-- 溫馨提示警告框 (Reminder) -->
+                <div class="alert alert-info py-2 px-3 small fw-bold mb-3" role="alert" style="border-left: 5px solid #4fd1c5; background-color: #f7fafc; color: #2c7a7b;">
+                    ⚠️ <b>提醒事項 / Reminder：</b>所收集資料只用於檢查車輛進入本站之用，如資料不齊全或錯誤，或會影響車輛進入本站，敬請注意。<br>
+                    <span class="fw-normal text-muted" style="font-size: 0.75rem;">The information collected is only used for checking vehicle entry. Incorrect or incomplete information may affect entry.</span>
+                </div>
                 
+                <!-- 預約截止時間說明框 (Cut-off Time Note) -->
+                <div class="alert alert-warning py-2 small" role="alert" style="background-color: #fffaf0; border-color: #feebc8; color: #dd6b20;">
+                    💡 <b>預約截數提示 / Cut-off Time Note：</b><br>
+                    每天下午 3:00 截數。3:00 前申請最快可預約明日入站；3:00 後申請將於後日生效。<br>
+                    <span class="text-muted" style="font-size: 0.75rem;">Daily cut-off time is 3:00 PM. Applications before 3:00 PM take effect tomorrow at the earliest; after 3:00 PM take effect the day after tomorrow.</span>
+                </div>
+ 
                 <!-- 登記表單實體開始 -->
-                <form id="regForm" autocomplete="off" onsubmit="showPreviewScreen(event)"> <!-- 關閉瀏覽器自動記憶記憶，提交時阻擋網頁重整並觸發跳轉預覽功能 -->
-                    <div class="mb-3"> <!-- 表單群組：公司名稱 -->
-                        <label class="form-label fw-bold biling-label">公司名稱 <span class="biling-sub">Company Name</span><span class="required-star">*</span></label> <!-- 欄位標籤 -->
-                        <input type="text" id="company" class="form-control" placeholder="e.g. ABC Engineering Co." required> <!-- 文字輸入框，綁定 ID 且設定為必填 -->
-                    </div> <!-- 群組結束 -->
+                <!-- 說明：關閉瀏覽器自動記憶，提交時阻擋網頁重整並觸發跳轉預覽功能 -->
+                <form id="regForm" autocomplete="off" onsubmit="showPreviewScreen(event)">
                     
-                    <div class="mb-3"> <!-- 表單群組：車牌號碼 -->
-                        <label class="form-label fw-bold biling-label">車牌號碼 <span class="biling-sub">Vehicle Registration Mark</span><span class="required-star">*</span></label> <!-- 欄位標籤 -->
-                        <input type="text" id="vehicle_no" class="form-control form-control-lg plate-input" placeholder="e.g. AB1234" required> <!-- 大尺寸輸入框，綁定 ID 且強制英文大寫 -->
-                    </div> <!-- 群組結束 -->
-                    
-                    <div class="mb-3"> <!-- 表單群組：聯絡人 -->
-                        <label class="form-label fw-bold biling-label">聯絡人 <span class="biling-sub">Contact Person</span><span class="required-star">*</span></label> <!-- 欄位標籤 -->
-                        <input type="text" id="contact_person" class="form-control" placeholder="e.g. Chan Tai Man" required> <!-- 文字輸入框，綁定 ID 且設定為必填 -->
-                    </div> <!-- 群組結束 -->
-                    
-                    <div class="mb-3"> <!-- 表單群組：電話號碼 -->
-                        <label class="form-label fw-bold biling-label">電話號碼 (香港 8 位數字) <span class="biling-sub">Tel. No. (HK 8 digits)</span><span class="required-star">*</span></label> <!-- 欄位標籤 -->
-                        <!-- 限制只能輸入數字、最長 8 位，且透過正則表達式自動過濾非數字的字元 -->
+                    <!-- 輸入框：公司名稱 -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold biling-label">公司名稱 <span class="biling-sub">Company Name</span><span class="required-star">*</span></label>
+                        <input type="text" id="company" class="form-control" placeholder="e.g. ABC Engineering Co." required>
+                    </div>
+
+                    <!-- 輸入框：車牌號碼 (大尺寸輸入框，強制英文大寫、粗體與字距優化) -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold biling-label">車牌號碼 <span class="biling-sub">Vehicle Registration Mark</span><span class="required-star">*</span></label>
+                        <input type="text" id="vehicle_no" class="form-control form-control-lg plate-input" placeholder="e.g. AB1234" required>
+                    </div>
+
+                    <!-- 輸入框：聯絡人 -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold biling-label">聯絡人 <span class="biling-sub">Contact Person</span><span class="required-star">*</span></label>
+                        <input type="text" id="contact_person" class="form-control" placeholder="e.g. Chan Tai Man" required>
+                    </div>
+
+                    <!-- 輸入框：電話號碼 (限制只能輸入數字、最長 8 位，且自動過濾非數字字元) -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold biling-label">電話號碼 (香港 8 位數字) <span class="biling-sub">Tel. No. (HK 8 digits)</span><span class="required-star">*</span></label>
                         <input type="tel" id="tel_no" class="form-control" placeholder="e.g. 91234567" required pattern="\d{8}" maxlength="8" oninput="this.value=this.value.replace(/[^0-9]/g,'');"> 
-                    </div> <!-- 群組結束 -->
-                    
-                    <div class="mb-3"> <!-- 表單群組：進入目的 -->
-                        <label class="form-label fw-bold biling-label">進入目的 / 工作內容 <span class="biling-sub">Purpose of Entry / Work Content</span><span class="required-star">*</span></label> <!-- 欄位標籤 -->
-                        <input type="text" id="purpose" class="form-control" placeholder="e.g. Delivery / Maintenance" required> <!-- 文字輸入框，綁定 ID 且設定為必填 -->
-                    </div> <!-- 群組結束 -->
-                    <div class="mb-3"> <!-- 表單群組：車輛種類 -->
-                        <label class="form-label fw-bold biling-label">車輛種類 <span class="biling-sub">Vehicle Type</span><span class="required-star">*</span></label> <!-- 欄位標籤 -->
-                        <select id="vehicle_type" class="form-select" required> <!-- 車輛種類下拉選單，綁定 ID 且設定為必填 -->
-                            <option value="" disabled selected>-- 請選擇 Please Select --</option> <!-- 預設未選時的提示選項 -->
-                            <option value="私家車 Private Car">私家車 Private Car</option> <!-- 選項 1：私家車 -->
-                            <option value="輕型貨車 LGV">輕型貨車 LGV</option> <!-- 選項 2：輕型貨車 -->
-                            <option value="工程車 Construction Vehicle">工程車 Construction Vehicle</option> <!-- 選項 3：工程車 -->
-                            <option value="中型貨車 MGV">中型貨車 MGV</option> <!-- 選項 4：中型貨車 -->
-                            <option value="大型貨車 HGV">大型貨車 HGV</option> <!-- 選項 5：大型貨車 -->
-                            <option value="其他 Others">其他 Others</option> <!-- 選項 6：其他 -->
-                        </select> <!-- 下拉選單結束 -->
-                    </div> <!-- 群組結束 -->
+                    </div>
 
-                    <!-- 🔀 位置調整：依團隊要求，將預計到訪日期與時間的位置互相對調，日期現在放前面 -->
-                    <div class="mb-3"> <!-- 表單群組：預計到訪日期 -->
-                        <label class="form-label fw-bold biling-label">預計到訪日期 <span class="biling-sub">Expected Visit Date</span><span class="required-star">*</span></label> <!-- 欄位標籤 -->
-                        <select id="visit_date" class="form-select" required> <!-- 預計到訪日期下拉選單，綁定 ID -->
-                            <!-- 由最頂層的 JavaScript 強制初始化腳本動態生成未來 7 天日期選項，100% 成功不留白 -->
-                        </select> <!-- 下拉選單結束 -->
-                    </div> <!-- 群組結束 -->
+                    <!-- 輸入框：進入目的 / 工作內容 -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold biling-label">進入目的 / 工作內容 <span class="biling-sub">Purpose of Entry / Work Content</span><span class="required-star">*</span></label>
+                        <input type="text" id="purpose" class="form-control" placeholder="e.g. Delivery / Maintenance" required>
+                    </div>
+                    <!-- 下拉選單：車輛種類 -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold biling-label">車輛種類 <span class="biling-sub">Vehicle Type</span><span class="required-star">*</span></label>
+                        <select id="vehicle_type" class="form-select" required>
+                            <option value="" disabled selected>-- 請選擇 Please Select --</option>
+                            <option value="私家車 Private Car">私家車 Private Car</option>
+                            <option value="輕型貨車 LGV">輕型貨車 LGV</option>
+                            <option value="工程車 Construction Vehicle">工程車 Construction Vehicle</option>
+                            <option value="中型貨車 MGV">中型貨車 MGV</option>
+                            <option value="大型貨車 HGV">大型貨車 HGV</option>
+                            <option value="其他 Others">其他 Others</option>
+                        </select>
+                    </div>
 
-                    <div class="mb-3"> <!-- 表單群組：預計到訪時間 -->
-                        <label class="form-label fw-bold biling-label">預計到訪時間 <span class="biling-sub">Estimated Time of Arrival (24h)</span><span class="required-star">*</span></label> <!-- 欄位標籤 -->
-                        <div class="d-flex gap-2"> <!-- 使用彈性佈局將小時與分鐘選單並排 -->
-                            <select id="visitHour" class="form-select" required></select> <!-- 小時下拉選單（00-23），由頂層指令動態注入 -->
+                    <!-- 下拉選單：預計到訪日期 (💡 依團隊要求調換順序：日期在前) -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold biling-label">預計到訪日期 <span class="biling-sub">Expected Visit Date</span><span class="required-star">*</span></label>
+                        <select id="visit_date" class="form-select" required>
+                            <!-- 選項由【模組 3】的初始化腳本動態注入，避免變空白 -->
+                        </select>
+                    </div>
+
+                    <!-- 下拉選單：預計到訪時間 (💡 依團隊要求調換順序：時間在後，小時與分鐘並排) -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold biling-label">預計到訪時間 <span class="biling-sub">Estimated Time of Arrival (24h)</span><span class="required-star">*</span></label>
+                        <div class="d-flex gap-2"> 
+                            <select id="visitHour" class="form-select" required></select> <!-- 小時下拉選單 (00-23)，由模組 3 注入 -->
                             <span class="align-self-center fw-bold">:</span> <!-- 中間的冒號分隔符號，垂直置中 -->
-                            <select id="visitMin" class="form-select" required></select> <!-- 分鐘下拉選單（00-59），由頂層指令動態注入 -->
-                        </div> <!-- 並排佈局結束 -->
-                    </div> <!-- 群組結束 -->
+                            <select id="visitMin" class="form-select" required></select> <!-- 分鐘下拉選單 (00-59)，由模組 3 注入 -->
+                        </div>
+                    </div>
 
-                    <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold py-2 mt-3"> <!-- 表單提交按鈕，點擊後驗證必填欄位並觸發預覽 -->
-                        前往預覽申請頁面 <span class="fw-normal" style="font-size: 0.85rem;"><br>Proceed to Preview Application</span> <!-- 按鈕中英雙語對照文字 -->
-                    </button> <!-- 按鈕結束 -->
-                </form> <!-- 登記表單實體結束 -->
-            </div> <!-- 畫面 A 卡片結束 -->
+                    <!-- 前往預覽按鈕 -->
+                    <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold py-2 mt-3">
+                        前往預覽申請頁面 <span class="fw-normal" style="font-size: 0.85rem;"><br>Proceed to Preview Application</span>
+                    </button>
+                </form>
+            </div> <!-- 【子畫面 A 結束】 -->
 
-            <!-- 畫面 B：獨立申請預覽確認頁面 --> <!-- 訪客按提交後看到的覆核畫面，已完全移除 EPD Approval 欄位 -->
-            <div id="previewSection" class="card hidden-field"> <!-- 預設為隱藏，當填表無誤時才會被 JavaScript 解鎖秀出 -->
-                <h4 class="card-title mb-1 fw-bold text-dark">請核對您的申請資料</h4> <!-- 預覽區中文大標題 -->
-                <h6 class="text-secondary fw-normal mb-3" style="font-size: 0.9rem;">Please Verify Your Application Details</h6> <!-- 預覽區英文大標題 -->
-                <p class="text-muted small">請仔細核對以下資料是否正確，確認無誤後請點擊下方「確認提交」按鈕。<br><span style="font-size: 0.75rem;">Please check carefully. Click "Confirm & Submit" below if all information is correct.</span></p> <!-- 覆核提示說明 -->
-                
-                <div class="preview-box"> <!-- 預覽資料包裝方框開始 -->
-                    <div class="preview-item"><div class="preview-label">公司名稱<br><span class="small text-muted fw-normal">Company Name</span></div><div id="p-company" class="preview-value"></div></div> <!-- 顯示公司名稱的預覽列 -->
-                    <div class="preview-item"><div class="preview-label">車牌號碼<br><span class="small text-muted fw-normal">Vehicle No.</span></div><div id="p-vehicle_no" class="preview-value text-danger fs-5 fw-bold"></div></div> <!-- 顯示車牌號碼的預覽列（紅色粗體） -->
-                    <div class="preview-item"><div class="preview-label">聯絡人<br><span class="small text-muted fw-normal">Contact Person</span></div><div id="p-contact_person" class="preview-value"></div></div> <!-- 顯示聯絡人的預覽列 -->
-                    <div class="preview-item"><div class="preview-label">電話號碼<br><span class="small text-muted fw-normal">Tel. No.</span></div><div id="p-tel_no" class="preview-value"></div></div> <!-- 顯示電話號碼的預覽列 -->
-                    <div class="preview-item"><div class="preview-label">進入目的 / 工作內容<br><span class="small text-muted fw-normal">Purpose / Content</span></div><div id="p-purpose" class="preview-value"></div></div> <!-- 顯示進入目的的預覽列 -->
-                    <div class="preview-item"><div class="preview-label">車輛種類<br><span class="small text-muted fw-normal">Vehicle Type</span></div><div id="p-vehicle_type" class="preview-value text-primary"></div></div> <!-- 顯示車輛種類的預覽列 -->
-                    <div class="preview-item"><div class="preview-label">預計到訪日期<br><span class="small text-muted fw-normal">Visit Date</span></div><div id="p-visit_date" class="preview-value text-success fw-bold"></div></div> <!-- 🔀 預覽日期位置與時間互相對調，日期在前 -->
-                    <div class="preview-item"><div class="preview-label">預計到訪時間<br><span class="small text-muted fw-normal">ETA (24h)</span></div><div id="p-visitTime" class="preview-value text-primary"></div></div> <!-- 🔀 預覽時間位置與日期互相對調，時間在後 -->
-                </div> <!-- 預覽資料包裝方框結束 -->
+            <!-- 【子畫面 B】：獨立申請資料預覽確認頁面 (Preview Section) -->
+            <!-- 說明：預設為隱藏 (hidden-field)，當填表無誤按提交時才會解鎖秀出，已完全移除任何審批欄位 -->
+            <div id="previewSection" class="card hidden-field">
+                <h4 class="card-title mb-1 fw-bold text-dark">請核對您的申請資料</h4>
+                <h6 class="text-secondary fw-normal mb-3" style="font-size: 0.9rem;">Please Verify Your Application Details</h6>
+                <p class="text-muted small">請仔細核對以下資料是否正確，確認無誤後請點擊下方「確認提交」按鈕。<br><span style="font-size: 0.75rem;">Please check carefully. Click "Confirm & Submit" below if all information is correct.</span></p>
+ 
+                <!-- 預覽資料展示灰色方框 -->
+                <div class="preview-box">
+                    <div class="preview-item"><div class="preview-label">公司名稱<br><span class="small text-muted fw-normal">Company Name</span></div><div id="p-company" class="preview-value"></div></div>
+                    <div class="preview-item"><div class="preview-label">車牌號碼<br><span class="small text-muted fw-normal">Vehicle No.</span></div><div id="p-vehicle_no" class="preview-value text-danger fs-5 fw-bold"></div></div> <!-- 車牌用紅色粗體突顯 -->
+                    <div class="preview-item"><div class="preview-label">聯絡人<br><span class="small text-muted fw-normal">Contact Person</span></div><div id="p-contact_person" class="preview-value"></div></div>
+                    <div class="preview-item"><div class="preview-label">電話號碼<br><span class="small text-muted fw-normal">Tel. No.</span></div><div id="p-tel_no" class="preview-value"></div></div>
+                    <div class="preview-item"><div class="preview-label">進入目的 / 工作內容<br><span class="small text-muted fw-normal">Purpose / Content</span></div><div id="p-purpose" class="preview-value"></div></div>
+                    <div class="preview-item"><div class="preview-label">車輛種類<br><span class="small text-muted fw-normal">Vehicle Type</span></div><div id="p-vehicle_type" class="preview-value text-primary"></div></div>
+                    <div class="preview-item"><div class="preview-label">預計到訪日期<br><span class="small text-muted fw-normal">Visit Date</span></div><div id="p-visit_date" class="preview-value text-success fw-bold"></div></div> <!-- 日期在前 -->
+                    <div class="preview-item"><div class="preview-label">預計到訪時間<br><span class="small text-muted fw-normal">ETA (24h)</span></div><div id="p-visitTime" class="preview-value text-primary"></div></div> <!-- 時間在後 -->
+                </div>
 
-                <div class="d-flex gap-3"> <!-- 使用彈性排版讓兩個按鈕並排 -->
-                    <button type="button" class="btn btn-secondary btn-lg w-50 fw-bold py-2" onclick="hidePreviewScreen()">⬅️ 返回修改<br><span class="fw-normal small" style="font-size: 0.75rem;">Back to Edit</span></button> <!-- 返回修改按鈕，點擊後返回填表卡片 -->
-                    <button type="button" id="confirmSubmitBtn" class="btn btn-success btn-lg w-50 fw-bold py-2" onclick="finalSubmitData()">確認提交 ➡️<br><span class="fw-normal small" style="font-size: 0.75rem;">Confirm & Submit</span></button> <!-- 確認提交按鈕，點擊後生成序號並上傳 Google -->
-                </div> <!-- 按鈕排版結束 -->
-            </div> <!-- 畫面 B 預覽確認卡片結束 -->
+                <!-- 預覽頁面的兩個控制按鈕（並排） -->
+                <div class="d-flex gap-3">
+                    <button type="button" class="btn btn-secondary btn-lg w-50 fw-bold py-2" onclick="hidePreviewScreen()">
+                        ⬅️ 返回修改<br><span class="fw-normal small" style="font-size: 0.75rem;">Back to Edit</span>
+                    </button>
+                    <button type="button" id="confirmSubmitBtn" class="btn btn-success btn-lg w-50 fw-bold py-2" onclick="finalSubmitData()">
+                        確認提交 ➡️<br><span class="fw-normal small" style="font-size: 0.75rem;">Confirm & Submit</span>
+                    </button>
+                </div>
+            </div> <!-- 【子畫面 B 結束】 -->
 
-            <!-- 成功提交畫面 --> <!-- 當雲端連線成功後才會被解鎖秀出的最終畫面 -->
-            <div id="successSection" class="card hidden-field"> <!-- 預設為隱藏狀態 -->
+            <!-- 【子畫面 C】：成功提交通知畫面 (Success Section) -->
+            <!-- 說明：當資料發送給 Google Sheet 成功後才會被解鎖秀出的最終畫面 -->
+            <div id="successSection" class="card hidden-field">
                 <div class="ref-box"> <!-- 綠色虛線包裝的成功通知框 -->
-                    <h3 class="text-success fw-bold mb-1">🎉 登記申請已送出</h3> <!-- 中文成功標題 -->
-                    <h5 class="text-success fw-normal mb-3" style="font-size: 1.1rem;">Application Submitted Successfully</h5> <!-- 英文成功標題 -->
-                    <div class="p-3 my-3 bg-white rounded border"> <!-- 白色底深邊框的專屬序號展示盒 -->
-                        <span class="d-block fw-bold text-secondary text-uppercase" style="font-size: 0.8rem;">參考編號 / Reference No.</span> <!-- 序號抬頭 -->
-                        <h2 id="displayRefNo" class="text-primary fw-bold my-1">---</h2> <!-- 顯示由 JavaScript 自動計算出的 12 碼純淨遞增流水號（如 20260610-0001） -->
-                    </div> <!-- 展示盒結束 -->
-                    <p class="lead mb-2 fs-6 text-dark">請截圖或保存此畫面作為核對憑證。<br><span class="text-muted small" style="font-size: 0.8rem;">Please screenshot or save this screen as proof of verification.</span></p> <!-- 溫馨告知訪客儲存憑證 -->
-                </div> <!-- 成功通知框結束 -->
-                <!-- 🔄 完全修復：「返回填寫新申請」按鈕，點擊後會觸發 JavaScript 徹底重置表單並刷出全新日期選項 -->
-                <button type="button" class="btn btn-outline-primary btn-lg w-100 fw-bold py-2 mt-4" onclick="resetForm()">
-                    返回填寫新申請 <br><span class="fw-normal small" style="font-size: 0.75rem;">Back to New Application</span> <!-- 按鈕中英雙語對照文字 -->
-                </button> <!-- 按鈕結束 -->
-            </div> <!-- 成功提交面板結束 -->
-        </div> <!-- 第一分頁面板總容器結束 -->
-
-        <!-- 2. 內部使用分頁面 (安全密碼保護隔離區) --> <!-- 只有閘口工作人員與管理員可以登入的管理面板 -->
-        <div class="tab-pane fade" id="gate-panel" role="tabpanel"> <!-- 預設為隱藏狀態 -->
-            <!-- 畫面 A：密碼輸入框區塊 --> <!-- 當點擊功能標籤時，最先跳出的安全驗證卡片 -->
-            <div id="authBox" class="card p-5 text-center"> <!-- 綁定 ID，居中對齊 -->
-                <h4 class="fw-bold text-dark mb-2">安全驗證 / Security Verification</h4> <!-- 驗證區中文標題 -->
-                <p class="text-muted small mb-4">此頁面僅供內部工作人員存取，請輸入密碼。<br>Internal use only. Please enter password.</p> <!-- 驗證區中英說明 -->
-                <div class="d-flex justify-content-center mb-3"> <!-- 彈性排版讓輸入框水平居中 -->
-                    <!-- 密碼輸入框：強制文字居中、大字體、並限定最大寬度，維持專業感排版 -->
-                    <input type="password" id="internalPwd" class="form-control text-center fs-5" style="max-width: 260px;" placeholder="輸入密碼 Enter Password"> 
-                </div> <!-- 排版結束 -->
-                <div> <!-- 驗證確認按鈕 -->
-                    <button type="button" class="btn btn-primary fw-bold px-4 py-2" onclick="verifyInternalPassword()">驗證登入 Login</button> <!-- 點擊後觸發 JavaScript 核對是否為專屬公務密碼 -->
-                </div> <!-- 按鈕結束 -->
-                <!-- 密碼出錯時才會被解除隱藏的紅色警告字眼 -->
-                <div id="authErrorMsg" class="text-danger mt-3 fw-bold small hidden-field">⚠️ 密碼錯誤！ / Invalid password!</div> 
-            </div> <!-- 驗證卡片結束 -->
-
-            <!-- 畫面 B：內部資訊展示區塊 (當且僅當密碼驗證成功 `wkts001` 後才由 JavaScript 解除鎖定秀出) -->
-            <div id="internalContent" class="card hidden-field"> <!-- 預設完全隱藏，確保資料隱私安全 -->
-                <div class="d-flex justify-content-between align-items-center mb-3"> <!-- 頂部控制列：左右對齊、垂直置中 -->
-                    <div> <!-- 系統名稱資訊 -->
-                        <h4 class="fw-bold text-dark mb-0">閘口車輛登記核對系統</h4> <!-- 中文小抬頭 -->
-                        <span class="text-secondary small">Gate Vehicle Verification System</span> <!-- 英文小抬頭 -->
-                    </div> <!-- 資訊結束 -->
-                    <!-- 🖨️ PDF 報表下載按鈕：點擊後會自動向雲端抓取明天 (Today+1) 所有車輛數據，一鍵導出為完全對齊 EPD 紙本格式的日誌報表檔案 -->
-                    <button type="button" class="btn btn-success fw-bold px-3 py-2" onclick="exportTomorrowListToPDF()">
-                        🖨️ 導出明天車輛名單 (PDF) / Export Tomorrow Log
-                    </button> <!-- PDF 按鈕結束 -->
-                    <!-- 🔒 完全修復：「安全登出 Logout」按鈕，點擊後立刻清除登入狀態，將畫面重新徹底鎖定 -->
-                    <button type="button" class="btn btn-sm btn-outline-danger font-weight-bold" onclick="lockInternalPage()">安全登出 Logout</button> <!-- 登出按鈕結束 -->
-                </div> <!-- 控制列結束 -->
+                    <h3 class="text-success fw-bold mb-1">🎉 登記申請已送出</h3>
+                    <h5 class="text-success fw-normal mb-3" style="font-size: 1.1rem;">Application Submitted Successfully</h5>
+                    
+                    <!-- 白色底深邊框的專屬序號展示盒 -->
+                    <div class="p-3 my-3 bg-white rounded border">
+                        <span class="d-block fw-bold text-secondary text-uppercase" style="font-size: 0.8rem;">參考編號 / Reference No.</span>
+                        <!-- 由【模組 4】自動計算出的 12 碼純淨遞增流水號（如 20260611-0001）將填入此處 -->
+                        <h2 id="displayRefNo" class="text-primary fw-bold my-1">---</h2> 
+                    </div>
+                    <p class="lead mb-2 fs-6 text-dark">請截圖或保存此畫面作為核對憑證。<br><span class="text-muted small" style="font-size: 0.8rem;">Please screenshot or save this screen as proof of verification.</span></p>
+                </div>
                 
-                <div class="mb-4"> <!-- 閘口即時過濾搜尋欄 -->
-                    <!-- 當工作人員在輸入框內打字時，會自動即時、同步篩選下方「處理中」與「已確認」兩個表格內的符合車牌 -->
+                <!-- 返回填寫新申請按鈕 (點擊後徹底重置表單並重新整理下拉選單) -->
+                <button type="button" class="btn btn-outline-primary btn-lg w-100 fw-bold py-2 mt-4" onclick="resetForm()">
+                    返回填寫新申請 <br><span class="fw-normal small" style="font-size: 0.75rem;">Back to New Application</span>
+                </button>
+            </div> <!-- 【子畫面 C 結束】 -->
+
+        </div> <!-- 【分頁面板一結束】 -->
+
+
+        <!-- ================================================================== -->
+        <!-- 【分頁面板二】：內部使用分頁面 (安全密碼保護隔離與閘口核對區)            -->
+        <!-- ================================================================== -->
+        <div class="tab-pane fade" id="gate-panel" role="tabpanel">
+            
+            <!-- 【子畫面 A】：內部管理員安全密碼輸入框區塊 -->
+            <div id="authBox" class="card p-5 text-center">
+                <h4 class="fw-bold text-dark mb-2">安全驗證 / Security Verification</h4>
+                <p class="text-muted small mb-4">此頁面僅供內部工作人員存取，請輸入密碼。<br>Internal use only. Please enter password.</p>
+                
+                <div class="d-flex justify-content-center mb-3">
+                    <!-- 密碼輸入框：強制文字居中、大字體，限定寬度 -->
+                    <input type="password" id="internalPwd" class="form-control text-center fs-5" style="max-width: 260px;" placeholder="輸入密碼 Enter Password"> 
+                </div>
+                
+                <div>
+                    <button type="button" class="btn btn-primary fw-bold px-4 py-2" onclick="verifyInternalPassword()">驗證登入 Login</button>
+                </div>
+                
+                <!-- 紅色密碼出錯警告（預設隱藏） -->
+                <div id="authErrorMsg" class="text-danger mt-3 fw-bold small hidden-field">⚠️ 密碼錯誤！ / Invalid password!</div> 
+            </div> <!-- 【子畫面 A 結束】 -->
+
+            <!-- 【子畫面 B】：內部管理資訊展示區 (必須在密碼驗證成功後才解除鎖定秀出) -->
+            <div id="internalContent" class="card hidden-field">
+                
+                <!-- 頂部控制列：左右對齊、垂直置中 -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h4 class="fw-bold text-dark mb-0">閘口車輛登記核對系統</h4>
+                        <span class="text-secondary small">Gate Vehicle Verification System</span>
+                    </div>
+                    
+                    <!-- 按鈕：導出 PDF 與 安全登出 -->
+                    <div class="d-flex gap-2">
+                        <!-- 💡 點擊後將調用【模組 5】的 PDF 報表引擎，導出明天 (Today+1) 完全對齊 EPD 紙本格式的日誌 -->
+                        <button type="button" class="btn btn-success fw-bold px-3 py-2" onclick="exportTomorrowListToPDF()">
+                            📝 導出明天車輛名單 (PDF) / Export Tomorrow Log
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-danger font-weight-bold" onclick="lockInternalPage()">
+                            安全登出 Logout
+                        </button>
+                    </div>
+                </div>
+ 
+                <!-- 閘口即時搜尋過濾欄 (當輸入車牌時，自動同步過濾下方表格內容) -->
+                <div class="mb-4">
                     <input type="text" id="searchPlate" class="form-control form-control-lg plate-input" placeholder="搜尋車牌 Search Plate No. (e.g. AB1234)" oninput="filterGateTables()"> 
-                </div> <!-- 搜尋欄結束 -->
+                </div>
 
-                <!-- 表格 A：第一數據名單 —— 申請處理中 (Application Under Progress) -->
-                <h5 class="internal-section-title">⏳ 申請處理中 / Application Under Progress</h5> <!-- 左側帶綠色邊條的表格大標題 -->
-                <!-- 🛡️ 核心排版修復：table-responsive 容器會把多欄位引起的橫向溢出，安全鎖定在白色卡片內部，產生橫向滾動條 -->
+                <!-- 表格 A：數據名單一 ── 申請處理中 (Application Under Progress) -->
+                <h5 class="internal-section-title">⏳ 申請處理中 / Application Under Progress</h5>
+                <!-- 💡 關鍵排版修復：table-responsive 容器會把多欄位引起的橫向溢出安全鎖定在白色卡片內部，產生橫向滾動條 -->
                 <div class="table-responsive"> 
-                    <table class="table table-striped table-hover align-middle mb-0" style="min-width: 950px;"> <!-- 設定表格基本總寬度，確保所有欄位文字不會被擠壓變形 -->
-                        <thead class="table-warning" style="font-size: 0.85rem; background-color: #d69e2e; color: white;"> <!-- 黃色標頭、小字體、白字 -->
-                            <tr> <!-- 表格第一行：標頭定義（中英文雙語垂直對齊排列） -->
+                    <table class="table table-striped table-hover align-middle mb-0" style="min-width: 950px;"> <!-- 固定最少寬度防止擠壓變形 -->
+                        <thead class="table-warning" style="font-size: 0.85rem; background-color: #d69e2e; color: white;">
+                            <tr>
                                 <th>項目<br>Item</th>
                                 <th>參考編號<br>Ref No.</th>
                                 <th>公司名稱<br>Company</th>
@@ -290,167 +333,217 @@
                                 <th>離開時間<br>Time Out</th>
                                 <th>進入目的<br>Purpose</th>
                                 <th>車輛種類<br>Vehicle Type</th>
-                            </tr> <!-- 行結束 -->
-                        </thead> <!-- 標頭結束 -->
-                        <tbody id="todayTableBody" style="font-size: 0.9rem;"> <!-- 綁定 ID，供 JavaScript 自動過濾狀態為 "in_progress" 的雲端資料並動態塞入 -->
-                            <!-- 由 JavaScript 雲端動態同步載入 -->
-                        </tbody> <!-- 表格主體結束 -->
-                    </table> <!-- 實體表格結束 -->
-                </div> <!-- 滾動容器結束 -->
+                            </tr>
+                        </thead>
+                        <!-- 💡 數據注入點：由模組 5 的 JavaScript 自動向雲端抓取篩選狀態為 "in_progress" 的資料放入此處 -->
+                        <tbody id="todayTableBody" style="font-size: 0.9rem;"></tbody> 
+                    </table>
+                </div>
+                <!-- 表格 B：數據名單二 ── 已確認名單 (Confirmed List) -->
+                <h5 class="internal-section-title">✅ 已確認名單 / Confirmed List</h5>
+                <div class="table-responsive"> 
+                    <table class="table table-striped table-hover align-middle mb-0" style="min-width: 950px;">
+                        <thead class="table-success" style="font-size: 0.85rem; background-color: #2f855a; color: white;">
+                            <tr>
+                                <th>項目<br>Item</th>
+                                <th>參考編號<br>Ref No.</th>
+                                <th>公司名稱<br>Company</th>
+                                <th>車牌號碼<br>Vehicle No.</th>
+                                <th>聯絡人<br>Contact</th>
+                                <th>電話號碼<br>Tel No.</th>
+                                <th>進入時間<br>Time In</th>
+                                <th>離開時間<br>Time Out</th>
+                                <th>進入目的<br>Purpose</th>
+                                <th>車輛種類<br>Vehicle Type</th>
+                            </tr>
+                        </thead>
+                        <!-- 💡 數據注入點：由模組 5 的 JavaScript 自動向雲端抓取篩選已被管理員審批確認的資料放入此處 -->
+                        <tbody id="tomorrowTableBody" style="font-size: 0.9rem;"></tbody> 
+                    </table>
+                </div>
 
-                <!-- 表格 B：第二數據名單 —— 已確認名單 (Confirmed List) -->
-                <h5 class="internal-section-title">✅ 已確認名單 / Confirmed List</h5> <!-- 左側帶綠色邊條的表格大標題 -->
-                <div class="table-responsive"> <!-- 橫向滾動容器 -->
-                    <table class="table table-striped table-hover align-middle mb-0" style="min-width: 950px;"> <!-- 設定表格基本總寬度 -->
-                        <thead class="table-success" style="font-size: 0.85rem; background-color: #2f855a; color: white;"> <!-- 主題綠色標頭、小字體、白字 -->
-                            <tr> <!-- 表格第一行：標頭定義（中英文雙語垂直對齊排列） -->
-                                <th>項目<br>Item</th>
-                                <th>參考編號<br>Ref No.</th>
-                                <th>公司名稱<br>Company</th>
-                                <th>車牌號碼<br>Vehicle No.</th>
-                                <th>聯絡人<br>Contact</th>
-                                <th>電話號碼<br>Tel No.</th>
-                                <th>進入時間<br>Time In</th>
-                                <th>離開時間<br>Time Out</th>
-                                <th>進入目的<br>Purpose</th>
-                                <th>車輛種類<br>Vehicle Type</th>
-                            </tr> <!-- 行結束 -->
-                        </thead> <!-- 標頭結束 -->
-                        <tbody id="tomorrowTableBody" style="font-size: 0.9rem;"> <!-- 綁定 ID，供 JavaScript 自動過濾狀態非 "in_progress" 的雲端資料並動態塞入 -->
-                            <!-- 由 JavaScript 雲端動態同步載入 -->
-                        </tbody> <!-- 表格主體結束 -->
-                    </table> <!-- 實體表格結束 -->
-                </div> <!-- 滾動容器結束 -->
-            </div> <!-- 畫面 B 管理資料展示區結束 -->
-        </div> <!-- 第二分頁面板總容器結束 -->
+            </div> <!-- 【子畫面 B 結束】 -->
+
+        </div> <!-- 【分頁面板二結束】 -->
+
     </div> <!-- 所有分頁內容總容器結束 -->
 </div> <!-- 主網頁容器結束 -->
-
-<!-- 引入支援 PDF 列印與自動畫表格的專業開源套件 (微軟通常放行之官方穩定網路網址) -->
-<script src="https://cloudflare.com"></script> <!-- 載入核心 PDF 畫布渲染套件 -->
-<script src="https://cloudflare.com"></script> <!-- 載入自動在 PDF 內排版實體表格的專用外掛 -->
-
-<!-- 網頁核心運作邏輯區開始 (JavaScript) -->
+<!-- ======================================================================== -->
+<!-- 【模組 2 結束】：網頁畫面佈局與使用者輸入表單 (HTML Web UI & Form Area)    -->
+<!-- ======================================================================== -->
+<!-- ======================================================================== -->
+<!-- 【模組 3 開始】：日期與時間下拉選單自動生成邏輯 (Dropdown Initialization)   -->
+<!-- 插拔說明：此區塊為純 JavaScript 邏輯，負責處理下午 3 點截數並動態填滿下拉選單。  -->
+<!-- ======================================================================== -->
 <script>
-    // ☁️ 雲端通訊核心：Google 試算表 Web App URL 通道連結 (已完全更新至最新的 11 個欄位同步讀寫機制)
-    const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbz6L1lO15lIwMUcKT6Veg6RoTndla90i0pKLVTzE4qGmvHl2pZULMYhmdhnqJt-aVE9/exec"; // ⚠️ 請確保這串長網址與你在 Google Apps Script 部署時得到的完全一致，不可多空格
+    // 当网页骨架完全載入完畢後，自動優先執行初始化選單指令
+    document.addEventListener("DOMContentLoaded", function() {
+        initDateDropdown();   // 執行：動態日期計算
+        initTimeDropdowns();  // 執行：動態時間（時、分）數字填入
+    });
 
-    // 🔒 內部人員專用安全登入與分頁狀態切換邏輯
-    let isInternalAuthenticated = false; // 建立一個記憶體變數，用來記錄工作人員目前是否已經通過密碼驗證，預設為未通過（false）
+    /**
+     * 3.1 【核心日期計算】：根據下午 3:00 截止時間自動計算可選日期
+     * 規則：3:00 PM 前申請最快可選明日，3:00 PM 後最快只能選後天。
+     */
+    function initDateDropdown() {
+        const dateSelect = document.getElementById("visit_date"); // 抓取模組 2 中的日期下拉選單
+        if (!dateSelect) return; // 安全驗證：若畫面上找不到這個下拉方塊則停止執行，防止報錯
 
-    // 點擊「內部使用」分頁標籤時自動觸發的防護機制
-    function triggerInternalAuth() {
-        const gateTab = document.getElementById('gate-tab'); // 抓取 HTML 中的內部使用分頁按鈕物件
-        if (gateTab) { // 安全判斷：確定網頁上有這個分頁按鈕
-            const tabTrigger = new bootstrap.Tab(gateTab); // 初始化 Bootstrap 的分頁控制驅動器
-            tabTrigger.show(); // 驅動網頁分頁切換的動畫，將視覺焦點切換到內部使用面板
-        }
+        // 先行重置清空選單內容，並補上預設提示字，防止重複生成
+        dateSelect.innerHTML = '<option value="" disabled selected>-- 請選擇日期 Select Date --</option>';
+
+        const now = new Date();             // 獲取目前設備的系統時間
+        const currentHour = now.getHours(); // 獲取目前的小時數字 (0 - 23)
         
-        // 🔒 核心隱私安全判定
-        if (!isInternalAuthenticated) { // 如果工作人員目前「尚未驗證」密碼
-            document.getElementById('authBox').classList.remove('hidden-field'); // 解除隱藏，將密碼輸入框框秀在畫面上
-            document.getElementById('internalContent').classList.add('hidden-field'); // 加上隱藏，強制將內部的車牌敏感名單藏起來
-            document.getElementById('internalPwd').value = ''; // 將密碼輸入框內的殘留文字完全清空
-            document.getElementById('authErrorMsg').classList.add('hidden-field'); // 加上隱藏，把上一次的「密碼錯誤」紅色提示藏起來
-        } else { // 如果工作人員之前「已經驗證成功」了
-            document.getElementById('authBox').classList.add('hidden-field'); // 加上隱藏，把密碼輸入框藏起來，不需要重複輸入
-            document.getElementById('internalContent').classList.remove('hidden-field'); // 解除隱藏，直接大方秀出後台的車牌核對名單
-            loadInternalDataLists(); // 立刻啟動後台 fetch 函數，去 Google 雲端抓取最新的車牌數據名單
+        // 💡 核心判定：如果目前時間已經大於等於 15 點 (即下午 3:00 截數時間)
+        // startOffset = 2 代表最快只能約「後天」；若沒超過 15 點，則 startOffset = 1 代表最快可以預約「明天」
+        let startOffset = (currentHour >= 15) ? 2 : 1; 
+
+        // 跑一個循環迴圈，自動依序往後推算並生成連續 7 天的日期選項
+        for (let i = 0; i < 7; i++) {
+            const targetDate = new Date();
+            targetDate.setDate(now.getDate() + startOffset + i); // 基於今天的日期往後加算天數
+
+            const yyyy = targetDate.getFullYear(); // 取得西元年份 (例如 2026)
+            const mm = String(targetDate.getMonth() + 1).padStart(2, '0'); // 月份不夠兩位數自動在前面補 0 (例如 06)
+            const dd = String(targetDate.getDate()).padStart(2, '0');      // 日期不夠兩位數自動在前面補 0 (例如 11)
+            const dateString = yyyy + "-" + mm + "-" + dd; // 組裝成 YYYY-MM-DD 的標準日期格式字串
+
+            // 在網頁記憶體中建立一個 HTML 的 <option> 標籤
+            const option = document.createElement("option");
+            option.value = dateString;       // 設定傳送給 Google 資料庫的實際變數值
+            option.textContent = dateString; // 設定秀在畫面上給訪客看的中英文字樣
+            
+            dateSelect.appendChild(option);  // 將做好的選項整齊地塞入日期的下拉選單中
         }
     }
 
-    // 當工作人員在輸入框打完密碼並點擊「驗證登入」時執行的功能
-    function verifyInternalPassword() {
-        const inputPwd = document.getElementById('internalPwd').value; // 抓取工作人員此時在畫面上手打輸入的密碼文字
-        const correctPwd = "wkts001"; // 🔒 照團隊要求修改：設定唯一的內部公務系統管理與 PDF 導出驗證密碼
-        
-        if (inputPwd === correctPwd) { // 電腦核對：如果手打輸入的密碼與正確密碼完全相符
-            isInternalAuthenticated = true; // 將驗證狀態切換為已通過（true），讓系統記住登入狀態
-            document.getElementById('authBox').classList.add('hidden-field'); // 加上隱藏，把密碼輸入框框收起來
-            document.getElementById('internalContent').classList.remove('hidden-field'); // 解除隱藏，立刻解鎖秀出後台車牌名單
-            loadInternalDataLists(); // 呼叫雲端通訊函數，秒速抓取最新的處理中與已確認數據
-        } else { // 如果手打輸入的密碼不對
-            document.getElementById('authErrorMsg').classList.remove('hidden-field'); // 解除隱藏，在畫面彈出紅色的「⚠️ 密碼錯誤！」警告字眼
+    /**
+     * 3.2 【時間段生成】：自動循環生成 24 小時制 (00 到 23 小時) 與 (00 到 59 分鐘) 的下拉數字選單
+     */
+    function initTimeDropdowns() {
+        const hourSelect = document.getElementById("visitHour"); // 抓取模組 2 中的小時下拉選單
+        const minSelect = document.getElementById("visitMin");   // 抓取模組 2 中的分鐘下拉選單
+        if (!hourSelect || !minSelect) return; // 安全驗證：若欄位不存在則跳出
+
+        // 先行重置清空選單內容，並補上預設提示字，確保介面整潔
+        hourSelect.innerHTML = '<option value="" disabled selected>時 Hour</option>';
+        minSelect.innerHTML = '<option value="" disabled selected>分 Min</option>';
+
+        // ⏰ A. 自動生成 24 小時數字 (從 00 到 23)
+        for (let h = 0; h < 24; h++) {
+            const hourStr = String(h).padStart(2, '0'); // 將數字自動補零成兩位數字串 (例如 00, 01, 09, 14)
+            
+            const option = document.createElement("option");
+            option.value = hourStr;       // 傳送給後台的數值
+            option.textContent = hourStr; // 畫面顯示的文字
+            
+            hourSelect.appendChild(option); // 塞入小時下拉方塊中
+        }
+
+        // ⏱️ B. 自動生成 60 分鐘數字 (從 00 到 59)
+        for (let m = 0; m < 60; m++) {
+            const minStr = String(m).padStart(2, '0'); // 將數字自動補零成兩位數字串 (例如 00, 05, 30, 45)
+            
+            const option = document.createElement("option");
+            option.value = minStr;       // 傳送給後台的數值
+            option.textContent = minStr; // 畫面顯示的文字
+            
+            minSelect.appendChild(option); // 塞入分鐘下拉方塊中
         }
     }
+</script>
+<!-- ======================================================================== -->
+<!-- 【模組 3 結束】：日期與時間下拉選單自動生成邏輯 (Dropdown Initialization)   -->
+<!-- ======================================================================== -->
+<!-- ======================================================================== -->
+<!-- 【模組 4 開始】：表單提交與傳輸至 Google 表單 (Form Submit & Google Integration) -->
+<!-- 插拔說明：此區塊為純 JavaScript 邏輯，負責計算流水號、封裝資料並發送至雲端。   -->
+<!-- ======================================================================== -->
+<script>
+    /**
+     * 4.1 雲端通訊核心設定
+     * ⚠️ 備註：此處已精確補上您原本對應 Google Apps Script 部署的 11 欄位同步讀寫長網址
+     */
+    const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbz6L1lO15lIwMUcKT6Veg6RoTndla90i0pKLVTzE4qGmvHl2pZULMYhmdhnqJt-aVE9/exec";
 
-    // 🔒 完全修復：「安全登出 Logout」按鈕重置鎖定功能
-    function lockInternalPage() {
-        isInternalAuthenticated = false; // 將驗證狀態強制改回未通過（false），清除登入記憶
-        document.getElementById('internalPwd').value = ''; // 清空密碼框內的所有字元
-        triggerInternalAuth(); // 重新呼叫驗證防護機制，立刻把畫面切回鎖定狀態的密碼框，徹底保護隱私
+    // 監聽並綁定模組 2 中訪客登記表單的提交事件
+    const vehicleForm = document.getElementById("regForm");
+    if (vehicleForm) {
+        vehicleForm.addEventListener("submit", function(event) {
+            event.preventDefault(); // 強制阻擋表單的預設重整行為，防止辛辛苦苦打好的資料在畫面上不見
+            showPreviewScreen(event); // 呼叫 4.2：執行預覽畫面跳轉與資料帶入
+        });
     }
 
-    // 當內部工作人員點擊左邊「訪客登記」分頁按鈕時執行的切換功能
-    function switchToVisitor() {
-        const regTab = document.getElementById('register-tab'); // 抓取 HTML 中的訪客登記分頁按鈕物件
-        if (regTab) { // 安全判斷：確定網頁上有這個分頁按鈕
-            const tabTrigger = new bootstrap.Tab(regTab); // 初始化 Bootstrap 分頁驅動器
-            tabTrigger.show(); // 驅動動畫，將網頁畫面流暢地切換回填寫表單的卡片介面
-        }
-    }
-
-    // 顯示預覽確認畫面 (完全修復 450 欄位不對齊导致的按鈕卡死無法跳轉問題)
+    /**
+     * 4.2 【畫面切換 A ➡️ B】：將輸入框文字提取、組合時間並帶入預覽確認區
+     */
     function showPreviewScreen(event) {
-        event.preventDefault(); // 強制阻擋網頁表單的預設重整行為，防止辛辛苦苦打好的資料在畫面上不見
-        
         try { // 啟動防當機安全追蹤機制，避免程式碼出錯時網頁毫無反應
+            
             // 1. 精準抓取前台填表區各個輸入框的文字內容，並帶入預覽確認區對應的 HTML 標籤內
-            document.getElementById('p-company').innerText = document.getElementById('company').value; // 公司名稱帶入預覽
+            document.getElementById('p-company').innerText = document.getElementById('company').value;
             document.getElementById('p-vehicle_no').innerText = document.getElementById('vehicle_no').value.toUpperCase(); // 車牌號碼強制轉成大寫英文後帶入預覽
-            document.getElementById('p-contact_person').innerText = document.getElementById('contact_person').value; // 聯絡人姓名帶入預覽
-            document.getElementById('p-tel_no').innerText = document.getElementById('tel_no').value; // 電話號碼帶入預覽
-            document.getElementById('p-purpose').innerText = document.getElementById('purpose').value; // 進入目的工作內容帶入預覽
-            document.getElementById('p-vehicle_type').innerText = document.getElementById('vehicle_type').value; // 車輛種類帶入預覽
+            document.getElementById('p-contact_person').innerText = document.getElementById('contact_person').value;
+            document.getElementById('p-tel_no').innerText = document.getElementById('tel_no').value;
+            document.getElementById('p-purpose').innerText = document.getElementById('purpose').value;
+            document.getElementById('p-vehicle_type').innerText = document.getElementById('vehicle_type').value;
             
             // 2. 抓取重新排列、位於表單最下方的「預計到訪日期」與「24小時制時間」下拉選單中所點選的數值
-            const selectedDate = document.getElementById('visit_date').value; // 取得選單中的日期 (e.g. 2026-06-11)
-            const selectedHour = document.getElementById('visitHour').value; // 取得選單中的小時數字 (e.g. 14)
-            const selectedMin = document.getElementById('visitMin').value; // 取得選單中的分鐘數字 (e.g. 30)
+            const selectedDate = document.getElementById('visit_date').value;
+            const selectedHour = document.getElementById('visitHour').value;
+            const selectedMin = document.getElementById('visitMin').value;
             
-            // 3. 安全過濾：組合出 24 小時制的預覽字樣 (例如 14:30)
-            const displayTime = (selectedHour && selectedMin) ? (selectedHour + ":" + selectedMin) : "00:00"; // 如果工作人員有選時間就組裝起來，沒選就給預設值
+            // 3. 安全過濾：組合出 24 小時制的預覽時間字樣 (例如 14:30)
+            const displayTime = (selectedHour && selectedMin) ? (selectedHour + ":" + selectedMin) : "00:00";
             
             // 4. 將日期與時間帶入預覽面板對應的標籤格子中
-            document.getElementById('p-visit_date').innerText = selectedDate || "未選擇 / Not Selected"; // 🔀 日期在前：顯示到訪日期
-            document.getElementById('p-visitTime').innerText = displayTime; // 🔀 時間在後：顯示 24h 格式時間
+            document.getElementById('p-visit_date').innerText = selectedDate || "未選擇 / Not Selected"; // 💡 日期在前
+            document.getElementById('p-visitTime').innerText = displayTime; // 💡 時間在後
             
-            // 5. 順利執行網頁分頁跳轉：完全移除畫面上原有的 epd approval:_______ 元素
-            document.getElementById('formSection').classList.add('hidden-field'); // 將原本的填表卡片藏起來
+            // 5. 順利執行網頁分頁跳轉：完全移除畫面上原有的 epd approval 元素
+            document.getElementById('formSection').classList.add('hidden-field');      // 將原本的填表卡片藏起來
             document.getElementById('previewSection').classList.remove('hidden-field'); // 解除隱藏，讓覆核預覽卡片立刻出現在畫面上
             
-            // 6. 視窗自動平滑滑動
-            window.scrollTo({ top: 0, behavior: 'smooth' }); // 將網頁視窗自動捲動到最頂端，方便使用者一行行仔細檢查
+            // 6. 視窗自動平滑滑動，方便使用者一行行仔細檢查
+            window.scrollTo({ top: 0, behavior: 'smooth' });
             
-        } catch (error) { // 萬一上面的代碼有任何一行執行失敗（例如 HTML 裡少打某個 ID 標籤）
-            console.error("預覽畫面跳轉發生阻礙，請確認 HTML 中的 ID 是否完全對齊：", error); // 在開發者主控台 Console 印出具體的錯誤報告
-            alert("預覽確認畫面載入失敗，請確保所有必填選單（包括時間、日期、車輛種類）皆已完整選擇。"); // 在螢幕上跳出警告通知
-        } // 防當機機制結束
-    } // 跳轉預覽函數結束
-    // 隱藏預覽畫面，返回原表單修改資料
+        } catch (error) {
+            console.error("預覽畫面跳轉發生阻礙，請確認 HTML 中的 ID 是否完全對齊：", error);
+            alert("預覽確認畫面載入失敗，請確保所有必填選單（包括時間、日期、車輛種類）皆已完整選擇。");
+        }
+    }
+
+    /**
+     * 4.3 【畫面切換 B ➡️ A】：隱藏預覽畫面，返回原表單修改資料
+     */
     function hidePreviewScreen() {
         document.getElementById('previewSection').classList.add('hidden-field'); // 將覆核預覽卡片隱藏起來
         document.getElementById('formSection').classList.remove('hidden-field'); // 解除隱藏，讓原本填表的卡片重新秀出來
     }
 
-    // 核心雲端儲存：生成純淨版當天 4 位數流水號，並發送至 Google Sheets 資料庫
+    /**
+     * 4.4 【核心雲端儲存與序號生成】：生成純淨版天數流水號，並發送至 Google Sheets 資料庫
+     */
     function finalSubmitData() {
         const btn = document.getElementById('confirmSubmitBtn'); // 抓取確認提交按鈕物件
         btn.disabled = true; // 將按鈕鎖定鎖死，防止訪客因為緊張而重複點擊、造成資料庫重複寫入
         btn.innerText = "正在傳送... Submitting..."; // 更改按鈕文字提示正在連線雲端
 
-        // 📅 自動計算當天日期標記 (例如今天登記會生成 "20260610")
-        const dateObj = new Date(); // 建立目前時間物件
-        const yyyy = dateObj.getFullYear(); // 取得西元年份
-        const mm = String(dateObj.getMonth() + 1).padStart(2, '0'); // 取得月份並自動補零
-        const dd = String(dateObj.getDate()).padStart(2, '0'); // 取得日期並自動補零
-        const todayKey = yyyy + mm + dd; // 組裝成無斜線的純數字日期標記串
+        // 📅 自動計算當天日期標記 (例如今天登記會生成 "20260611")
+        const dateObj = new Date();
+        const yyyy = dateObj.getFullYear();
+        const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const dd = String(dateObj.getDate()).padStart(2, '0');
+        const todayKey = yyyy + mm + dd;
 
         // 從本機暫存記憶體讀取當天序號計數器與上一次登記的日期
-        let lastDateTrack = localStorage.getItem('last_submission_date'); // 抓取紀錄中的舊日期
-        let currentSequence = parseInt(localStorage.getItem('last_sequence_number')) || 0; // 抓取目前累積的序號數字，若沒有則從 0 開始
+        let lastDateTrack = localStorage.getItem('last_submission_date');
+        let currentSequence = parseInt(localStorage.getItem('last_sequence_number')) || 0;
 
-        // 🔄 智慧型天數重設判定：如果發現今天的日期與上一次紀錄的不同（跨天了）
+        // 🔄 智慧型天數重設判定：如果發現今天的日期與上一次紀錄的不同（代表跨天了）
         if (lastDateTrack !== todayKey) {
             currentSequence = 0; // 序號立刻強制回歸歸零，重新從 0 開始計算
             localStorage.setItem('last_submission_date', todayKey); // 更新暫存記憶體中的日期標記為今天
@@ -458,15 +551,16 @@
 
         // 序號自動加 1，並補零轉換成 4 位數純淨字串 (例如：第一筆是 0001，第二筆是 0002)
         currentSequence += 1;
-        localStorage.setItem('last_sequence_number', currentSequence); // 儲存更新後的序號數字到本機中
-        const sequenceStr = String(currentSequence).padStart(4, '0'); // 格式化補零成 4 位數
+        localStorage.setItem('last_sequence_number', currentSequence); // 儲存更新後的序號數字到本機暫存中
+        const sequenceStr = String(currentSequence).padStart(4, '0');
 
-        // 🆔 組裝成完全移除開頭 "REF-" 的純淨公務核對編號格式 (例如：20260610-0001)
+        // 🆔 組裝成完全移除開頭 "REF-" 的純淨公務核對編號格式 (例如：20260611-0001)
         const generatedRefNo = todayKey + "-" + sequenceStr;
-        const selectedHour = document.getElementById('visitHour').value; // 抓取填表的小時
-        const selectedMin = document.getElementById('visitMin').value; // 抓取填表的分鐘
 
-        // 📦 嚴格打包：將前台資料轉換為對齊 Google 試算表後台的 11 個關鍵欄位變數 JSON
+        const selectedHour = document.getElementById('visitHour').value;
+        const selectedMin = document.getElementById('visitMin').value;
+
+        // 📦 嚴格打包：將前台資料轉換為對齊 Google 試算表後台的 11 個關鍵欄位變數 JSON 物件
         const payload = {
             ref_no: generatedRefNo, // 傳送純淨序號 (對應試算表 B 欄)
             date: document.getElementById('visit_date').value, // 傳送預計到訪日期 (對應試算表 C 欄)
@@ -479,6 +573,7 @@
             visitTime: selectedHour + ":" + selectedMin, // 傳送 24h 格式時間 (對應試算表 I 欄)
             visit_date: document.getElementById('visit_date').value // 傳送日期供後台隱藏欄位備份篩選 (對應試算表 L 欄)
         };
+
         // 3. 發送非同步傳輸請求到 Google 雲端腳本
         fetch(GOOGLE_API_URL, {
             method: "POST", // 採用 POST 寫入模式
@@ -489,33 +584,116 @@
         .then(() => { // 當網路發送成功後執行（no-cors 模式下會自動判定成功）
             document.getElementById('displayRefNo').innerText = generatedRefNo; // 把剛剛算好的純淨編號秀在成功畫面最中央
             document.getElementById('previewSection').classList.add('hidden-field'); // 將覆核預覽卡片隱藏起來
-            document.getElementById('successSection').classList.remove('hidden-field'); // 解除隱藏，秀出大大的「🎉 登記申請已送出」卡片
-            btn.disabled = false; // 將按鈕鎖定解除復原
-            btn.innerText = "確認提交 ➡️ Confirm & Submit"; // 復原按鈕原始文字
+            document.getElementById('successSection').classList.remove('hidden-field'); // 解除隱藏，秀出「🎉 登記申請已送出」卡片
+            
+            // 復原按鈕原始狀態
+            btn.disabled = false;
+            btn.innerText = "確認提交 ➡️ Confirm & Submit";
         })
-        .catch(err => { // 萬一發生罕見的網路斷線或寫入失敗
-            console.error(err); // 在後台印出詳細報告
-            alert("寫入雲端失敗，請檢查網絡後重試。"); // 在螢幕跳出錯誤通知
-            btn.disabled = false; // 解除按鈕鎖定
-            btn.innerText = "確認提交 ➡️ Confirm & Submit"; // 復原按鈕文字
+        .catch(err => {
+            console.error(err);
+            alert("寫入雲端失敗，請檢查網絡後重試。");
+            btn.disabled = false;
+            btn.innerText = "確認提交 ➡️ Confirm & Submit";
         });
     }
 
-    // 🔄 完全修復：「返回填寫新申請」按鈕重置清空功能
+    /**
+     * 4.5 【返回重置功能】：「返回填寫新申請」按鈕重置清空功能
+     * 說明：點擊後會觸發 JavaScript 徹底重置表單並重新刷出全新日期選項
+     */
     function resetForm() {
-        document.getElementById('regForm').reset(); // 一鍵清空表單中所有文字框
-        forceInitDropdowns(); // 核心修正：重新呼叫最頂層強制腳本，重新注入未來 7 天日期與 24h 下拉選單選項，絕不再變空白
+        document.getElementById('regForm').reset(); // 一鍵清空表單中所有文字方塊
+        forceInitDropdowns(); // 核心修正：重新呼叫模組 3 頂層強制腳本，重新注入未來 7 天日期與時間，絕不再變空白
+        
         document.getElementById('successSection').classList.add('hidden-field'); // 將成功提交卡片隱藏起來
-        document.getElementById('formSection').classList.remove('hidden-field'); // 解除隱藏，重新大方秀出全新的空白填表卡片
+        document.getElementById('formSection').classList.remove('hidden-field'); // 解除隱藏，重新顯示空白填表卡片
     }
-
+</script>
+<!-- ======================================================================== -->
+<!-- 【模組 4 結束】：表單提交與傳輸至 Google 表單 (Form Submit & Google Integration) -->
+<!-- ======================================================================== -->
+<!-- ======================================================================== -->
+<!-- 【模組 5：段落一 (第 1 - 100 行)】內部管理、安全驗證、即時搜尋與 PDF 匯出   -->
+<!-- 插拔說明：此區塊為純 JavaScript 邏輯，專門提供給後台管理員驗證權限與同步雲端數據。-->
+<!-- ======================================================================== -->
+<script>
+    // 🔒 內部人員專用安全登入與分頁狀態切換記憶變數
+    let isInternalAuthenticated = false; // 建立一個變數記錄工作人員目前是否已通過驗證，預設為未通過（false）
+    
     // 全球唯一快取記憶體變數：專門用來在網頁背後暫存目前從 Google 雲端拉下來的所有車牌大名單
     let globalCachedDataList = [];
 
-    // 內部管理：向資料庫拉取最新車牌數據名單並動態填入兩個表格中
+    /**
+     * 5.1 【分頁點擊防護機制】：點擊「內部使用」分頁標籤時自動觸發
+     */
+    function triggerInternalAuth() {
+        const gateTab = document.getElementById('gate-tab'); // 抓取 HTML 中的內部使用分頁按鈕物件
+        if (gateTab) {
+            const tabTrigger = new bootstrap.Tab(gateTab); // 初始化 Bootstrap 的分頁控制驅動器
+            tabTrigger.show(); // 驅動網頁分頁切換的動畫，將視覺焦點切換到內部使用面板
+        }
+        
+        // 🔒 核心隱私安全判定
+        if (!isInternalAuthenticated) { 
+            // 如果工作人員目前「尚未驗證」密碼
+            document.getElementById('authBox').classList.remove('hidden-field');       // 解除隱藏，將密碼輸入框秀在畫面上
+            document.getElementById('internalContent').classList.add('hidden-field'); // 加上隱藏，強制將內部的車牌敏感名單藏起來
+            document.getElementById('internalPwd').value = '';                         // 將密碼輸入框內的殘留文字完全清空
+            document.getElementById('authErrorMsg').classList.add('hidden-field');    // 加上隱藏，把上一次的「密碼錯誤」紅色提示藏起來
+        } else { 
+            // 如果工作人員之前「已經驗證成功」了
+            document.getElementById('authBox').classList.add('hidden-field');          // 加上隱藏，把密碼輸入框藏起來，不需要重複輸入
+            document.getElementById('internalContent').classList.remove('hidden-field'); // 解除隱藏，直接大方秀出後台的車牌核對名單
+            loadInternalDataLists(); // 立刻啟動後台 fetch 函數，去 Google 雲端抓取最新的車牌數據名單
+        }
+    }
+
+    /**
+     * 5.2 【安全密碼核對】：當工作人員在輸入框打完密碼並點擊「驗證登入」時執行
+     */
+    function verifyInternalPassword() {
+        const inputPwd = document.getElementById('internalPwd').value; // 抓取工作人員此時在畫面上手打輸入的密碼文字
+        const correctPwd = "wkts001"; // 🔒 唯一指定的內部公務系統管理與 PDF 導出驗證密碼
+        
+        if (inputPwd === correctPwd) { 
+            // 電腦核對：如果手打輸入的密碼與正確密碼完全相符
+            isInternalAuthenticated = true; // 將驗證狀態切換為已通過（true），讓系統記住登入狀態
+            document.getElementById('authBox').classList.add('hidden-field');          // 把密碼輸入框框收起來
+            document.getElementById('internalContent').classList.remove('hidden-field'); // 立刻解鎖秀出後台車牌名單
+            loadInternalDataLists(); // 呼叫雲端通訊函數，秒速抓取最新的處理中與已確認數據
+        } else { 
+            // 如果手打輸入的密碼不對
+            document.getElementById('authErrorMsg').classList.remove('hidden-field'); // 在畫面彈出紅色的「⚠️ 密碼錯誤！」警告字眼
+        }
+    }
+
+    /**
+     * 5.3 【安全登出鎖定】：點擊「安全登出 Logout」按鈕時立刻清除權限並重設鎖定
+     */
+    function lockInternalPage() {
+        isInternalAuthenticated = false; // 將驗證狀態強制改回未通過（false），清除登入記憶
+        document.getElementById('internalPwd').value = ''; // 清空密碼框內的所有字元
+        triggerInternalAuth(); // 重新呼叫驗證防護機制，立刻把畫面切回鎖定狀態的密碼框，徹底保護隱私
+    }
+
+    /**
+     * 5.4 【切換回訪客】：當內部工作人員點擊左邊「訪客登記」分頁按鈕時執行的功能
+     */
+    function switchToVisitor() {
+        const regTab = document.getElementById('register-tab'); // 抓取 HTML 中的訪客登記分頁按鈕物件
+        if (regTab) {
+            const tabTrigger = new bootstrap.Tab(regTab); // 初始化 Bootstrap 分頁驅動器
+            tabTrigger.show(); // 驅動動畫，將網頁畫面流暢地切換回填寫表單的卡片介面
+        }
+    }
+
+    /**
+     * 5.5 【數據即時抓取】：向 Google Sheets 資料庫拉取最新車牌數據名單並動態填入兩個表格中
+     */
     function loadInternalDataLists() {
-        const todayTbody = document.getElementById('todayTableBody'); // 抓取「申請處理中」表格實體主體
-        const tomorrowTbody = document.getElementById('tomorrowTableBody'); // 抓取「已確認名單」表格實體主體
+        const todayTbody = document.getElementById('todayTableBody');       // 抓取模組 2 中的「申請處理中」表格實體主體
+        const tomorrowTbody = document.getElementById('tomorrowTableBody'); // 抓取模組 2 中的「已確認名單」表格實體主體
         
         // 在數據還沒完全從雲端拉下來之前，先貼心顯示讀取中動畫字樣，避免畫面上空蕩蕩
         todayTbody.innerHTML = '<tr><td colspan="10" class="text-center py-3 text-secondary">正在同步雲端數據... Syncing cloud data...</td></tr>';
@@ -524,19 +702,19 @@
         fetch(GOOGLE_API_URL) // 發送網頁連線請求，跟 Google 試算表要最新的所有名單
             .then(response => response.json()) // 成功連線後，將原始數據轉換為乾淨的 JSON 陣列物件
             .then(dataList => {
-                globalCachedDataList = dataList; // 將整份雲端大名單同步複製一份到快取記憶體中，供 PDF 導出按鈕隨時一秒抽查使用
-                todayTbody.innerHTML = ''; // 清空處理中表格的讀取中字樣
+                globalCachedDataList = dataList; // 同步複製一份到快取記憶體中，供 PDF 導出按鈕隨時一秒抽查使用
+                todayTbody.innerHTML = '';    // 清空處理中表格的讀取中字樣
                 tomorrowTbody.innerHTML = ''; // 清空已確認表格的讀取中字樣
-
+                
                 // 透過 JavaScript 進行狀態分類篩選
-                let inProgressCars = dataList.filter(item => item.status === "in_progress"); // 篩選最右邊欄位為 "in_progress" 的放入處理中大軍
-                let confirmedCars = dataList.filter(item => item.status !== "in_progress"); // 篩選最右邊欄位已經被管理員手動改掉的放入已確認大軍
-                // 1. 開始動態渲染「申請處理中」表格
-                if (inProgressCars.length === 0) { // 萬一目前雲端沒有半筆處理中的資料
-                    todayTbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-3">暫無處理中的申請 / No records in progress.</td></tr>'; // 貼上無資料的中英提示列
-                } else { // 如果有資料
-                    inProgressCars.forEach(item => { // 用循環把每一台車的資料依序跑出來
-                        const tr = document.createElement('tr'); // 建立一個實體表格行標籤
+                let inProgressCars = dataList.filter(item => item.status === "in_progress"); // 篩選最右邊欄位為 "in_progress" 的放入處理中
+                let confirmedCars = dataList.filter(item => item.status !== "in_progress");  // 篩選最右邊欄位已經被管理員批准確認的資料
+                // A. 開始動態渲染「申請處理中」表格
+                if (inProgressCars.length === 0) {
+                    todayTbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-3">暫無處理中的申請 / No records in progress.</td></tr>';
+                } else {
+                    inProgressCars.forEach(item => {
+                        const tr = document.createElement('tr');
                         tr.innerHTML = `
                             <td>${item.item || '-'}</td>
                             <td class="fw-bold text-secondary" style="font-size:0.8rem;">${item.ref_no || '-'}</td>
@@ -549,16 +727,16 @@
                             <td>${item.purpose || '-'}</td>
                             <td><span class="badge bg-secondary">${item.vehicle_type || '-'}</span></td>
                         `; // 將 10 個欄位數據完美塞入格子內，車牌用橘黃色突顯，車種用精美小標籤包裹
-                        todayTbody.appendChild(tr); // 把這一列塞進處理中表格裡
+                        todayTbody.appendChild(tr);
                     });
                 }
-
-                // 2. 開始動態渲染「已確認名單」表格
-                if (confirmedCars.length === 0) { // 萬一目前雲端沒有半筆已確認的資料
-                    tomorrowTbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-3">暫無已確認之名單 / No confirmed records.</td></tr>'; // 貼上無資料的中英提示列
-                } else { // 如果有資料
-                    confirmedCars.forEach(item => { // 用循環把已確認的每一台車的資料依序跑出來
-                        const tr = document.createElement('tr'); // 建立一個表格行標籤
+                
+                // B. 開始動態渲染「已確認名單」表格
+                if (confirmedCars.length === 0) {
+                    tomorrowTbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-3">暫無已確認之名單 / No confirmed records.</td></tr>';
+                } else {
+                    confirmedCars.forEach(item => {
+                        const tr = document.createElement('tr');
                         tr.innerHTML = `
                             <td>${item.item || '-'}</td>
                             <td class="fw-bold text-secondary" style="font-size:0.8rem;">${item.ref_no || '-'}</td>
@@ -570,115 +748,127 @@
                             <td>${item.time_out || '---'}</td>
                             <td>${item.purpose || '-'}</td>
                             <td><span class="badge bg-success">${item.vehicle_type || '-'}</span></td>
-                        `; // 將 10 個欄位數據完美塞入格子內，車牌與車種標籤改用安全穩固的綠色突顯
-                        tomorrowTbody.appendChild(tr); // 把這一列塞進已確認表格裡
+                        `; // 車牌與車種標籤改用安全穩固的綠色突顯
+                        tomorrowTbody.appendChild(tr);
                     });
                 }
             })
-            .catch(error => { // 萬一發生網路斷線或是你的 GOOGLE_API_URL 複製貼錯少字
-                console.error(error); // 在後台印出錯誤報告
-                const errHTML = `<tr><td colspan="10" class="text-center text-danger py-3">⚠️ 雲端連線失敗，請檢查網路連線或 Web App URL 是否正確。</td></tr>`; // 建立網頁紅字警告列
-                todayTbody.innerHTML = errHTML; // 塞入表格 A
-                tomorrowTbody.innerHTML = errHTML; // 塞入表格 B
+            .catch(error => {
+                console.error(error);
+                const errHTML = `<tr><td colspan="10" class="text-center text-danger py-3">⚠️ 雲端連線失敗，請檢查網路連線或 Web App URL 是否正確。</td></tr>`;
+                todayTbody.innerHTML = errHTML;
+                tomorrowTbody.innerHTML = errHTML;
             });
     }
-    // 🖨️ 核心 PDF 導出引擎：自動篩選明天 (Today+1) 的所有車輛名單，並生成完美對齊 EPD 官方紙本格式的日誌檔案
+
+    /**
+     * 5.6 【核心 PDF 導出引擎】：自動篩選明天 (Today+1) 的所有車輛名單，並生成完美對齊 EPD 官方紙本格式的日誌檔案
+     */
     function exportTomorrowListToPDF() {
         // 1. 自動精準計算出明天的 YYYY-MM-DD 日期標籤字串
-        const tomorrow = new Date(); // 取得目前的日期時間
+        const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1); // 將日期往後推進 1 天（即為明天）
-        const yyyy = tomorrow.getFullYear(); // 取得明天的西元年
-        const mm = String(tomorrow.getMonth() + 1).padStart(2, '0'); // 取得明天的月份並補零
-        const dd = String(tomorrow.getDate()).padStart(2, '0'); // 取得明天的日期並補零
-        const tomorrowString = yyyy + "-" + mm + "-" + dd; // 組裝成與雲端一模一樣的 "2026-06-11" 對照字串
-
+        const yyyy = tomorrow.getFullYear();
+        const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
+        const dd = String(tomorrow.getDate()).padStart(2, '0');
+        const tomorrowString = yyyy + "-" + mm + "-" + dd; // 組裝成與雲端一模一樣的對照字串
+        
         // 2. 從快取記憶體的大名單中，精準過濾篩選出所有登記在明天到訪的車輛
         let tomorrowCars = globalCachedDataList.filter(item => {
             return String(item.visit_date).trim() === tomorrowString; // 比對到訪日期是否等於明天的日期
         });
-
-        if (tomorrowCars.length === 0) { // 安全機制：如果發現明天根本沒有任何車子預約
-            alert("雲端資料庫中，目前沒有任何預約在明天 (" + tomorrowString + ") 到訪的車輛紀錄，因此無法生成空報表。"); // 跳出貼心提示通知，阻擋生成空白破壞格式的檔案
+        
+        if (tomorrowCars.length === 0) {
+            alert("雲端資料庫中，目前沒有任何預約在明天 (" + tomorrowString + ") 到訪的車輛紀錄，因此無法生成空報表。");
             return; // 直接退出，不執行列印
         }
-
-        // 3. 驅動視窗中的 window.jspdf 元件，在設備記憶體中建立高解析度虛擬畫布物件
+        
+        // 3. 驅動視窗中的 window.jspdf 元件，在設備記憶體中建立高解析度虛擬 A4 橫向畫布物件
         const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('l', 'mm', 'a4'); // 設定列印格式為：l (Landscape 橫向排版)、公制單位 mm、標準 A4 紙張大小
-
+        const doc = new jsPDF('l', 'mm', 'a4'); // l (Landscape 橫向排版)、公制單位 mm、標準 A4
+        
         // 4. 完美繪製紙本官方的大標頭字眼與右上角專屬的批核核對簽名線
-        doc.setFont("Helvetica", "bold"); // 設定字型為 Helvetica 粗體
-        doc.setFontSize(16); // 設定字級大小為 16 級
-        doc.text("WEST KOWLOON REFUSE TRANSFER STATION", 14, 15); // 在畫布左側 (X:14, Y:15) 印出西九龍廢物轉運站官方抬頭
-        doc.setFont("Helvetica", "normal"); // 切換回普通標準字體
-        doc.setFontSize(12); // 下調字級為 12 級
-        doc.text("Registered Vehicle Log    Log Date: " + tomorrowString, 14, 21); // 在大標題下方 (X:14, Y:21) 印出表格名稱與明天的日期標記
-        doc.text("EPD Approval: ________________________", 200, 15); // 🔒 移至此處：在畫布最右上角 (X:200, Y:15) 完美印出只供密碼持有密碼者列印查看的官方批核線
-
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(16);
+        doc.text("WEST KOWLOON REFUSE TRANSFER STATION", 14, 15); // 在畫布左側印出西九龍廢物轉運站官方抬頭
+        
+        doc.setFont("Helvetica", "normal");
+        doc.setFontSize(12);
+        doc.text("Registered Vehicle Log       Log Date: " + tomorrowString, 14, 21); // 印出表格名稱與明天的日期標記
+        doc.text("EPD Approval: ________________________", 200, 15); // 🔒 在畫布最右上角完美印出唯有登入管理員才能導出的批核簽名線
+        
         // 5. 使用循環，將明天的車輛數據，一筆一筆依序整理轉換為對齊官方紙本 9 欄位的二維數據陣列結構
-        let tableRows = []; // 建立一個空白的行矩陣容器
-        tomorrowCars.forEach((car, index) => { // 開始循環跑明天的所有車子
+        let tableRows = [];
+        tomorrowCars.forEach((car, index) => {
             tableRows.push([
-                index + 1,                     // 欄位 1：項目序號 Item (從 1 開始遞增)
-                car.company || '',             // 欄位 2：公司名稱 Company
-                String(car.vehicle_no).toUpperCase(), // 欄位 3：車牌號碼 Vehicle No. (強制英文大寫)
-                car.contact_person || '',      // 欄位 4：聯絡人 Contact Person
-                car.tel_no || '',              // 欄位 5：電話號碼 Tel. No.
-                car.time_in === '---' ? '' : car.time_in,   // 欄位 6：進入時間 Time In (若沒登記則貼心維持完全空白留給閘口紙本手寫)
-                car.time_out === '---' ? '' : car.time_out, // 欄位 7：離開時間 Time Out (若沒登記則貼心維持完全空白留給閘口紙本手寫)
-                car.purpose || '',             // 欄位 8：進入目的 / 工作內容 Purpose
-                car.vehicle_type || ''         // 欄位 9：車輛種類 Vehicle Type
-            ]); // 單行整理完畢，塞入矩陣中
-        }); // 數據整理完畢
-        // 6. 啟動 AutoTable 專業排版外掛，將上面的矩陣數據自動繪製成完全無形變、美觀、且帶細格線的實體網格表格
+                index + 1, // 欄位 1：項目序號 Item (從 1 開始遞增)
+                car.company || '',
+                String(car.vehicle_no).toUpperCase(),
+                car.contact_person || '',
+                car.tel_no || '',
+                car.time_in === '---' ? '' : car.time_in,   // 若進站時間沒登記則貼心維持完全空白，留給閘口紙本手寫
+                car.time_out === '---' ? '' : car.time_out, // 若離站時間沒登記則貼心維持完全空白，留給閘口紙本手寫
+                car.purpose || '',
+                car.vehicle_type || ''
+            ]);
+        });
+        
+        // 6. 啟動 AutoTable 外掛，將上面的矩陣數據自動繪製成完全無形變、美觀、且帶細網格線的實體表格
         doc.autoTable({
             startY: 28, // 從距離紙張最頂端 28 毫米的地方開始畫表格，完美避開上方的抬頭字
-            head: [['Item', 'Company', 'Vehicle No.', 'Contact Person', 'Tel. No.', 'Time In', 'Time Out', 'Purpose / Work Content', 'Vehicle Type']], // 注入完全對齊紙本的 9 大中英對照標頭列
+            head: [['Item', 'Company', 'Vehicle No.', 'Contact Person', 'Tel. No.', 'Time In', 'Time Out', 'Purpose / Work Content', 'Vehicle Type']], // 注入完全對齊紙本的中英對照標頭
             body: tableRows, // 注入剛剛整理好的明天車牌數據
-            theme: 'grid', // 採用 grid 主題，強制繪製出清晰的網格虛線框，方便老前輩拿筆在紙上對齊勾選
+            theme: 'grid',    // 採用清晰的網格虛線框，方便保安人員拿筆在紙上對齊勾選
+            
+            // 🎨 語法修復核心：已為您精確補上先前遺漏的顏色代碼值（深環保綠表頭背景、白色字體、深灰色內文）
             headStyles: { fillColor: '#2f855a', textColor: '#ffffff', fontStyle: 'bold', halign: 'center' }, 
             bodyStyles: { textColor: '#2d3748', halign: 'center' }, 
-            styles: { fontSize: 9, cellPadding: 3 }, // 限制字型大小為 9 級（最適合 A4 橫向寬度），格子內邊距四周留白 3 毫米
-            columnStyles: { // 🎨 核心技術：依據紙本圖片比例，用毫米 (mm) 微調限制這 9 個欄位的實體寬度，確保橫向不擠壓、不爆表
-                0: { cellWidth: 12 },  // 項目 Item 欄寬
-                1: { cellWidth: 40 },  // 公司 Company 欄寬
-                2: { cellWidth: 26 },  // 車牌 Vehicle No. 欄寬
-                3: { cellWidth: 30 },  // 聯絡人 Contact Person 欄寬
-                4: { cellWidth: 26 },  // 電話 Tel. No. 欄寬
-                5: { cellWidth: 22 },  // 進入時間 Time In 欄寬
-                6: { cellWidth: 22 },  // 離開時間 Time Out 欄寬
-                7: { cellWidth: 50 },  // 工作內容 Purpose 欄寬
-                8: { cellWidth: 35 }   // 車種類別 Vehicle Type 欄寬
+            
+            styles: { fontSize: 9, cellPadding: 3 }, // 限制字型大小為 9 級（最適合 A4 橫向寬度），內邊距留白 3 毫米
+            
+            columnStyles: { 
+                // 🎨 核心技術：依據紙本圖片比例，用毫米 (mm) 微調限制這 9 個欄位的實體寬度，確保橫向不擠壓、不爆表
+                0: { cellWidth: 12 }, // 項目 Item
+                1: { cellWidth: 40 }, // 公司 Company
+                2: { cellWidth: 26 }, // 車牌 Vehicle No.
+                3: { cellWidth: 30 }, // 聯絡人 Contact Person
+                4: { cellWidth: 26 }, // 電話 Tel. No.
+                5: { cellWidth: 22 }, // 進入時間 Time In
+                6: { cellWidth: 22 }, // 離開時間 Time Out
+                7: { cellWidth: 50 }, // 工作內容 Purpose
+                8: { cellWidth: 35 }  // 車種類別 Vehicle Type
             }
-        }); // 表格繪製完畢
-
-        // 7. 自動觸發密碼持有人的瀏覽器下載：將檔名自動命名為明天日期 (例如：2026-06-11_Log.pdf) 並自動存入他的電腦或手機中
+        });
+        
+        // 7. 自動觸發下載：將檔名自動命名為明天日期 (例如：2026-06-12_Log.pdf) 
         const fileName = tomorrowString + "_Log.pdf";
         doc.save(fileName); // 驅動下載功能
-    } // PDF 導出功能結束
+    }
 
-    // 內部管理：當閘口人員在搜尋框打字時，自動同步、過濾下方兩個表格內的符合車牌英文字母
+    /**
+     * 5.7 【閘口車牌即時過濾功能】：當閘口人員在搜尋框打字時，自動、即時同步過濾下方表格內容
+     */
     function filterGateTables() {
-        const input = document.getElementById('searchPlate').value.toUpperCase(); // 抓取搜尋框打的字並自動轉大寫英文
-        const tables = [document.getElementById('todayTableBody'), document.getElementById('tomorrowTableBody')]; // 把兩個表格的主體放入陣列中一起處理
+        const input = document.getElementById('searchPlate').value.toUpperCase(); // 抓取搜尋框打的字並自動轉大寫
+        const tables = [document.getElementById('todayTableBody'), document.getElementById('tomorrowTableBody')]; // 把兩個表格放入陣列中處理
         
-        tables.forEach(tbody => { // 循環過濾兩個表格
+        tables.forEach(tbody => {
+            if (!tbody) return;
             const rows = tbody.getElementsByTagName('tr'); // 抓取該表格內目前所有的行 (Rows)
-            for (let i = 0; i < rows.length; i++) { // 用循環一行一行往下檢查
-                const td = rows[i].getElementsByTagName('td'); // 抓取這一行裡的所有格子
-                if (td.length > 0) { // 安全判斷：確定這行是有資料的
+            for (let i = 0; i < rows.length; i++) {
+                const td = rows[i].getElementsByTagName('td');
+                if (td.length > 0) {
                     const txtValue = rows[i].textContent || rows[i].innerText; // 提取這一行內所有的純文字內容
-                    if (txtValue.toUpperCase().indexOf(input) > -1) { // 比對：如果行內文字包含搜尋框打的字
-                        rows[i].style.display = ""; // 保持原樣，顯示這行資料
-                    } else { // 如果完全不符合
-                        rows[i].style.display = "none"; // 加上隱藏，把這行車子藏起來
+                    if (txtValue.toUpperCase().indexOf(input) > -1) {
+                        rows[i].style.display = ""; // 包含搜尋字眼則保持原樣，顯示這行
+                    } else {
+                        rows[i].style.display = "none"; // 不符合則加上隱藏，把這行車子藏起來
                     }
                 }
             }
-        }); // 兩個表格過濾完畢
-    } // 搜尋功能結束
-</script> <!-- 網頁核心 JavaScript 結束 -->
-<!-- 引入微軟通常放行的官方 Bootstrap 網頁互動特效驅動腳本，確保分頁切換特效 100% 正常順暢 -->
-<script src="https://jsdelivr.net"></script> 
-</body> <!-- 網頁實體內容區結束 -->
-</html> <!-- 整份網頁文件完全結束 -->
+        });
+    }
+</script>
+<!-- ======================================================================== -->
+<!-- 【模組 5 結束】：內部管理、安全驗證、即時搜尋與 PDF 匯出 (Internal Admin & PDF Engine) -->
+<!-- ======================================================================== -->
