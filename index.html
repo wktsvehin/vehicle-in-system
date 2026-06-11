@@ -625,37 +625,39 @@ let globalCachedDataList = [];
      triggerInternalAuth();
  }
 
- /**
-  * 5.1 【分頁點擊防護機制】(已優化相容獨立按鈕跳轉)
-  */
- function triggerInternalAuth() {
-     // 顯示內部使用總面板，並隱藏訪客面板
-     const gatePanel = document.getElementById('gate-panel');
-     if (gatePanel) {
-         gatePanel.classList.add('show', 'active');
-     }
-     const regPanel = document.getElementById('register-panel');
-     if (regPanel) {
-         regPanel.classList.remove('show', 'active');
-     }
-     
-     // 🔒 核心隱私安全判定
-     if (!isInternalAuthenticated) { 
-         document.getElementById('authBox').classList.remove('hidden-field'); 
-         document.getElementById('internalContent').classList.add('hidden-field'); 
-         
-         document.getElementById('startAuthBtnWrapper').classList.remove('hidden-field');
-         document.getElementById('passwordInputWrapper').classList.add('hidden-field');
-         
-         document.getElementById('internalPwd').value = ''; 
-         document.getElementById('authErrorMsg').classList.add('hidden-field'); 
-     } else { 
-         document.getElementById('authBox').classList.add('hidden-field'); 
-         document.getElementById('internalContent').classList.remove('hidden-field'); 
-         if (typeof loadInternalDataLists === 'function') { loadInternalDataLists(); }
-     }
-     window.scrollTo({ top: 0, behavior: 'smooth' });
- }
+/**
+ * 5.1 【分頁點擊防護機制】(徹底修復訪客登記頁面底部出現安全驗證的問題)
+ */
+function triggerInternalAuth() {
+    // A. 顯示內部使用總面板，並將訪客總面板進行安全隱藏
+    const gatePanel = document.getElementById('gate-panel');
+    if (gatePanel) { gatePanel.classList.add('show', 'active'); }
+    const regPanel = document.getElementById('register-panel');
+    if (regPanel) { regPanel.classList.remove('show', 'active'); }
+    
+    // 🔒 B. 後台隱私安全判定
+    if (!isInternalAuthenticated) { 
+        // 尚未登入：只解鎖分頁二內部的驗證外框，絕對不露出版面
+        const authBox = document.getElementById('authBox');
+        if (authBox) authBox.classList.remove('hidden-field'); 
+        
+        const internalContent = document.getElementById('internalContent');
+        if (internalContent) internalContent.classList.add('hidden-field'); 
+        
+        // 還原為初始藍色大按鈕外觀，把密碼輸入格子藏起來
+        document.getElementById('startAuthBtnWrapper').classList.remove('hidden-field');
+        document.getElementById('passwordInputWrapper').classList.add('hidden-field');
+        
+        document.getElementById('internalPwd').value = ''; 
+        document.getElementById('authErrorMsg').classList.add('hidden-field'); 
+    } else { 
+        // 已經登入成功：藏起密碼盒，直接展示後台大名單
+        document.getElementById('authBox').classList.add('hidden-field'); 
+        document.getElementById('internalContent').classList.remove('hidden-field'); 
+        if (typeof loadInternalDataLists === 'function') { loadInternalDataLists(); }
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
  /**
   * 5.1.2【按鈕動態展開密碼框】(重新編排保留)
