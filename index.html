@@ -507,6 +507,9 @@ function finalSubmitData() {
 <!-- 【模組 5 START】：內部管理、安全驗證、即時搜尋與 PDF 匯出 -->
 <!-- ======================================================================== -->
 <script>
+// 🌐 核心修正：手動定義雲端連線網址（您可以先保留這個測試網址或替換成您自己的）
+const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbz6L1lO15lIwMUcKT6Veg6RoTndla90i0pKLVTzE4qGmvHl2pZULMYhmdhnqJt-aVE9/exec";
+ 
 // 🔒 5.0 內部人員專用安全登入與分頁狀態切換記憶變數
 let isInternalAuthenticated = false; 
 let globalCachedDataList = [];
