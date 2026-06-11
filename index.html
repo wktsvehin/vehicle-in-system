@@ -213,7 +213,7 @@
     <!-- ================================================================== -->
     <!-- 【分頁面板二】：內部使用分頁面 (安全密碼保護隔離與閘口核對區) -->
     <!-- ================================================================== -->
-    <div class="tab-pane fade" id="gate-panel" role="tabpanel">
+    <div class="tab-pane fade" id="gate-panel" role="tabpanel" style="display: none;">
       <!-- 🔒 2.5 內部驗證主卡片：這個卡片只有在點擊「內部使用」分頁後才會獨立顯示 -->
       <div id="authBox" class="card text-center p-4 my-2 mx-auto" style="max-width: 400px; border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.06);">
         <div class="mb-3 fs-1">🔒</div>
@@ -515,114 +515,71 @@ let globalCachedDataList = [];
  * 🆕 5.0.2【跳轉至內部員工登入頁面】：點擊頂部右側獨立按鈕時觸發
  * 👑 核心優化：點擊時如同跳轉下一頁，將前台訪客畫面完全隱藏抹除
  */
+/**
+ * 👑 核心優化：點擊內部使用，如同跳轉下一頁，前台完全抹除
+ */
 function goToInternalLoginPage() {
-  // 1. 隱藏訪客登記總面板的顯示狀態，防範前台申請人窺探
   const regPanel = document.getElementById('register-panel');
   if (regPanel) { 
     regPanel.classList.remove('show', 'active'); 
+    regPanel.style.display = 'none'; // 💡 隱藏訪客頁面
   }
   
-  // 2. 切換頂部獨立分頁按鈕的亮起 (Active) 觸控狀態
   document.getElementById('register-tab').classList.remove('active');
   document.getElementById('gate-tab').classList.add('active');
   
-  // 3. 呼叫底層防護，觸行動態安全判定
   triggerInternalAuth();
 }
 
-/**
- * 5.1 【分頁點擊防護與畫面完全隔離機制】
- * 徹底解決訪客登記頁面底部或周圍出現安全驗證或後台表格殘影的問題
- */
 function triggerInternalAuth() {
-  // A. 顯示內部使用總面板
   const gatePanel = document.getElementById('gate-panel');
   if (gatePanel) { 
     gatePanel.classList.add('show', 'active'); 
+    gatePanel.style.display = 'block'; // 💡 顯示內部頁面
   }
   
-  // 🔒 B. 後台隱私安全判定
   if (!isInternalAuthenticated) { 
-    // 尚未登入：只解鎖密碼輸入卡片，後台名單絕對不露出版面
     const authBox = document.getElementById('authBox');
     if (authBox) authBox.classList.remove('hidden-field'); 
     
     const internalContent = document.getElementById('internalContent');
     if (internalContent) internalContent.classList.add('hidden-field'); 
     
-    // 清空密碼欄位與舊的錯誤訊息提示，還原乾淨介面
     document.getElementById('internalPwd').value = ''; 
     document.getElementById('authErrorMsg').classList.add('hidden-field'); 
   } else { 
-    // 已經登入成功：藏起密碼盒，直接展示後台數據大名單
-    document.getElementById('authBox').classList.add('hidden-field'); 
-    const internalContent = document.getElementById('internalContent');
-    if (internalContent) internalContent.classList.remove('hidden-field'); 
-    
-    // 自動向雲端發送請求同步最新數據
-    if (typeof loadInternalDataLists === 'function') { loadInternalDataLists(); }
-  }
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-/**
- * 5.2 【安全密碼核對】
- * 比對成功後，將解鎖狀態設為 true，並首次觸發雲端數據抓取
- */
-function verifyInternalPassword() {
-  const inputPwd = document.getElementById('internalPwd').value; 
-  const correctPwd = "wkts001"; // 內部安全驗證密碼
-  
-  if (inputPwd === correctPwd) { 
-    isInternalAuthenticated = true; 
     document.getElementById('authBox').classList.add('hidden-field'); 
     document.getElementById('internalContent').classList.remove('hidden-field'); 
     if (typeof loadInternalDataLists === 'function') { loadInternalDataLists(); }
-  } else { 
-    // 密碼錯誤：跳出高對比紅色警告框
-    document.getElementById('authErrorMsg').classList.remove('hidden-field'); 
   }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 /**
- * 5.3 【安全登出鎖定】
- * 移除清除記憶狀態，徹底還原為未驗證狀態
- */
-function lockInternalPage() {
-  isInternalAuthenticated = false; 
-  document.getElementById('internalPwd').value = ''; 
-  triggerInternalAuth(); 
-}
-
-/**
- * 🔄 5.4 【彈回訪客申請頁面】：當人員點擊左側「訪客登記」按鈕時觸發
- * 👑 核心優化：切回訪客時，安全卸載並隱藏密碼框與後台敏感表格
+ * 👑 核心優化：切回訪客登記時，安全卸載隱藏密碼框
  */
 function switchToVisitor() {
-  // 1. 隱藏內部人員總面板（包含密碼驗證框與後台表格大名單）
   const gatePanel = document.getElementById('gate-panel');
   if (gatePanel) { 
     gatePanel.classList.remove('show', 'active'); 
+    gatePanel.style.display = 'none'; // 💡 隱藏內部頁面
   }
   
-  // 2. 切換頂部獨立引導按鈕的 active 狀態
   document.getElementById('gate-tab').classList.remove('active');
   document.getElementById('register-tab').classList.add('active');
   
-  // 3. 重新把訪客登記總面板完整顯示出來
   const regPanel = document.getElementById('register-panel');
   if (regPanel) { 
     regPanel.classList.add('show', 'active'); 
+    regPanel.style.display = 'block'; // 💡 重新顯示訪客頁面
   }
   
-  // 4. 確保訪客看到的依然是原本填寫到一半的填表主表單卡片 (formSection)
   const formSec = document.getElementById('formSection');
-  if (formSec) { 
-    formSec.classList.remove('hidden-field'); 
-  }
+  if (formSec) { formSec.classList.remove('hidden-field'); }
   
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+
 /**
  * 5.5 【數據即時抓取與表格動態渲染】
  * 自動向雲端 API 請求最新數據，並依狀態分類渲染至後台的兩個表格中
