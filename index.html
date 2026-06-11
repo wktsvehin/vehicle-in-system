@@ -99,19 +99,23 @@
  West Kowloon Transfer Station Vehicle Registration
  </h6>
 
- <!-- 2.3 功能分頁切換導覽標籤 (Tabs) -->
- <!-- 說明：提供外來訪客填表與內部人員查核的功能切換按鈕區 -->
- <ul class="nav nav-tabs nav-justified" id="systemTab" role="tablist">
- <li class="nav-item"> <!-- 分頁標籤一：訪客登記 -->
- <button class="nav-link active fw-bold" id="register-tab" data-bs-toggle="tab" data-bs-target="#register-panel" type="button" onclick="switchToVisitor()">
- 訪客登記<br><span class="small fw-normal text-lowercase" style="font-size: 0.75rem;">Visitor Registration</span>
- </button>
- </li>
- <li class="nav-item"> <!-- 分頁標籤二：內部使用 -->
- <button class="nav-link fw-bold" id="gate-tab" data-bs-toggle="tab" data-bs-target="#gate-panel" type="button" onclick="triggerInternalAuth()">
- 內部使用<br><span class="small fw-normal text-lowercase" style="font-size: 0.75rem;">Internal Use</span>
- </button>
- </li>
+  <!-- ======================================================================== -->
+ <!-- 2.3 功能分頁切換導覽標籤 (已優化為獨立員工按鈕導線) -->
+ <!-- ======================================================================== -->
+ <ul class="nav nav-tabs row g-2 border-0 mb-4 px-1" id="systemTab" role="tablist">
+   <!-- 左側：訪客登記分頁 -->
+   <li class="nav-item col-7 m-0"> 
+     <button class="nav-link active fw-bold w-100 text-start px-3 py-2" id="register-tab" data-bs-toggle="tab" data-bs-target="#register-panel" type="button" onclick="switchToVisitor()" style="border-radius: 10px !important; background-color: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+       📝 訪客登記<br><span class="small fw-normal text-lowercase" style="font-size: 0.72rem;">Visitor Registration</span>
+     </button>
+   </li>
+   
+   <!-- 右側：完全獨立的內部員工登入「深青色引導按鈕」 -->
+   <li class="nav-item col-5 m-0"> 
+     <button class="btn btn-warning fw-bold w-100 h-100 d-flex flex-column justify-content-center align-items-center px-2 py-2" id="gate-tab" type="button" onclick="goToInternalLoginPage()" style="border-radius: 10px !important; background: linear-gradient(135deg, #2c7a7b 0%, #236162 100%) !important; color: #ffffff !important; border: none !important; box-shadow: 0 4px 12px rgba(35, 97, 98, 0.25);">
+       🔒 內部使用<br><span class="small fw-normal text-lowercase text-white-50" style="font-size: 0.72rem;">Internal Use</span>
+     </button>
+   </li>
  </ul>
 
  <!-- 2.4 所有分頁實體內容的總容器 -->
