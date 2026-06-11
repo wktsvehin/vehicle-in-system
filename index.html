@@ -589,261 +589,274 @@ function finalSubmitData() {
 <!-- ======================================================================== -->
 <!-- 【模組 4 END】 -->
 <!-- ======================================================================== -->
-<!-- ======================================================================== -->
-<!-- 【模組 5：段落一 (第 1 - 100 行)】內部管理、安全驗證、即時搜尋與 PDF 匯出   -->
-<!-- 插拔說明：此區塊為純 JavaScript 邏輯，專門提供給後台管理員驗證權限與同步雲端數據。-->
-<!-- ======================================================================== -->
-<script>
-    // 🔒 內部人員專用安全登入與分頁狀態切換記憶變數
-    let isInternalAuthenticated = false; // 建立一個變數記錄工作人員目前是否已通過驗證，預設為未通過（false）
+// ======================================================================== 
+// 【模組 5：內部管理、安全驗證、即時搜尋與 PDF 匯出】(第 1 - 100 行)
+// 插拔說明：此區塊為純 JavaScript 邏輯，專門提供給後台管理員驗證權限與同步雲端數據。
+// ======================================================================== 
+
+// 🔒 5.0 內部人員專用安全登入與分頁狀態切換記憶變數
+let isInternalAuthenticated = false; // 記錄工作人員目前是否已通過驗證，預設為未通過（false）
+let globalCachedDataList = [];        // 專門用來在網頁背後暫存目前從 Google 雲端拉下來的所有車牌大名單
+
+/**
+ * 5.1 【分頁點擊防護機制】：點擊頂部「內部使用」分頁標籤時自動觸發
+ */
+function triggerInternalAuth() {
+    const gateTab = document.getElementById('gate-tab'); // 抓取 HTML 中的內部使用分頁按鈕物件
+    if (gateTab) {
+        const tabTrigger = new bootstrap.Tab(gateTab); // 初始化 Bootstrap 的分頁控制驅動器
+        tabTrigger.show(); // 驅動網頁分頁切換的動畫，將視覺焦點切換到內部使用面板
+    }
     
-    // 全球唯一快取記憶體變數：專門用來在網頁背後暫存目前從 Google 雲端拉下來的所有車牌大名單
-    let globalCachedDataList = [];
-
-    /**
-     * 5.1 【分頁點擊防護機制】：點擊「內部使用」分頁標籤時自動觸發
-     */
-    function triggerInternalAuth() {
-        const gateTab = document.getElementById('gate-tab'); // 抓取 HTML 中的內部使用分頁按鈕物件
-        if (gateTab) {
-            const tabTrigger = new bootstrap.Tab(gateTab); // 初始化 Bootstrap 的分頁控制驅動器
-            tabTrigger.show(); // 驅動網頁分頁切換的動畫，將視覺焦點切換到內部使用面板
-        }
+    // 🔒 核心隱私安全判定
+    if (!isInternalAuthenticated) { 
+        // 5.1.1 如果工作人員目前「尚未驗證」密碼：還原初始狀態，安全隔離密碼框
+        document.getElementById('authBox').classList.remove('hidden-field'); // 秀出驗證主卡片
+        document.getElementById('internalContent').classList.add('hidden-field'); // 強制隱藏敏感大名單
         
-        // 🔒 核心隱私安全判定
-        if (!isInternalAuthenticated) { 
-            // 如果工作人員目前「尚未驗證」密碼
-            document.getElementById('authBox').classList.remove('hidden-field');       // 解除隱藏，將密碼輸入框秀在畫面上
-            document.getElementById('internalContent').classList.add('hidden-field'); // 加上隱藏，強制將內部的車牌敏感名單藏起來
-            document.getElementById('internalPwd').value = '';                         // 將密碼輸入框內的殘留文字完全清空
-            document.getElementById('authErrorMsg').classList.add('hidden-field');    // 加上隱藏，把上一次的「密碼錯誤」紅色提示藏起來
-        } else { 
-            // 如果工作人員之前「已經驗證成功」了
-            document.getElementById('authBox').classList.add('hidden-field');          // 加上隱藏，把密碼輸入框藏起來，不需要重複輸入
-            document.getElementById('internalContent').classList.remove('hidden-field'); // 解除隱藏，直接大方秀出後台的車牌核對名單
-            loadInternalDataLists(); // 立刻啟動後台 fetch 函數，去 Google 雲端抓取最新的車牌數據名單
-        }
-    }
-
-    /**
-     * 5.2 【安全密碼核對】：當工作人員在輸入框打完密碼並點擊「驗證登入」時執行
-     */
-    function verifyInternalPassword() {
-        const inputPwd = document.getElementById('internalPwd').value; // 抓取工作人員此時在畫面上手打輸入的密碼文字
-        const correctPwd = "wkts001"; // 🔒 唯一指定的內部公務系統管理與 PDF 導出驗證密碼
+        // 🔄 排版重設：強制顯示「引導大按鈕」，將密碼輸入框與錯誤字眼隱藏，回歸清爽外觀
+        document.getElementById('startAuthBtnWrapper').classList.remove('hidden-field');
+        document.getElementById('passwordInputWrapper').classList.add('hidden-field');
         
-        if (inputPwd === correctPwd) { 
-            // 電腦核對：如果手打輸入的密碼與正確密碼完全相符
-            isInternalAuthenticated = true; // 將驗證狀態切換為已通過（true），讓系統記住登入狀態
-            document.getElementById('authBox').classList.add('hidden-field');          // 把密碼輸入框框收起來
-            document.getElementById('internalContent').classList.remove('hidden-field'); // 立刻解鎖秀出後台車牌名單
-            loadInternalDataLists(); // 呼叫雲端通訊函數，秒速抓取最新的處理中與已確認數據
-        } else { 
-            // 如果手打輸入的密碼不對
-            document.getElementById('authErrorMsg').classList.remove('hidden-field'); // 在畫面彈出紅色的「⚠️ 密碼錯誤！」警告字眼
-        }
+        document.getElementById('internalPwd').value = ''; // 將密碼輸入方塊完全清空
+        document.getElementById('authErrorMsg').classList.add('hidden-field'); // 隱藏上一次的「密碼錯誤」紅色提示
+    } else { 
+        // 5.1.2 如果工作人員之前「已經驗證成功」了：直接越過驗證程序
+        document.getElementById('authBox').classList.add('hidden-field'); // 把密碼主卡片藏起來
+        document.getElementById('internalContent').classList.remove('hidden-field'); // 直接秀出後台的車牌核對名單
+        if (typeof loadInternalDataLists === 'function') { loadInternalDataLists(); } // 立刻去 Google 雲端抓取最新的車牌數據名單
     }
+}
 
-    /**
-     * 5.3 【安全登出鎖定】：點擊「安全登出 Logout」按鈕時立刻清除權限並重設鎖定
-     */
-    function lockInternalPage() {
-        isInternalAuthenticated = false; // 將驗證狀態強制改回未通過（false），清除登入記憶
-        document.getElementById('internalPwd').value = ''; // 清空密碼框內的所有字元
-        triggerInternalAuth(); // 重新呼叫驗證防護機制，立刻把畫面切回鎖定狀態的密碼框，徹底保護隱私
+/**
+ * 🆕 5.1.2【按鈕動態展開密碼框】：當工作人員點擊「🔐 進入內部系統」大按鈕時觸發
+ */
+function showPasswordInputField() {
+    // A. 隱藏最上層的藍色引導大按鈕
+    document.getElementById('startAuthBtnWrapper').classList.add('hidden-field');
+    // B. 解鎖並秀出底層的密碼輸入框、驗證登入按鈕與錯誤提示區
+    document.getElementById('passwordInputWrapper').classList.remove('hidden-field');
+    // C. 手機極致優化：自動將游標鎖定到密碼框中，讓工作人員不需再次手點即可直接打字
+    setTimeout(() => { 
+        const pwdInput = document.getElementById('internalPwd');
+        if(pwdInput) pwdInput.focus(); 
+    }, 100);
+}
+
+/**
+ * 5.2 【安全密碼核對】：當工作人員在輸入框打完密碼並點擊「驗證登入」時執行
+ */
+function verifyInternalPassword() {
+    const inputPwd = document.getElementById('internalPwd').value; // 抓取目前輸入的密碼
+    const correctPwd = "wkts001"; // 🔒 唯一指定的內部公務系統管理與 PDF 導出驗證密碼
+    
+    if (inputPwd === correctPwd) { 
+        // 密碼正確：將登入權限設定為 true，隱藏密碼區，大方解鎖後台大名單
+        isInternalAuthenticated = true; 
+        document.getElementById('authBox').classList.add('hidden-field'); 
+        document.getElementById('internalContent').classList.remove('hidden-field'); 
+        if (typeof loadInternalDataLists === 'function') { loadInternalDataLists(); } // 呼叫雲端通訊函數，秒速抓取最新的處理中與已確認數據
+    } else { 
+        // 密碼錯誤：在畫面彈出紅色的「⚠️ 密碼錯誤！」警告字眼
+        document.getElementById('authErrorMsg').classList.remove('hidden-field'); 
     }
+}
 
-    /**
-     * 5.4 【切換回訪客】：當內部工作人員點擊左邊「訪客登記」分頁按鈕時執行的功能
-     */
-    function switchToVisitor() {
-        const regTab = document.getElementById('register-tab'); // 抓取 HTML 中的訪客登記分頁按鈕物件
-        if (regTab) {
-            const tabTrigger = new bootstrap.Tab(regTab); // 初始化 Bootstrap 分頁驅動器
-            tabTrigger.show(); // 驅動動畫，將網頁畫面流暢地切換回填寫表單的卡片介面
-        }
+/**
+ * 5.3 【安全登出鎖定】：點擊「安全登出 Logout」按鈕時立刻清除權限並重設鎖定
+ */
+function lockInternalPage() {
+    isInternalAuthenticated = false; // 強制改回未通過（false），清除登入狀態記憶
+    document.getElementById('internalPwd').value = ''; // 清空密碼框內的所有字元
+    triggerInternalAuth(); // 重新呼叫防護機制，畫面會自動縮回只有「初始大按鈕」的乾淨狀態
+}
+
+/**
+ * 5.4 【切換回訪客】：當內部工作人員點擊左邊「訪客登記」分頁按鈕時執行的功能
+ */
+function switchToVisitor() {
+    const regTab = document.getElementById('register-tab'); // 抓取訪客登記分頁按鈕物件
+    if (regTab) {
+        const tabTrigger = new bootstrap.Tab(regTab); // 初始化分頁驱动器
+        tabTrigger.show(); // 驅動動畫，將網頁畫面流暢地切換回填寫表單的卡片介面
     }
+}
+/**
+ * 5.5 【數據即時抓取】：向 Google Sheets 資料庫拉取最新車牌數據名單並動態填入兩個表格中
+ */
+function loadInternalDataLists() {
+    const todayTbody = document.getElementById('todayTableBody'); // 抓取「申請處理中」表格實體主體
+    const tomorrowTbody = document.getElementById('tomorrowTableBody'); // 抓取「已確認名單」表格實體主體
+    
+    if (!todayTbody || !tomorrowTbody) return; // 安全防護驗證
 
-    /**
-     * 5.5 【數據即時抓取】：向 Google Sheets 資料庫拉取最新車牌數據名單並動態填入兩個表格中
-     */
-    function loadInternalDataLists() {
-        const todayTbody = document.getElementById('todayTableBody');       // 抓取模組 2 中的「申請處理中」表格實體主體
-        const tomorrowTbody = document.getElementById('tomorrowTableBody'); // 抓取模組 2 中的「已確認名單」表格實體主體
+    // 在數據還沒完全從雲端拉下來之前，先貼心顯示讀取中動畫字樣，避免畫面上空蕩蕩
+    todayTbody.innerHTML = '<tr><td colspan="10" class="text-center py-3 text-secondary">正在同步雲端數據... Syncing cloud data...</td></tr>';
+    tomorrowTbody.innerHTML = '<tr><td colspan="10" class="text-center py-3 text-secondary">正在同步雲端數據... Syncing cloud data...</td></tr>';
+    
+    // 💡 提示：此處配合您原本宣告的 GOOGLE_API_URL 變數發送網頁連線請求
+    fetch(GOOGLE_API_URL) 
+    .then(response => response.json()) // 將原始數據轉換為乾淨的 JSON 陣列物件
+    .then(dataList => {
+        globalCachedDataList = dataList; // 同步複製一份到快取記憶體中，供 PDF 導出按鈕隨時一秒抽查使用
+        todayTbody.innerHTML = ''; // 清空處理中表格的讀取中字樣
+        tomorrowTbody.innerHTML = ''; // 清空已確認表格的讀取中字樣
         
-        // 在數據還沒完全從雲端拉下來之前，先貼心顯示讀取中動畫字樣，避免畫面上空蕩蕩
-        todayTbody.innerHTML = '<tr><td colspan="10" class="text-center py-3 text-secondary">正在同步雲端數據... Syncing cloud data...</td></tr>';
-        tomorrowTbody.innerHTML = '<tr><td colspan="10" class="text-center py-3 text-secondary">正在同步雲端數據... Syncing cloud data...</td></tr>';
+        // 透過 JavaScript 進行狀態分類篩選
+        let inProgressCars = dataList.filter(item => item.status === "in_progress"); // 狀態為 "in_progress" 放入處理中
+        let confirmedCars = dataList.filter(item => item.status !== "in_progress");   // 其餘的放入已確認名單
         
-        fetch(GOOGLE_API_URL) // 發送網頁連線請求，跟 Google 試算表要最新的所有名單
-            .then(response => response.json()) // 成功連線後，將原始數據轉換為乾淨的 JSON 陣列物件
-            .then(dataList => {
-                globalCachedDataList = dataList; // 同步複製一份到快取記憶體中，供 PDF 導出按鈕隨時一秒抽查使用
-                todayTbody.innerHTML = '';    // 清空處理中表格的讀取中字樣
-                tomorrowTbody.innerHTML = ''; // 清空已確認表格的讀取中字樣
-                
-                // 透過 JavaScript 進行狀態分類篩選
-                let inProgressCars = dataList.filter(item => item.status === "in_progress"); // 篩選最右邊欄位為 "in_progress" 的放入處理中
-                let confirmedCars = dataList.filter(item => item.status !== "in_progress");  // 篩選最右邊欄位已經被管理員批准確認的資料
-                // A. 開始動態渲染「申請處理中」表格
-                if (inProgressCars.length === 0) {
-                    todayTbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-3">暫無處理中的申請 / No records in progress.</td></tr>';
-                } else {
-                    inProgressCars.forEach(item => {
-                        const tr = document.createElement('tr');
-                        tr.innerHTML = `
-                            <td>${item.item || '-'}</td>
-                            <td class="fw-bold text-secondary" style="font-size:0.8rem;">${item.ref_no || '-'}</td>
-                            <td>${item.company || '-'}</td>
-                            <td class="fw-bold text-uppercase text-warning">${item.vehicle_no || '-'}</td>
-                            <td>${item.contact_person || '-'}</td>
-                            <td>${item.tel_no || '-'}</td>
-                            <td>${item.time_in || '---'}</td>
-                            <td>${item.time_out || '---'}</td>
-                            <td>${item.purpose || '-'}</td>
-                            <td><span class="badge bg-secondary">${item.vehicle_type || '-'}</span></td>
-                        `; // 將 10 個欄位數據完美塞入格子內，車牌用橘黃色突顯，車種用精美小標籤包裹
-                        todayTbody.appendChild(tr);
-                    });
-                }
-                
-                // B. 開始動態渲染「已確認名單」表格
-                if (confirmedCars.length === 0) {
-                    tomorrowTbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-3">暫無已確認之名單 / No confirmed records.</td></tr>';
-                } else {
-                    confirmedCars.forEach(item => {
-                        const tr = document.createElement('tr');
-                        tr.innerHTML = `
-                            <td>${item.item || '-'}</td>
-                            <td class="fw-bold text-secondary" style="font-size:0.8rem;">${item.ref_no || '-'}</td>
-                            <td>${item.company || '-'}</td>
-                            <td class="fw-bold text-uppercase text-success">${item.vehicle_no || '-'}</td>
-                            <td>${item.contact_person || '-'}</td>
-                            <td>${item.tel_no || '-'}</td>
-                            <td>${item.time_in || '---'}</td>
-                            <td>${item.time_out || '---'}</td>
-                            <td>${item.purpose || '-'}</td>
-                            <td><span class="badge bg-success">${item.vehicle_type || '-'}</span></td>
-                        `; // 車牌與車種標籤改用安全穩固的綠色突顯
-                        tomorrowTbody.appendChild(tr);
-                    });
-                }
-            })
-            .catch(error => {
-                console.error(error);
-                const errHTML = `<tr><td colspan="10" class="text-center text-danger py-3">⚠️ 雲端連線失敗，請檢查網路連線或 Web App URL 是否正確。</td></tr>`;
-                todayTbody.innerHTML = errHTML;
-                tomorrowTbody.innerHTML = errHTML;
+        // A. 開始動態渲染「申請處理中」表格
+        if (inProgressCars.length === 0) {
+            todayTbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-3">暫無處理中的申請 / No records in progress.</td></tr>';
+        } else {
+            inProgressCars.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.item || '-'}</td>
+                    <td class="fw-bold text-secondary" style="font-size:0.8rem;">${item.ref_no || '-'}</td>
+                    <td>${item.company || '-'}</td>
+                    <td class="fw-bold text-uppercase text-warning">${item.vehicle_no || '-'}</td>
+                    <td>${item.contact_person || '-'}</td>
+                    <td>${item.tel_no || '-'}</td>
+                    <td>${item.time_in || '---'}</td>
+                    <td>${item.time_out || '---'}</td>
+                    <td>${item.purpose || '-'}</td>
+                    <td><span class="badge bg-secondary">${item.vehicle_type || '-'}</span></td>
+                `; // 車牌用橘黃色突顯，車種用精美小標籤包裹
+                todayTbody.appendChild(tr);
             });
-    }
-
-    /**
-     * 5.6 【核心 PDF 導出引擎】：自動篩選明天 (Today+1) 的所有車輛名單，並生成完美對齊 EPD 官方紙本格式的日誌檔案
-     */
-    function exportTomorrowListToPDF() {
-        // 1. 自動精準計算出明天的 YYYY-MM-DD 日期標籤字串
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1); // 將日期往後推進 1 天（即為明天）
-        const yyyy = tomorrow.getFullYear();
-        const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
-        const dd = String(tomorrow.getDate()).padStart(2, '0');
-        const tomorrowString = yyyy + "-" + mm + "-" + dd; // 組裝成與雲端一模一樣的對照字串
-        
-        // 2. 從快取記憶體的大名單中，精準過濾篩選出所有登記在明天到訪的車輛
-        let tomorrowCars = globalCachedDataList.filter(item => {
-            return String(item.visit_date).trim() === tomorrowString; // 比對到訪日期是否等於明天的日期
-        });
-        
-        if (tomorrowCars.length === 0) {
-            alert("雲端資料庫中，目前沒有任何預約在明天 (" + tomorrowString + ") 到訪的車輛紀錄，因此無法生成空報表。");
-            return; // 直接退出，不執行列印
         }
         
-        // 3. 驅動視窗中的 window.jspdf 元件，在設備記憶體中建立高解析度虛擬 A4 橫向畫布物件
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('l', 'mm', 'a4'); // l (Landscape 橫向排版)、公制單位 mm、標準 A4
-        
-        // 4. 完美繪製紙本官方的大標頭字眼與右上角專屬的批核核對簽名線
-        doc.setFont("Helvetica", "bold");
-        doc.setFontSize(16);
-        doc.text("WEST KOWLOON REFUSE TRANSFER STATION", 14, 15); // 在畫布左側印出西九龍廢物轉運站官方抬頭
-        
-        doc.setFont("Helvetica", "normal");
-        doc.setFontSize(12);
-        doc.text("Registered Vehicle Log       Log Date: " + tomorrowString, 14, 21); // 印出表格名稱與明天的日期標記
-        doc.text("EPD Approval: ________________________", 200, 15); // 🔒 在畫布最右上角完美印出唯有登入管理員才能導出的批核簽名線
-        
-        // 5. 使用循環，將明天的車輛數據，一筆一筆依序整理轉換為對齊官方紙本 9 欄位的二維數據陣列結構
-        let tableRows = [];
-        tomorrowCars.forEach((car, index) => {
-            tableRows.push([
-                index + 1, // 欄位 1：項目序號 Item (從 1 開始遞增)
-                car.company || '',
-                String(car.vehicle_no).toUpperCase(),
-                car.contact_person || '',
-                car.tel_no || '',
-                car.time_in === '---' ? '' : car.time_in,   // 若進站時間沒登記則貼心維持完全空白，留給閘口紙本手寫
-                car.time_out === '---' ? '' : car.time_out, // 若離站時間沒登記則貼心維持完全空白，留給閘口紙本手寫
-                car.purpose || '',
-                car.vehicle_type || ''
-            ]);
-        });
-        
-        // 6. 啟動 AutoTable 外掛，將上面的矩陣數據自動繪製成完全無形變、美觀、且帶細網格線的實體表格
-        doc.autoTable({
-            startY: 28, // 從距離紙張最頂端 28 毫米的地方開始畫表格，完美避開上方的抬頭字
-            head: [['Item', 'Company', 'Vehicle No.', 'Contact Person', 'Tel. No.', 'Time In', 'Time Out', 'Purpose / Work Content', 'Vehicle Type']], // 注入完全對齊紙本的中英對照標頭
-            body: tableRows, // 注入剛剛整理好的明天車牌數據
-            theme: 'grid',    // 採用清晰的網格虛線框，方便保安人員拿筆在紙上對齊勾選
-            
-            // 🎨 語法修復核心：已為您精確補上先前遺漏的顏色代碼值（深環保綠表頭背景、白色字體、深灰色內文）
-            headStyles: { fillColor: '#2f855a', textColor: '#ffffff', fontStyle: 'bold', halign: 'center' }, 
-            bodyStyles: { textColor: '#2d3748', halign: 'center' }, 
-            
-            styles: { fontSize: 9, cellPadding: 3 }, // 限制字型大小為 9 級（最適合 A4 橫向寬度），內邊距留白 3 毫米
-            
-            columnStyles: { 
-                // 🎨 核心技術：依據紙本圖片比例，用毫米 (mm) 微調限制這 9 個欄位的實體寬度，確保橫向不擠壓、不爆表
-                0: { cellWidth: 12 }, // 項目 Item
-                1: { cellWidth: 40 }, // 公司 Company
-                2: { cellWidth: 26 }, // 車牌 Vehicle No.
-                3: { cellWidth: 30 }, // 聯絡人 Contact Person
-                4: { cellWidth: 26 }, // 電話 Tel. No.
-                5: { cellWidth: 22 }, // 進入時間 Time In
-                6: { cellWidth: 22 }, // 離開時間 Time Out
-                7: { cellWidth: 50 }, // 工作內容 Purpose
-                8: { cellWidth: 35 }  // 車種類別 Vehicle Type
-            }
-        });
-        
-        // 7. 自動觸發下載：將檔名自動命名為明天日期 (例如：2026-06-12_Log.pdf) 
-        const fileName = tomorrowString + "_Log.pdf";
-        doc.save(fileName); // 驅動下載功能
+        // B. 開始動態渲染「已確認名單」表格
+        if (confirmedCars.length === 0) {
+            tomorrowTbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-3">暫無已確認之名單 / No confirmed records.</td></tr>';
+        } else {
+            confirmedCars.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.item || '-'}</td>
+                    <td class="fw-bold text-secondary" style="font-size:0.8rem;">${item.ref_no || '-'}</td>
+                    <td>${item.company || '-'}</td>
+                    <td class="fw-bold text-uppercase text-success">${item.vehicle_no || '-'}</td>
+                    <td>${item.contact_person || '-'}</td>
+                    <td>${item.tel_no || '-'}</td>
+                    <td>${item.time_in || '---'}</td>
+                    <td>${item.time_out || '---'}</td>
+                    <td>${item.purpose || '-'}</td>
+                    <td><span class="badge bg-success">${item.vehicle_type || '-'}</span></td>
+                `; // 車牌與車種標籤改用安全穩固的綠色突顯
+                tomorrowTbody.appendChild(tr);
+            });
+        }
+    })
+    .catch(error => {
+        console.error(error);
+        const errHTML = `<tr><td colspan="10" class="text-center text-danger py-3">⚠️ 雲端連線失敗，請檢查網路連線或 Web App URL 是否正確。</td></tr>`;
+        todayTbody.innerHTML = errHTML;
+        tomorrowTbody.innerHTML = errHTML;
+    });
+}
+/**
+ * 5.6 【核心 PDF 導出引擎】：自動篩選明天 (Today+1) 的所有車輛名單，並生成完美對齊 EPD 官方紙本格式的日誌檔案
+ */
+function exportTomorrowListToPDF() {
+    // 1. 自動精準計算出明天的 YYYY-MM-DD 日期標籤字串
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1); // 將日期往後推進 1 天（即為明天）
+    const yyyy = tomorrow.getFullYear();
+    const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
+    const dd = String(tomorrow.getDate()).padStart(2, '0');
+    const tomorrowString = yyyy + "-" + mm + "-" + dd; // 組裝成與雲端一模一樣的對照字串
+    
+    // 2. 從快取記憶體的大名單中，精準過濾篩選出所有登記在明天到訪的車輛
+    let tomorrowCars = globalCachedDataList.filter(item => {
+        return String(item.visit_date).trim() === tomorrowString; // 比對到訪日期是否等於明天的日期
+    });
+    
+    if (tomorrowCars.length === 0) {
+        alert("雲端資料庫中，目前沒有任何預約在明天 (" + tomorrowString + ") 到訪的車輛紀錄，因此無法生成空報表。");
+        return; // 直接退出，不執行列印
     }
+    
+    // 3. 驅動視窗中的 window.jspdf 元件，在設備記憶體中建立高解析度虛擬 A4 橫向畫布物件
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'mm', 'a4'); // l (Landscape 橫向排版)、公制單位 mm、標準 A4
+    
+    // 4. 完美繪製紙本官方的大標頭字眼與右上角專屬的批核核對簽名線
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("WEST KOWLOON REFUSE TRANSFER STATION", 14, 15); // 在畫布左側印出西九龍廢物轉運站官方抬頭
+    
+    doc.setFont("Helvetica", "normal");
+    doc.setFontSize(12);
+    doc.text("Registered Vehicle Log Log Date: " + tomorrowString, 14, 21); // 印出表格名稱與明天的日期標記
+    doc.text("EPD Approval: ________________________", 200, 15); // 🔒 在畫布最右上角完美印出批核簽名線
+    
+    // 5. 將明天的車輛數據，一筆一筆依序整理轉換為對齊官方紙本 9 欄位的二維數據陣列結構
+    let tableRows = [];
+    tomorrowCars.forEach((car, index) => {
+        tableRows.push([
+            index + 1, // 項目序號 Item (從 1 開始遞增)
+            car.company || '',
+            String(car.vehicle_no).toUpperCase(),
+            car.contact_person || '',
+            car.tel_no || '',
+            car.time_in === '---' ? '' : car.time_in,   // 若時間未填維持完全空白，留給閘口紙本手寫
+            car.time_out === '---' ? '' : car.time_out, // 若時間未填維持完全空白，留給閘口紙本手寫
+            car.purpose || '',
+            car.vehicle_type || ''
+        ]);
+    });
+    
+    // 6. 啟動 AutoTable 外掛，自動繪製成美觀且帶細網格線的實體表格
+    doc.autoTable({
+        startY: 28, // 從距離紙張最頂端 28 毫米的地方開始畫表格，完美避開上方的抬頭字
+        head: [['Item', 'Company', 'Vehicle No.', 'Contact Person', 'Tel. No.', 'Time In', 'Time Out', 'Purpose / Work Content', 'Vehicle Type']], // 注入中英對照標頭
+        body: tableRows, // 注入整理好的明天車牌數據
+        theme: 'grid',   // 採用清晰的網格虛線框，方便保安人員拿筆在紙上對齊勾選
+        headStyles: { fillColor: '#2f855a', textColor: '#ffffff', fontStyle: 'bold', halign: 'center' }, 
+        bodyStyles: { textColor: '#2d3748', halign: 'center' }, 
+        styles: { fontSize: 9, cellPadding: 3 }, // 限制字型大小為 9 級，最適合 A4 橫向寬度
+        columnStyles: { 
+            // 🎨 核心技術：依據紙本圖片比例，用毫米 (mm) 微調限制欄位寬度，確保橫向不擠壓、不爆表
+            0: { cellWidth: 12 }, // 項目 Item
+            1: { cellWidth: 40 }, // 公司 Company
+            2: { cellWidth: 26 }, // 車牌 Vehicle No.
+            3: { cellWidth: 30 }, // 聯絡人 Contact Person
+            4: { cellWidth: 26 }, // 電話 Tel. No.
+            5: { cellWidth: 22 }, // 進入時間 Time In
+            6: { cellWidth: 22 }, // 離開時間 Time Out
+            7: { cellWidth: 50 }, // 工作內容 Purpose
+            8: { cellWidth: 35 }  // 車種類別 Vehicle Type
+        }
+    });
+    
+    // 7. 自動觸發下載：將檔名自動命名為明天日期 (例如：2026-06-12_Log.pdf) 
+    const fileName = tomorrowString + "_Log.pdf";
+    doc.save(fileName); // 驅動下載功能
+}
 
-    /**
-     * 5.7 【閘口車牌即時過濾功能】：當閘口人員在搜尋框打字時，自動、即時同步過濾下方表格內容
-     */
-    function filterGateTables() {
-        const input = document.getElementById('searchPlate').value.toUpperCase(); // 抓取搜尋框打的字並自動轉大寫
-        const tables = [document.getElementById('todayTableBody'), document.getElementById('tomorrowTableBody')]; // 把兩個表格放入陣列中處理
-        
-        tables.forEach(tbody => {
-            if (!tbody) return;
-            const rows = tbody.getElementsByTagName('tr'); // 抓取該表格內目前所有的行 (Rows)
-            for (let i = 0; i < rows.length; i++) {
-                const td = rows[i].getElementsByTagName('td');
-                if (td.length > 0) {
-                    const txtValue = rows[i].textContent || rows[i].innerText; // 提取這一行內所有的純文字內容
-                    if (txtValue.toUpperCase().indexOf(input) > -1) {
-                        rows[i].style.display = ""; // 包含搜尋字眼則保持原樣，顯示這行
-                    } else {
-                        rows[i].style.display = "none"; // 不符合則加上隱藏，把這行車子藏起來
-                    }
-                }
+/**
+ * 5.7 【閘口車牌即時過濾功能】：當閘口人員在搜尋框打字時，自動同步即時過濾下方兩個表格的內容
+ */
+function filterGateTables() {
+    const input = document.getElementById('searchPlate').value.toUpperCase(); // 抓取搜尋關鍵字並自動轉大寫
+    const tables = [document.getElementById('todayTableBody'), document.getElementById('tomorrowTableBody')]; // 納入兩個表格容器
+    
+    tables.forEach(tbody => {
+        if (!tbody) return;
+        const rows = tbody.getElementsByTagName('tr'); // 抓取該表格內目前所有的行 (Rows)
+        for (let i = 0; i < rows.length; i++) {
+            const txtValue = rows[i].textContent || rows[i].innerText; // 提取這一行內所有的純文字內容
+            if (txtValue.toUpperCase().indexOf(input) > -1) {
+                rows[i].style.display = ""; // 包含搜尋字眼則保持原樣顯示
+            } else {
+                rows[i].style.display = "none"; // 不符合則加上隱藏
             }
-        });
-    }
+        }
+    });
+}
 </script>
 <!-- ======================================================================== -->
 <!-- 【模組 5 結束】：內部管理、安全驗證、即時搜尋與 PDF 匯出 (Internal Admin & PDF Engine) -->
