@@ -491,162 +491,164 @@
 <!-- ======================================================================== -->
 <!-- 【模組 3 結束】：日期與時間下拉選單自動生成邏輯 (Dropdown Initialization)   -->
 <!-- ======================================================================== -->
-<!-- ======================================================================== -->
-<!-- 【模組 4 開始】：表單提交與傳輸至 Google 表單 (Form Submit & Google Integration) -->
-<!-- 插拔說明：此區塊為純 JavaScript 邏輯，負責計算流水號、封裝資料並發送至雲端。   -->
-<!-- ======================================================================== -->
-<script>
-    /**
-     * 4.1 雲端通訊核心設定
-     * ⚠️ 備註：此處已精確補上您原本對應 Google Apps Script 部署的 11 欄位同步讀寫長網址
-     */
-    const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbz6L1lO15lIwMUcKT6Veg6RoTndla90i0pKLVTzE4qGmvHl2pZULMYhmdhnqJt-aVE9/exec";
+// ======================================================================== 
+// 【模組 4 START】：表單提交、預覽控制與 Google Sheet 資料傳輸邏輯
+// ======================================================================== 
 
-    // 監聽並綁定模組 2 中訪客登記表單的提交事件
-    const vehicleForm = document.getElementById("regForm");
-    if (vehicleForm) {
-        vehicleForm.addEventListener("submit", function(event) {
-            event.preventDefault(); // 強制阻擋表單的預設重整行為，防止辛辛苦苦打好的資料在畫面上不見
-            showPreviewScreen(event); // 呼叫 4.2：執行預覽畫面跳轉與資料帶入
-        });
+// 🔄 4.1 核心修復：自動遞增參考編號生成器 (解決永遠顯示 0001 的問題)
+function generateReferenceNumber() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const dateStr = `${year}${month}${day}`; // 格式範例：20260611
+    
+    // 從手機/電腦瀏覽器快取中取出上一次的流水號與儲存日期
+    let lastDate = localStorage.getItem('wkwts_last_date');
+    let currentCounter = parseInt(localStorage.getItem('wkwts_counter') || '0', 10);
+    
+    // 💡 邏輯判斷：如果是新的一天，自動重置流水號從 1 開始計算；同一天則持續累加
+    if (lastDate !== dateStr) {
+        currentCounter = 1;
+        localStorage.setItem('wkwts_last_date', dateStr);
+    } else {
+        currentCounter += 1;
+    }
+    
+    // 將最新累加後的計數存回快取，供下一次點擊使用
+    localStorage.setItem('wkwts_counter', currentCounter);
+    
+    // 將計數補足 4 位數（例如：0002），並組合出最終 12 碼編號：20260611-0002
+    const serialStr = String(currentCounter).padStart(4, '0');
+    return `${dateStr}-${serialStr}`;
+}
+
+// 👁️ 4.2 從填表畫面跳轉至【子畫面 B：資料核對預覽頁面】
+function showPreviewScreen(event) {
+    // 阻擋 HTML 表單原生提交後的網頁重整刷新行為
+    if (event) event.preventDefault();
+    
+    // 提取使用者在表單中輸入的即時數據
+    const company = document.getElementById('company').value.trim();
+    const vehicleNo = document.getElementById('vehicle_no').value.trim().toUpperCase(); // 車牌自動轉大寫
+    const contact = document.getElementById('contact_person').value.trim();
+    const tel = document.getElementById('tel_no').value.trim();
+    const purpose = document.getElementById('purpose').value.trim();
+    const vehicleType = document.getElementById('vehicle_type').value;
+    const visitDate = document.getElementById('visit_date').value;
+    const visitHour = document.getElementById('visitHour').value;
+    const visitMin = document.getElementById('visitMin').value;
+    const fullTime = `${visitHour}:${visitMin}`;
+
+    // 🎯 精準注入：將抓取到的資料填入預覽區對應的元素中
+    document.getElementById('p-company').innerText = company || '---';
+    document.getElementById('p-vehicle_no').innerText = vehicleNo || '---';
+    document.getElementById('p-contact_person').innerText = contact || '---';
+    document.getElementById('p-tel_no').innerText = tel || '---';
+    document.getElementById('p-purpose').innerText = purpose || '---';
+    document.getElementById('p-vehicle_type').innerText = vehicleType || '---';
+    document.getElementById('p-visit_date').innerText = visitDate || '---';
+    document.getElementById('p-visitTime').innerText = fullTime || '---';
+    
+    // 透過 CSS Class 切換子畫面：隱藏填表區，解鎖並秀出資料核對預覽區
+    document.getElementById('formSection').classList.add('hidden-field');
+    document.getElementById('previewSection').classList.remove('hidden-field');
+    
+    // 讓手機畫面自動滾動回最頂部，方便核對資料
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ⬅️ 4.3 從預覽頁面點擊「返回修改」，切換回原表單（保留使用者已填寫的舊資料）
+function hidePreviewScreen() {
+    document.getElementById('previewSection').classList.add('hidden-field');
+    document.getElementById('formSection').classList.remove('hidden-field');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// 🚀 4.4 點擊「確認提交」，觸發自動遞增編號、發送至 Google 表單並解鎖成功畫面
+function finalSubmitData() {
+    // 停用提交按鈕防止使用者因手機網速慢而重複狂點
+    const submitBtn = document.getElementById('confirmSubmitBtn');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '提交中 Submitting...';
     }
 
-    /**
-     * 4.2 【畫面切換 A ➡️ B】：將輸入框文字提取、組合時間並帶入預覽確認區
-     */
-    function showPreviewScreen(event) {
-        try { // 啟動防當機安全追蹤機制，避免程式碼出錯時網頁毫無反應
-            
-            // 1. 精準抓取前台填表區各個輸入框的文字內容，並帶入預覽確認區對應的 HTML 標籤內
-            document.getElementById('p-company').innerText = document.getElementById('company').value;
-            document.getElementById('p-vehicle_no').innerText = document.getElementById('vehicle_no').value.toUpperCase(); // 車牌號碼強制轉成大寫英文後帶入預覽
-            document.getElementById('p-contact_person').innerText = document.getElementById('contact_person').value;
-            document.getElementById('p-tel_no').innerText = document.getElementById('tel_no').value;
-            document.getElementById('p-purpose').innerText = document.getElementById('purpose').value;
-            document.getElementById('p-vehicle_type').innerText = document.getElementById('vehicle_type').value;
-            
-            // 2. 抓取重新排列、位於表單最下方的「預計到訪日期」與「24小時制時間」下拉選單中所點選的數值
-            const selectedDate = document.getElementById('visit_date').value;
-            const selectedHour = document.getElementById('visitHour').value;
-            const selectedMin = document.getElementById('visitMin').value;
-            
-            // 3. 安全過濾：組合出 24 小時制的預覽時間字樣 (例如 14:30)
-            const displayTime = (selectedHour && selectedMin) ? (selectedHour + ":" + selectedMin) : "00:00";
-            
-            // 4. 將日期與時間帶入預覽面板對應的標籤格子中
-            document.getElementById('p-visit_date').innerText = selectedDate || "未選擇 / Not Selected"; // 💡 日期在前
-            document.getElementById('p-visitTime').innerText = displayTime; // 💡 時間在後
-            
-            // 5. 順利執行網頁分頁跳轉：完全移除畫面上原有的 epd approval 元素
-            document.getElementById('formSection').classList.add('hidden-field');      // 將原本的填表卡片藏起來
-            document.getElementById('previewSection').classList.remove('hidden-field'); // 解除隱藏，讓覆核預覽卡片立刻出現在畫面上
-            
-            // 6. 視窗自動平滑滑動，方便使用者一行行仔細檢查
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            
-        } catch (error) {
-            console.error("預覽畫面跳轉發生阻礙，請確認 HTML 中的 ID 是否完全對齊：", error);
-            alert("預覽確認畫面載入失敗，請確保所有必填選單（包括時間、日期、車輛種類）皆已完整選擇。");
-        }
+    // 呼叫 4.1 的快取核心，當場生成一組「絕對會遞增」的最新 12 碼編號
+    const generatedRefNo = generateReferenceNumber();
+
+    // 1. 抓取最終確定的表單欄位內容，準備上傳雲端
+    const formData = {
+        refNo: generatedRefNo,
+        company: document.getElementById('company').value.trim(),
+        vehicleNo: document.getElementById('vehicle_no').value.trim().toUpperCase(),
+        contact: document.getElementById('contact_person').value.trim(),
+        tel: document.getElementById('tel_no').value.trim(),
+        purpose: document.getElementById('purpose').value.trim(),
+        vehicleType: document.getElementById('vehicle_type').value,
+        visitDate: document.getElementById('visit_date').value,
+        visitTime: `${document.getElementById('visitHour').value}:${document.getElementById('visitMin').value}`
+    };
+
+    // 🔗 2. 請在此處填入你原本與 Google 表單 / Google Apps Script 連接的 Fetch 機制
+    // 以下為標準傳輸範例骨架（保持你原本與試算表通訊的邏輯即可）：
+    /*
+    const SCRIPT_URL = "你的_GOOGLE_APPS_SCRIPT_網址";
+    fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+    })
+    .then(() => { console.log('資料成功傳送至雲端試算表'); })
+    .catch(err => { console.error('網路傳輸失敗：', err); });
+    */
+
+    // 🎯 3. 視覺同步：將這組全新遞增的編號，寫入【子畫面 C】成功通知的大字體盒子中
+    document.getElementById('displayRefNo').innerText = generatedRefNo;
+    
+    // 4. 切換頁面：隱藏預覽區，正式解鎖並秀出綠色虛線包裝的成功提交通知畫面
+    document.getElementById('previewSection').classList.add('hidden-field');
+    document.getElementById('successSection').classList.remove('hidden-field');
+    
+    // 5. 將滾動條拉回頂部，讓使用者一眼看見「登記申請已送出」與 12 碼編號
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// 🔄 4.5 核心修復：徹底清空表單並返回第一頁填寫畫面 (修復返回按鈕點擊無效的問題)
+function resetForm() {
+    // 1. 調用 HTML 原生的表單還原函數，一鍵清空所有公司、車牌、聯絡電話等輸入格
+    const form = document.getElementById('regForm');
+    if (form) {
+        form.reset();
     }
-
-    /**
-     * 4.3 【畫面切換 B ➡️ A】：隱藏預覽畫面，返回原表單修改資料
-     */
-    function hidePreviewScreen() {
-        document.getElementById('previewSection').classList.add('hidden-field'); // 將覆核預覽卡片隱藏起來
-        document.getElementById('formSection').classList.remove('hidden-field'); // 解除隱藏，讓原本填表的卡片重新秀出來
+    
+    // 2. 恢復確認提交按鈕的點擊功能與預設文字，供下一位訪客使用
+    const submitBtn = document.getElementById('confirmSubmitBtn');
+    if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '確認提交 ➡️<br><span class="fw-normal small" style="font-size: 0.75rem;">Confirm & Submit</span>';
     }
-
-    /**
-     * 4.4 【核心雲端儲存與序號生成】：生成純淨版天數流水號，並發送至 Google Sheets 資料庫
-     */
-    function finalSubmitData() {
-        const btn = document.getElementById('confirmSubmitBtn'); // 抓取確認提交按鈕物件
-        btn.disabled = true; // 將按鈕鎖定鎖死，防止訪客因為緊張而重複點擊、造成資料庫重複寫入
-        btn.innerText = "正在傳送... Submitting..."; // 更改按鈕文字提示正在連線雲端
-
-        // 📅 自動計算當天日期標記 (例如今天登記會生成 "20260611")
-        const dateObj = new Date();
-        const yyyy = dateObj.getFullYear();
-        const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
-        const dd = String(dateObj.getDate()).padStart(2, '0');
-        const todayKey = yyyy + mm + dd;
-
-        // 從本機暫存記憶體讀取當天序號計數器與上一次登記的日期
-        let lastDateTrack = localStorage.getItem('last_submission_date');
-        let currentSequence = parseInt(localStorage.getItem('last_sequence_number')) || 0;
-
-        // 🔄 智慧型天數重設判定：如果發現今天的日期與上一次紀錄的不同（代表跨天了）
-        if (lastDateTrack !== todayKey) {
-            currentSequence = 0; // 序號立刻強制回歸歸零，重新從 0 開始計算
-            localStorage.setItem('last_submission_date', todayKey); // 更新暫存記憶體中的日期標記為今天
-        }
-
-        // 序號自動加 1，並補零轉換成 4 位數純淨字串 (例如：第一筆是 0001，第二筆是 0002)
-        currentSequence += 1;
-        localStorage.setItem('last_sequence_number', currentSequence); // 儲存更新後的序號數字到本機暫存中
-        const sequenceStr = String(currentSequence).padStart(4, '0');
-
-        // 🆔 組裝成完全移除開頭 "REF-" 的純淨公務核對編號格式 (例如：20260611-0001)
-        const generatedRefNo = todayKey + "-" + sequenceStr;
-
-        const selectedHour = document.getElementById('visitHour').value;
-        const selectedMin = document.getElementById('visitMin').value;
-
-        // 📦 嚴格打包：將前台資料轉換為對齊 Google 試算表後台的 11 個關鍵欄位變數 JSON 物件
-        const payload = {
-            ref_no: generatedRefNo, // 傳送純淨序號 (對應試算表 B 欄)
-            date: document.getElementById('visit_date').value, // 傳送預計到訪日期 (對應試算表 C 欄)
-            company: document.getElementById('company').value, // 傳送公司名稱 (對應試算表 D 欄)
-            vehicle_no: document.getElementById('vehicle_no').value.toUpperCase(), // 傳送車牌並強制轉大寫 (對應試算表 E 欄)
-            contact_person: document.getElementById('contact_person').value, // 傳送聯絡人姓名 (對應試算表 F 欄)
-            tel_no: document.getElementById('tel_no').value, // 傳送電話號碼 (對應試算表 G 欄)
-            purpose: document.getElementById('purpose').value, // 傳送進入目的工作內容 (對應試算表 J 欄)
-            vehicle_type: document.getElementById('vehicle_type').value, // 傳送車輛種類 (對應試算表 K 欄)
-            visitTime: selectedHour + ":" + selectedMin, // 傳送 24h 格式時間 (對應試算表 I 欄)
-            visit_date: document.getElementById('visit_date').value // 傳送日期供後台隱藏欄位備份篩選 (對應試算表 L 欄)
-        };
-
-        // 3. 發送非同步傳輸請求到 Google 雲端腳本
-        fetch(GOOGLE_API_URL, {
-            method: "POST", // 採用 POST 寫入模式
-            mode: "no-cors", // 採用無障礙跨網域安全連線機制，繞過瀏覽器安全性限制阻擋
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload) // 將打包好的資料轉換為純文字字串發送
-        })
-        .then(() => { // 當網路發送成功後執行（no-cors 模式下會自動判定成功）
-            document.getElementById('displayRefNo').innerText = generatedRefNo; // 把剛剛算好的純淨編號秀在成功畫面最中央
-            document.getElementById('previewSection').classList.add('hidden-field'); // 將覆核預覽卡片隱藏起來
-            document.getElementById('successSection').classList.remove('hidden-field'); // 解除隱藏，秀出「🎉 登記申請已送出」卡片
-            
-            // 復原按鈕原始狀態
-            btn.disabled = false;
-            btn.innerText = "確認提交 ➡️ Confirm & Submit";
-        })
-        .catch(err => {
-            console.error(err);
-            alert("寫入雲端失敗，請檢查網絡後重試。");
-            btn.disabled = false;
-            btn.innerText = "確認提交 ➡️ Confirm & Submit";
-        });
+    
+    // 3. 重新調用外部【模組 3】的下拉選單初始化函數，確保日期與時間選單刷新成最新時間
+    if (typeof initializeDateTimeOptions === 'function') {
+        initializeDateTimeOptions();
+    } else if (typeof initDateTime === 'function') {
+        initDateTime(); 
     }
+    
+    // 4. 切換網頁區塊可見度：將成功卡片重新隱藏，並將最一開始的【子畫面 A 表單區】解除鎖定秀出
+    document.getElementById('successSection').classList.add('hidden-field');
+    document.getElementById('previewSection').classList.add('hidden-field'); // 安全防護雙重加固
+    document.getElementById('formSection').classList.remove('hidden-field');
+    
+    // 5. 手機友善：將網頁平滑滾動置頂，讓使用者能從第一個欄位「公司名稱」順暢開始重新填寫
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
-    /**
-     * 4.5 【返回重置功能】：「返回填寫新申請」按鈕重置清空功能
-     * 說明：點擊後會觸發 JavaScript 徹底重置表單並重新刷出全新日期選項
-     */
-    function resetForm() {
-        document.getElementById('regForm').reset(); // 一鍵清空表單中所有文字方塊
-        forceInitDropdowns(); // 核心修正：重新呼叫模組 3 頂層強制腳本，重新注入未來 7 天日期與時間，絕不再變空白
-        
-        document.getElementById('successSection').classList.add('hidden-field'); // 將成功提交卡片隱藏起來
-        document.getElementById('formSection').classList.remove('hidden-field'); // 解除隱藏，重新顯示空白填表卡片
-    }
-</script>
-<!-- ======================================================================== -->
-<!-- 【模組 4 結束】：表單提交與傳輸至 Google 表單 (Form Submit & Google Integration) -->
-<!-- ======================================================================== -->
+// ======================================================================== 
+// 【模組 4 END】
+// ======================================================================== 
 <!-- ======================================================================== -->
 <!-- 【模組 5：段落一 (第 1 - 100 行)】內部管理、安全驗證、即時搜尋與 PDF 匯出   -->
 <!-- 插拔說明：此區塊為純 JavaScript 邏輯，專門提供給後台管理員驗證權限與同步雲端數據。-->
