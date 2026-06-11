@@ -616,39 +616,59 @@ function switchToVisitor() {
 }
 
 /**
- * 5.5 【數據即時抓取與表格動態渲染】
- * 自動向雲端 API 請求最新數據，並依狀態分類渲染至後台的兩個表格中
+ * 5.5 【數據即時抓取與 3PM 智慧截數動態過濾渲染】
+ * 串接 3:00 PM 截數邏輯，只展示未超過截數時間的「預約明天 (Day-1)」處理中申請
  */
 function loadInternalDataLists() {
   const todayTbody = document.getElementById('todayTableBody'); 
   const tomorrowTbody = document.getElementById('tomorrowTableBody'); 
   if (!todayTbody || !tomorrowTbody) return; 
   
-  // 顯示資料載入中的提示動畫文字
   todayTbody.innerHTML = '<tr><td colspan="10" class="text-center py-3 text-secondary">正在同步雲端數據... Syncing...</td></tr>';
   tomorrowTbody.innerHTML = '<tr><td colspan="10" class="text-center py-3 text-secondary">正在同步雲端數據... Syncing...</td></tr>';
   
-  // 安全防護機制：若開發人員忘記定義 GOOGLE_API_URL 變數，則跳出醒目提示，防止系統當機
   if (typeof GOOGLE_API_URL === 'undefined') {
     const errHTML = `<tr><td colspan="10" class="text-center text-warning py-3">⚠️ 提示：請先在程式碼頂部設定 GOOGLE_API_URL 連線網址。</td></tr>`;
     todayTbody.innerHTML = errHTML; tomorrowTbody.innerHTML = errHTML;
     return;
   }
 
-  // 開始向 Google Apps Script 資料庫發送非同步請求
   fetch(GOOGLE_API_URL) 
   .then(response => response.json()) 
   .then(dataList => {
-    globalCachedDataList = dataList; // 將數據緩存至全域變數，供後續 PDF 導出與搜尋使用
+    globalCachedDataList = dataList; 
     todayTbody.innerHTML = ''; tomorrowTbody.innerHTML = ''; 
     
-    // 依據審批狀態篩選資料
-    let inProgressCars = dataList.filter(item => item.status === "in_progress"); 
-    let confirmedCars = dataList.filter(item => item.status !== "in_progress"); 
+    // ⏰ 1. 獲取當前系統時間與日期，用於精準判斷 3:00 PM 截數線
+    const now = new Date();
+    const currentHour = now.getHours();
     
-    // 渲染表格 A：申請處理中名單
+    // 計算出「明天 (Day-1)」的 YYYY-MM-DD 字串
+    const tomorrowObj = new Date();
+    tomorrowObj.setDate(now.getDate() + 1);
+    const tYYYY = tomorrowObj.getFullYear();
+    const tMM = String(tomorrowObj.getMonth() + 1).padStart(2, '0');
+    const tDD = String(tomorrowObj.getDate()).padStart(2, '0');
+    const tomorrowDateString = `${tYYYY}-${tMM}-${tDD}`;
+
+    // 🔄 2. 分流與智慧過濾邏輯
+    let inProgressCars = dataList.filter(item => {
+      // 必須先滿足雲端原始狀態為進行中
+      if (item.status !== "in_progress") return false;
+      
+      // 💡 核心判定：如果申請人預約的是明天 (Visit Day-1)
+      if (String(item.visit_date).trim() === tomorrowDateString) {
+        // 如果現在時間還沒到 15 點 (3:00 PM)，允許其出現在處理中列表中
+        return currentHour < 15;
+      }
+      
+      // 其他預約日期（例如預約更遠的後天、大後天）則不受 3點限制，正常顯示
+      return true;
+    }); 
+    
+    // 渲染表格 A：符合 3PM 限制、仍在處理中的名單
     if (inProgressCars.length === 0) {
-      todayTbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-3">暫無處理中的申請</td></tr>';
+      todayTbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-3">暫無符合時間條件或處理中的申請</td></tr>';
     } else {
       inProgressCars.forEach(item => {
         const tr = document.createElement('tr');
@@ -657,7 +677,8 @@ function loadInternalDataLists() {
       });
     }
     
-    // 渲染表格 B：已確認准入名單
+    // 渲染表格 B：已確認准入名單 (保持原有邏輯)
+    let confirmedCars = dataList.filter(item => item.status !== "in_progress"); 
     if (confirmedCars.length === 0) {
       tomorrowTbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-3">暫無已確認之名單</td></tr>';
     } else {
