@@ -126,18 +126,29 @@
  <h4 class="card-title mb-3 fw-bold" style="color: #2d3748;">
  車輛入站申請 <span class="text-muted fw-normal" style="font-size: 1.05rem;">/ Vehicle Access Application</span>
  </h4>
-
- <!-- 溫馨提示警告框 (Reminder) -->
- <div class="alert alert-info py-2 px-3 small fw-bold mb-3" role="alert" style="border-left: 5px solid #4fd1c5; background-color: #f7fafc; color: #2c7a7b;">
- ⚠️ <b>提醒事項 / Reminder：</b>所收集資料只用於檢查車輛進入本站之用，如資料不齊全或錯誤，或會影響車輛進入本站，敬請注意。<br>
- <span class="fw-normal text-muted" style="font-size: 0.75rem;">The information collected is only used for checking vehicle entry. Incorrect or incomplete information may affect entry.</span>
- </div>
  
- <!-- 預約截止時間說明框 (Cut-off Time Note) -->
- <div class="alert alert-warning py-2 small" role="alert" style="background-color: #fffaf0; border-color: #feebc8; color: #dd6b20;">
- 💡 <b>預約截數提示 / Cut-off Time Note：</b><br>
- 每天下午 3:00 截數。3:00 前申請最快可預約明日入站；3:00 後申請將於後日生效。<br>
- <span class="text-muted" style="font-size: 0.75rem;">Daily cut-off time is 3:00 PM. Applications before 3:00 PM take effect tomorrow at the earliest; after 3:00 PM take effect the day after tomorrow.</span>
+ <!-- 1. 溫馨提示警告框 (Reminder) -->
+ <div class="alert alert-info p-3 mb-3 d-flex align-items-start" role="alert" style="border-left: 5px solid #4fd1c5; background-color: #f7fafc; color: #2c7a7b; border-radius: 8px;">
+ <!-- 左側固定寬度的圖標容器，確保與下方提示框的圖標等寬 -->
+ <div class="flex-shrink-0 text-center" style="width: 28px; font-size: 1.1rem; line-height: 1.2;">⚠️</div>
+ <!-- 右側文字主體 -->
+ <div class="flex-grow-1 ps-1" style="font-size: 0.9rem; line-height: 1.5;">
+ <b class="d-block mb-1" style="font-size: 0.95rem;">提醒事項 / Reminder：</b>
+ <span class="d-block text-dark fw-bold">所收集資料只用於檢查車輛進入本站之用，如資料不齊全或錯誤，或會影響車輛進入本站，敬請注意。</span>
+ <span class="d-block text-muted mt-1" style="font-size: 0.75rem; font-weight: normal;">The information collected is only used for checking vehicle entry. Incorrect or incomplete information may affect entry.</span>
+ </div>
+ </div>
+        
+ <!-- 2. 預約截止時間說明框 (Cut-off Time Note) -->
+ <div class="alert alert-warning p-3 mb-4 d-flex align-items-start" role="alert" style="background-color: #fffaf0; border-color: #feebc8; color: #dd6b20; border-radius: 8px; border-left: 5px solid #ffa133;">
+ <!-- 左側固定寬度的圖標容器，與上方對齊 -->
+ <div class="flex-shrink-0 text-center" style="width: 28px; font-size: 1.1rem; line-height: 1.2;">💡</div>
+ <!-- 右側文字主體 -->
+ <div class="flex-grow-1 ps-1" style="font-size: 0.9rem; line-height: 1.5;">
+ <b class="d-block mb-1" style="font-size: 0.95rem;">預約截數提示 / Cut-off Time Note：</b>
+ <span class="d-block text-dark fw-bold">每天下午 3:00 截數。3:00 前申請最快可預約明日入站；3:00 後申請將於後日生效。</span>
+ <span class="d-block text-muted mt-1" style="font-size: 0.75rem; font-weight: normal;">Daily cut-off time is 3:00 PM. Applications before 3:00 PM take effect tomorrow at the earliest; after 3:00 PM take effect the day after tomorrow.</span>
+ </div>
  </div>
 
  <!-- 登記表單實體開始 -->
