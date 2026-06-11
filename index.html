@@ -514,12 +514,11 @@
 <!-- ======================================================================== -->
 <!-- 【模組 3 結束】：日期與時間下拉選單自動生成邏輯 (Dropdown Initialization) -->
 <!-- ======================================================================== -->
-
 <!-- ======================================================================== -->
 <!-- 【模組 4 START】：表單提交、預覽控制與 Google Sheet 資料傳輸邏輯 -->
 <!-- ======================================================================== -->
 <script>
-// 🔄 4.1 自動遞增參考編號生成器 (解決永遠顯示 0001 的問題)
+// 🔄 4.1 自動遞增參考編號生成器
 function generateReferenceNumber() {
     const now = new Date();
     const year = now.getFullYear();
@@ -542,7 +541,7 @@ function generateReferenceNumber() {
     return `${dateStr}-${serialStr}`;
 }
 
-// 👁️ 4.2 從填表畫面跳轉至【子畫面 B：資料核對預覽頁面】
+// 👁️ 4.2 跳轉至預覽頁面
 function showPreviewScreen(event) {
     if (event) event.preventDefault();
     
@@ -571,14 +570,14 @@ function showPreviewScreen(event) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// ⬅️ 4.3 從預覽頁面點擊「返回修改」，切換回原表單
+// ⬅️ 4.3 返回修改
 function hidePreviewScreen() {
     document.getElementById('previewSection').classList.add('hidden-field');
     document.getElementById('formSection').classList.remove('hidden-field');
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// 🚀 4.4 點擊「確認提交」，觸發自動遞增編號、發送至 Google 表單並解鎖成功畫面
+// 🚀 4.4 確認提交
 function finalSubmitData() {
     const submitBtn = document.getElementById('confirmSubmitBtn');
     if (submitBtn) {
@@ -587,19 +586,6 @@ function finalSubmitData() {
     }
 
     const generatedRefNo = generateReferenceNumber();
-
-    // 💡 提示：此處已為您保留並相容與 Google Sheet 連接的 formData 骨架
-    const formData = {
-        refNo: generatedRefNo,
-        company: document.getElementById('company').value.trim(),
-        vehicleNo: document.getElementById('vehicle_no').value.trim().toUpperCase(),
-        contact: document.getElementById('contact_person').value.trim(),
-        tel: document.getElementById('tel_no').value.trim(),
-        purpose: document.getElementById('purpose').value.trim(),
-        vehicleType: document.getElementById('vehicle_type').value,
-        visitDate: document.getElementById('visit_date').value,
-        visitTime: `${document.getElementById('visitHour').value}:${document.getElementById('visitMin').value}`
-    };
 
     document.getElementById('displayRefNo').innerText = generatedRefNo;
     document.getElementById('previewSection').classList.add('hidden-field');
@@ -610,7 +596,6 @@ function finalSubmitData() {
 <!-- ======================================================================== -->
 <!-- 【模組 4 END】 -->
 <!-- ======================================================================== -->
-
 <!-- ======================================================================== -->
 <!-- 【模組 5：段落一 (第 1 - 100 行)】內部管理、安全驗證、即時搜尋與 PDF 匯出   -->
 <!-- 插拔說明：此區塊為純 JavaScript 邏輯，專門提供給後台管理員驗證權限與同步雲端數據。-->
