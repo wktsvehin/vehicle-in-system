@@ -6,7 +6,7 @@
   <title>西九龍廢物轉運站車輛登記系統</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh.js"></script>
+ <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
@@ -107,9 +107,9 @@
     <div class="flex" style="justify-content:space-between;align-items:center;margin-bottom:16px"><h4>🚗 關口核對系統</h4><div class="flex"><input type="date" id="exportDate" class="form-control" style="width:140px"><button class="btn-success" onclick="exportPDF()">📄 匯出PDF</button><button class="btn-outline" onclick="logout()">🚪 登出</button></div></div>
     <input type="text" id="searchInput" class="form-control plate-input mb-3" placeholder="🔍 搜尋車牌" oninput="filterTable()">
     <div class="section-title">📋 申請處理中 <span class="eng-text">(未過15:00)</span></div>
-    <div class="table-responsive"><table><thead><tr><th>#</th><th>參考編號</th><th>公司</th><th>車牌</th><th>聯絡人</th><th>電話</th><th>時間</th><th>目的</th><th>車型</th></tr></thead><tbody id="progressTable"></tbody></table></div>
+    <div class="table-responsive"> <table> <thead> <tr> <th>#</th> <th>參考編號</th> <th>公司</th> <th>車牌</th> <th>聯絡人</th> <th>電話</th> <th>時間</th> <th>目的</th> <th>車型</th> </tr> </thead> <tbody id="progressTable"></tbody> </table> </div>
     <div class="section-title">✅ 已確認名單 <span class="eng-text">(今天或之後)</span></div>
-    <div class="table-responsive"><table><thead><tr><th>#</th><th>參考編號</th><th>公司</th><th>車牌</th><th>聯絡人</th><th>電話</th><th>到訪日期</th><th>入站時間</th><th>目的</th><th>車型</th></tr></thead><tbody id="confirmedTable"></tbody></table></div>
+    <div class="table-responsive"> <table> <thead> <tr> <th>#</th> <th>參考編號</th> <th>公司</th> <th>車牌</th> <th>聯絡人</th> <th>電話</th> <th>到訪日期</th> <th>入站時間</th> <th>目的</th> <th>車型</th> </tr> </thead> <tbody id="confirmedTable"></tbody> </table> </div>
   </div>
 </div>
 
@@ -211,7 +211,7 @@ function verifyLogin() {
 function logout() { isLoggedIn = false; showLogin(); }
 
 function loadData() {
-  document.getElementById('progressTable').innerHTML = '<tr><td colspan="9">載入中...</td></tr>';
+  document.getElementById('progressTable').innerHTML = '<td><td colspan="9">載入中......</td></tr>';
   fetch(API).then(r => r.json()).then(data => {
     console.log("API資料:", data);
     if (!Array.isArray(data)) { console.error("資料不是陣列"); return; }
@@ -289,7 +289,7 @@ function filterTable() {
   });
 }
 
-// PDF 匯出（更新格式：標題列用深藍綠底色+白字，EPD 中英文並排，移除列印時間）
+// PDF 匯出 - 修正版：白底黑字表格，移除右邊多餘文字，EPD 查閱欄位簡潔
 async function exportPDF() {
   let selectedDate = document.getElementById('exportDate').value;
   if (!selectedDate) { alert('請先選擇要匯出的日期'); return; }
@@ -315,15 +315,15 @@ async function exportPDF() {
       let timeInDisplay = normTime(item.visit_time);
       let timeOutDisplay = '---';
       tableRows += `
-        <tr style="background-color: ${idx % 2 === 0 ? '#f0f8ff' : '#ffffff'};">
-          <td style="border:1px solid #aaa; padding:8px;">${idx + 1}</td>
-          <td style="border:1px solid #aaa; padding:8px;">${escapeHtml(item.company)}</td>
-          <td style="border:1px solid #aaa; padding:8px;">${escapeHtml(item.vehicle_no)}</td>
-          <td style="border:1px solid #aaa; padding:8px;">${escapeHtml(item.contact_person)}</td>
-          <td style="border:1px solid #aaa; padding:8px;">${escapeHtml(item.tel_no)}</td>
-          <td style="border:1px solid #aaa; padding:8px;">${timeInDisplay}</td>
-          <td style="border:1px solid #aaa; padding:8px;">${timeOutDisplay}</td>
-          <td style="border:1px solid #aaa; padding:8px;">${escapeHtml(item.purpose)}</td>
+        <tr style="background-color: #ffffff;">
+          <td style="border: 1px solid #000000; padding: 8px; color: #000000;">${idx + 1}</td>
+          <td style="border: 1px solid #000000; padding: 8px; color: #000000;">${escapeHtml(item.company)}</td>
+          <td style="border: 1px solid #000000; padding: 8px; color: #000000;">${escapeHtml(item.vehicle_no)}</td>
+          <td style="border: 1px solid #000000; padding: 8px; color: #000000;">${escapeHtml(item.contact_person)}</td>
+          <td style="border: 1px solid #000000; padding: 8px; color: #000000;">${escapeHtml(item.tel_no)}</td>
+          <td style="border: 1px solid #000000; padding: 8px; color: #000000;">${timeInDisplay}</td>
+          <td style="border: 1px solid #000000; padding: 8px; color: #000000;">${timeOutDisplay}</td>
+          <td style="border: 1px solid #000000; padding: 8px; color: #000000;">${escapeHtml(item.purpose)}</td>
         </tr>
       `;
     });
@@ -335,12 +335,11 @@ async function exportPDF() {
       <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; border-bottom: 2px solid #1f6e6e; padding-bottom: 10px;">
         <div style="text-align: left;">
           <div style="font-size: 14px; font-weight: bold; color: #1f6e6e;">中國港灣工程有限責任公司</div>
-          <div style="font-size: 12px; color: #555;">China Harbour Engineering Company Limited</div>
-          <div style="font-size: 11px; margin-top: 5px;">西九龍廢物轉運站 | West Kowloon Transfer Station</div>
+          <div style="font-size: 12px; color: #000000;">China Harbour Engineering Company Limited</div>
+          <div style="font-size: 11px; margin-top: 5px; color: #000000;">西九龍廢物轉運站 | West Kowloon Transfer Station</div>
         </div>
         <div style="text-align: right;">
-          <div style="font-size: 12px; font-weight: bold;">EPD 審批 / EPD Approval: _________________</div>
-          <div style="font-size: 10px; color: #666;">(環保署職員簽署 / EPD Officer Signature)</div>
+          <div style="font-size: 12px; font-weight: bold; color: #000000;">環境保護署查閱 / Checked By EPD: _________________</div>
         </div>
       </div>
       
@@ -351,27 +350,27 @@ async function exportPDF() {
         </div>
       </div>
       
-      <div style="font-size: 16px; font-weight: bold; text-align: center; margin-bottom: 12px;">車輛進入預先登記記錄<br>Registered Vehicle Log</div>
+      <div style="font-size: 16px; font-weight: bold; text-align: center; margin-bottom: 12px; color: #000000;">車輛進入預先登記記錄<br>Registered Vehicle Log</div>
       
-      <table style="width:100%; border-collapse: collapse; font-size: 10px;">
+      <table style="width:100%; border-collapse: collapse; font-size: 10px; background-color: #ffffff;">
         <thead>
           <tr style="background-color: #1f6e6e; color: white; text-align: center;">
-            <th style="border: 1px solid #0a4c4c; padding: 10px 6px;">項目<br>Item</th>
-            <th style="border: 1px solid #0a4c4c; padding: 10px 6px;">公司名稱<br>Company</th>
-            <th style="border: 1px solid #0a4c4c; padding: 10px 6px;">車牌號碼<br>Vehicle No.</th>
-            <th style="border: 1px solid #0a4c4c; padding: 10px 6px;">聯絡人<br>Contact Person</th>
-            <th style="border: 1px solid #0a4c4c; padding: 10px 6px;">電話號碼<br>Tel. No.</th>
-            <th style="border: 1px solid #0a4c4c; padding: 10px 6px;">進入時間<br>Time In</th>
-            <th style="border: 1px solid #0a4c4c; padding: 10px 6px;">離開時間<br>Time Out</th>
-            <th style="border: 1px solid #0a4c4c; padding: 10px 6px;">進入目的/工作內容<br>Purpose/Work Description</th>
-          </tr>
+            <th style="border: 1px solid #000000; padding: 10px 6px;">項目<br>Item</th>
+            <th style="border: 1px solid #000000; padding: 10px 6px;">公司名稱<br>Company</th>
+            <th style="border: 1px solid #000000; padding: 10px 6px;">車牌號碼<br>Vehicle No.</th>
+            <th style="border: 1px solid #000000; padding: 10px 6px;">聯絡人<br>Contact Person</th>
+            <th style="border: 1px solid #000000; padding: 10px 6px;">電話號碼<br>Tel. No.</th>
+            <th style="border: 1px solid #000000; padding: 10px 6px;">進入時間<br>Time In</th>
+            <th style="border: 1px solid #000000; padding: 10px 6px;">離開時間<br>Time Out</th>
+            <th style="border: 1px solid #000000; padding: 10px 6px;">進入目的/工作內容<br>Purpose/Work Description</th>
+           </tr>
         </thead>
-        <tbody>
+        <tbody style="background-color: #ffffff; color: #000000;">
           ${tableRows}
         </tbody>
-      追赶
+      </table>
       
-      <div style="margin-top: 18px; font-size: 8px; text-align: center; color: #888;">
+      <div style="margin-top: 18px; font-size: 8px; text-align: center; color: #000000;">
         系統產生之記錄，請核對無誤後簽署
       </div>
     `;
