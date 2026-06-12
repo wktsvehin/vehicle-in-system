@@ -78,6 +78,10 @@
  .preview-label { width: 40%; font-weight: bold; color: #4a5568; min-width: 150px; }
  .preview-value { width: 60%; color: #2d3748; font-weight: 500; min-width: 150px; }
 </style>
+<!-- 📅 補載 Flatpickr 日曆插件的核心外觀與繁體中文語系庫 (CDN) -->
+<link rel="stylesheet" href="https://jsdelivr.net">
+<script src="https://jsdelivr.net"></script>
+<script src="https://jsdelivr.net/dist/l10n/zh.js"></script>
 <!-- ======================================================================== -->
 <!-- 【MODULE 1 END】 -->
 <!-- ======================================================================== -->
@@ -384,42 +388,41 @@
         initTimeDropdowns();  // 執行：動態時間（時、分）數字填入
     });
 
-    /**
-     * 3.1 【核心日期計算】：根據下午 3:00 截止時間自動計算可選日期
-     * 規則：3:00 PM 前申請最快可選明日，3:00 PM 後最快只能選後天。
-     */
-    function initDateDropdown() {
-        const dateSelect = document.getElementById("visit_date"); // 抓取模組 2 中的日期下拉選單
-        if (!dateSelect) return; // 安全驗證：若畫面上找不到這個下拉方塊則停止執行，防止報錯
+ /**
+ * 3.1 【智慧截數日曆初始化】：根據下午 3:00 截止時間自動計算可選日期
+ * 規則：3:00 PM 前最快選明日，3:00 PM 後最快選後天，且限制 1 星期之內。
+ */
+ function initDateDropdown() {
+   if (document.getElementById("visitDate")) {
+     // 1. 計算目前的日期與小時
+     const now = new Date();
+     const currentHour = now.getHours();
+     
+     // 2. 預設最快可以預約「明天」 (+1 天)
+     let minSelectableDate = new Date();
+     minSelectableDate.setDate(now.getDate() + 1); 
 
-        // 先行重置清空選單內容，並補上預設提示字，防止重複生成
-        dateSelect.innerHTML = '<option value="" disabled selected>-- 請選擇日期 Select Date --</option>';
+     // 💡 核心截數邏輯：如果目前時間已經到達或超過下午 3 點 (15:00)，最快只能預約「後天」 (+2 天)
+     if (currentHour >= 15) {
+       minSelectableDate.setDate(now.getDate() + 2);
+       console.log("⚠️ 目前已過下午 3 點截數時間，明天已被鎖定。最早預約日期修正為後天。");
+     }
 
-        const now = new Date();             // 獲取目前設備的系統時間
-        const currentHour = now.getHours(); // 獲取目前的小時數字 (0 - 23)
-        
-        // 💡 核心判定：如果目前時間已經大於等於 15 點 (即下午 3:00 截數時間)
-        // startOffset = 2 代表最快只能約「後天」；若沒超過 15 點，則 startOffset = 1 代表最快可以預約「明天」
-        let startOffset = (currentHour >= 15) ? 2 : 1; 
+     // 3. 計算最大可預約期限：只能選擇 1 星期以內 (今天 + 7 天)
+     let maxSelectableDate = new Date();
+     maxSelectableDate.setDate(now.getDate() + 7);
 
-        // 跑一個循環迴圈，自動依序往後推算並生成連續 7 天的日期選項
-        for (let i = 0; i < 7; i++) {
-            const targetDate = new Date();
-            targetDate.setDate(now.getDate() + startOffset + i); // 基於今天的日期往後加算天數
-
-            const yyyy = targetDate.getFullYear(); // 取得西元年份 (例如 2026)
-            const mm = String(targetDate.getMonth() + 1).padStart(2, '0'); // 月份不夠兩位數自動在前面補 0 (例如 06)
-            const dd = String(targetDate.getDate()).padStart(2, '0');      // 日期不夠兩位數自動在前面補 0 (例如 11)
-            const dateString = yyyy + "-" + mm + "-" + dd; // 組裝成 YYYY-MM-DD 的標準日期格式字串
-
-            // 在網頁記憶體中建立一個 HTML 的 <option> 標籤
-            const option = document.createElement("option");
-            option.value = dateString;       // 設定傳送給 Google 資料庫的實際變數值
-            option.textContent = dateString; // 設定秀在畫面上給訪客看的中英文字樣
-            
-            dateSelect.appendChild(option);  // 將做好的選項整齊地塞入日期的下拉選單中
-        }
-    }
+     // 4. 正式啟動並啟用 Flatpickr 綁定日曆控制項
+     flatpickr("#visitDate", {
+       dateFormat: "Y-m-d",               // 格式化輸出為: 2026-06-12
+       minDate: minSelectableDate,        // 自動鎖定最早可選日期
+       maxDate: maxSelectableDate,        // 自動鎖定最晚可選日期 (1星期內)
+       locale: "zh",                      // 支援繁體中文顯示
+       disableMobile: "true"              // 強制手機版彈出一致的精美網頁版日曆
+     });
+     console.log("Flatpickr 智慧截數日曆載入成功！");
+   }
+ }
 
     /**
      * 3.2 【時間段生成】：自動循環生成 24 小時制 (00 到 23 小時) 與 (00 到 59 分鐘) 的下拉數字選單
