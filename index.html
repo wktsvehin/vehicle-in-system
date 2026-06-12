@@ -424,16 +424,15 @@
             hourSelect.appendChild(option); // 塞入小時下拉方塊中
         }
 
-        // ⏱️ B. 自動生成 60 分鐘數字 (從 00 到 59)
-        for (let m = 0; m < 60; m++) {
-            const minStr = String(m).padStart(2, '0'); // 將數字自動補零成兩位數字串 (例如 00, 05, 30, 45)
-            
-            const option = document.createElement("option");
-            option.value = minStr;       // 傳送給後台的數值
-            option.textContent = minStr; // 畫面顯示的文字
-            
-            minSelect.appendChild(option); // 塞入分鐘下拉方塊中
-        }
+  // ⏱️ B. 固定只生成 00, 15, 30, 45 分鐘選項
+  const allowedMinutes = ["00", "15", "30", "45"];
+  allowedMinutes.forEach(function(minStr) {
+    const option = document.createElement("option");
+    option.value = minStr;
+    option.textContent = minStr;
+    minSelect.appendChild(option);
+  });
+
     }
 </script>
 <!-- ======================================================================== -->
