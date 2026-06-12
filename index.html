@@ -126,6 +126,10 @@
     }
     .plate-input { text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px; }
     input[type="date"] { cursor: pointer; }
+    /* 中英文分行樣式：輔助span換行 */
+    .chi-text { display: block; font-weight: normal; }
+    .eng-text { display: block; font-size: 0.7rem; font-weight: normal; color: #4a5568; }
+    .btn-tab span.eng-text, .section-title small.eng-text { font-size: 0.6rem; display: inline-block; margin-left: 4px; }
     @media (max-width: 480px) {
       body { padding: 12px; }
       .card { padding: 16px; }
@@ -142,10 +146,16 @@
   <h2 class="text-center" style="color:#2c7a7b;">西九龍廢物轉運站<br>車輛登記</h2>
   <p class="text-center" style="color:#718096; font-size:0.75rem; margin-bottom:20px;">West Kowloon Transfer Station Vehicle Registration</p>
 
-  <!-- 切換按鈕 -->
+  <!-- 切換按鈕 (中英文分行) -->
   <div class="flex" style="margin-bottom:20px;">
-    <div id="btnVisitor" class="btn-tab active" onclick="switchTab('visitor')">訪客登記<br><span style="font-size:0.6rem;">Visitor</span></div>
-    <div id="btnStaff" class="btn-tab staff" onclick="switchTab('staff')">職員專用<br><span style="font-size:0.6rem;">Staff Only</span></div>
+    <div id="btnVisitor" class="btn-tab active" onclick="switchTab('visitor')">
+      <span class="chi-text">訪客登記</span>
+      <span class="eng-text">Visitor</span>
+    </div>
+    <div id="btnStaff" class="btn-tab staff" onclick="switchTab('staff')">
+      <span class="chi-text">職員專用</span>
+      <span class="eng-text">Staff Only</span>
+    </div>
   </div>
 
   <!-- 訪客面板 -->
@@ -153,13 +163,11 @@
     <div id="formSection" class="card">
       <div class="alert-cutoff">
         <div style="font-weight:bold;">預約截數提示：每天下午3:00截數</div>
-        <div style="font-size:0.75rem;">3:00前申請→明日生效 | 3:00後申請→後日生效</div>
-        <div style="font-size:0.7rem; color:#718096; margin-top:6px;">Cut-off: 3:00 PM daily | Before → Next day | After → Day after next</div>
+        <div class="eng-text">Cut-off: 3:00 PM daily | Before → Next day | After → Day after next</div>
       </div>
       <div class="alert-cutoff" style="margin-top:12px;">
         <div style="font-weight:bold;">資料核對提醒</div>
-        <div style="font-size:0.75rem;">提交前請確認資料正確，此資料將用作入站核對憑證。</div>
-        <div style="font-size:0.7rem; color:#718096; margin-top:6px;">Please verify before submission. This will be used for entry verification.</div>
+        <div class="eng-text">Please verify before submission. This will be used for entry verification.</div>
       </div>
       <form id="regForm" onsubmit="showPreview(event)">
         <div class="form-group">
@@ -198,7 +206,10 @@
           <label class="form-label">預計到訪時間 <span class="form-sub">ETA (24h)</span></label>
           <div class="flex"><select id="hour" class="form-select" style="flex:1"></select><span style="font-size:1.5rem;">:</span><select id="minute" class="form-select" style="flex:1"></select></div>
         </div>
-        <button type="submit" class="btn-gold mt-2">提交申請 <span style="font-size:0.7rem;">Application Submission</span></button>
+        <button type="submit" class="btn-gold mt-2">
+          <span class="chi-text">提交申請</span>
+          <span class="eng-text" style="font-size:0.7rem;">Application Submission</span>
+        </button>
       </form>
     </div>
 
@@ -207,8 +218,7 @@
       <h3 class="text-center mb-2">請核對資料 / Verify Information</h3>
       <div class="alert-cutoff" style="background:#fff3cd; border-left-color:#f0ad4e; margin-bottom:20px;">
         <div style="font-weight:bold;">重要提醒：請核對資料</div>
-        <div style="font-size:0.75rem;">提交前請確認所有資料正確無誤，此資料將用作入站核對憑證。</div>
-        <div style="font-size:0.7rem; color:#856404; margin-top:6px;">Important: Please verify all information before submission. This will be used as entry verification proof.</div>
+        <div class="eng-text">Important: Please verify all information before submission. This will be used as entry verification proof.</div>
       </div>
       <div class="preview-box">
         <div class="preview-row"><span class="preview-label">公司 / Company：</span><span id="pCompany" class="preview-value"></span></div>
@@ -232,10 +242,15 @@
 
   <!-- 職員面板 -->
   <div id="staffPanel" style="display:none;">
-    <div id="loginBox" class="card text-center"><h3>🔒 職員驗證 / Staff Verification</h3><input type="password" id="staffPwd" class="form-control mb-2" placeholder="請輸入密碼 / Enter Password"><button class="btn-success w-100" onclick="verifyLogin()">登入系統 / Login</button><div id="loginError" class="hidden" style="color:#e53e3e;margin-top:12px;">密碼錯誤 / Incorrect password</div></div>
+    <div id="loginBox" class="card text-center">
+      <h3>🔒 職員驗證 <span class="eng-text" style="display:inline-block;">Staff Verification</span></h3>
+      <input type="password" id="staffPwd" class="form-control mb-2" placeholder="請輸入密碼 / Enter Password">
+      <button class="btn-success w-100" onclick="verifyLogin()">登入系統 / Login</button>
+      <div id="loginError" class="hidden" style="color:#e53e3e;margin-top:12px;">密碼錯誤 / Incorrect password</div>
+    </div>
     <div id="adminPanel" class="card hidden">
       <div class="flex" style="justify-content:space-between; align-items:center; margin-bottom:16px;">
-        <h4>🚗 關口核對系統 / Gate Check System</h4>
+        <h4>🚗 關口核對系統 <span class="eng-text" style="font-size:0.7rem;">Gate Check System</span></h4>
         <div class="flex" style="gap:8px;">
           <input type="date" id="exportDate" class="form-control" style="width:140px; padding:8px;">
           <button class="btn-success" onclick="exportPDF()">📄 匯出PDF / Export PDF</button>
@@ -244,11 +259,13 @@
       </div>
       <input type="text" id="searchInput" class="form-control plate-input mb-3" placeholder="🔍 搜尋車牌 / Search by Plate" oninput="filterTable()">
       
-      <div class="section-title">📋 申請處理中 / Pending Approval (Valid until 15:00 today)</div>
-      <div class="table-responsive"><table><thead><tr><th>#</th><th>參考編號 / Ref</th><th>公司 / Company</th><th>車牌 / Plate</th><th>聯絡人 / Contact</th><th>電話 / Tel</th><th>時間 / Time</th><th>目的 / Purpose</th><th>車型 / Type</th></tr></thead><tbody id="progressTable"></tbody></table></div>
+      <div class="section-title">📋 申請處理中 <span class="eng-text" style="font-size:0.7rem;">Pending Approval (Valid until 15:00 today)</span></div>
+      <div class="table-responsive"><table><thead><tr><th>#</th><th>參考編號 / Ref</th><th>公司 / Company</th><th>車牌 / Plate</th><th>聯絡人 / Contact</th><th>電話 / Tel</th><th>時間(ETA) / Time</th><th>目的 / Purpose</th><th>車型 / Type</th></tr></thead><tbody id="progressTable"></tbody></table>
+      </div>
       
-      <div class="section-title">✅ 已確認名單 / Confirmed List (Valid only before visit date)</div>
-      <div class="table-responsive"><table><thead><tr><th>#</th><th>參考編號 / Ref</th><th>公司 / Company</th><th>車牌 / Plate</th><th>聯絡人 / Contact</th><th>電話 / Tel</th><th>時間 / Time</th><th>目的 / Purpose</th><th>車型 / Type</th></tr></thead><tbody id="confirmedTable"></tbody></table></div>
+      <div class="section-title">✅ 已確認名單 <span class="eng-text" style="font-size:0.7rem;">Confirmed List (Valid entries)</span></div>
+      <div class="table-responsive"><table><thead><tr><th>#</th><th>參考編號 / Ref</th><th>公司 / Company</th><th>車牌 / Plate</th><th>聯絡人 / Contact</th><th>電話 / Tel</th><th>到訪日期 / Visit Date</th><th>入站時間 / Time In</th><th>目的 / Purpose</th><th>車型 / Type</th></tr></thead><tbody id="confirmedTable"></tbody></table>
+      </div>
     </div>
   </div>
 
@@ -307,7 +324,6 @@
     function showLogin() { 
       document.getElementById('loginBox').classList.remove('hidden'); 
       document.getElementById('adminPanel').classList.add('hidden');
-      // 清空密碼欄位與錯誤訊息 (優化體驗)
       const pwdField = document.getElementById('staffPwd');
       if(pwdField) pwdField.value = '';
       const errDiv = document.getElementById('loginError');
@@ -329,13 +345,12 @@
 
     function logout() { 
       isLoggedIn = false; 
-      // 修復1: 登出時清空密碼輸入框
       const pwdField = document.getElementById('staffPwd');
       if(pwdField) pwdField.value = '';
       showLogin(); 
     }
 
-    // ==================== 數據加載與過濾邏輯 (核心修正3,4) ====================
+    // ==================== 數據加載與過濾邏輯 ====================
     function loadData() {
       let pt = document.getElementById('progressTable'), ct = document.getElementById('confirmedTable');
       pt.innerHTML = '<tr><td colspan="9" class="text-center">加載中... / Loading...</td></tr>';
@@ -347,62 +362,81 @@
       });
     }
 
-    // 判斷申請是否還在處理中 (尚未過今天15:00截數且狀態為in_progress，同時到訪日期必須 >= 有效起始日)
+    // 判斷是否仍在處理中 (未過今天15:00 且 status in_progress)
     function isStillInProgress(item) {
       if(item.status !== 'in_progress') return false;
       const now = new Date();
-      const currentHour = now.getHours();
-      const todayDateStr = now.toISOString().split('T')[0];
-      // 規則：若訪客申請的visit_date是明天或之後，且在今天15:00之前依然顯示在處理中
-      // 更精確：根據截數規則，今天15:00前申請 -> 明日生效；15:00後申請 -> 後日生效
-      // 所以「處理中」列表只顯示那些還沒到生效日且尚未被確認的申請，但為了符合題目「申請處理中只顯示未到3pm的申請」
-      // 具體：凡是申請日期(created)今天且時間<15:00則仍顯示；若已超過今日15:00則不應出現在處理中。
-      // 但是資料中沒有created時間，只好用visit_date搭配當前時間推斷: 若visit_date是明天或更晚，今天整天都算處理中；若visit_date是今天則僅限此刻<15:00；若visit_date已過則不應出現。
       const visitDateStr = item.visit_date;
       if(!visitDateStr) return false;
       const visitDate = new Date(visitDateStr);
       const today = new Date();
       today.setHours(0,0,0,0);
-      const tomorrow = new Date(today);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      // 過期到訪日期不應出現在處理中
       if(visitDate < today) return false;
-      // 若到訪日期就是今天，必須目前時間小於15:00才顯示處理中
       if(visitDate.getTime() === today.getTime()) {
         return now.getHours() < 15;
       }
-      // 到訪日期在未來，只要是in_progress均可顯示，但為了避免已確認混亂，仍只顯示in_progress且未過截數時效？但要求4：申請處理中只顯示未到3pm，實際上未來日期的申請都在等待15:00截數，所以全部顯示合理。
       return true;
     }
 
-    // 已確認名單過濾: 去除過期(到訪日期小於今天)的資料，只顯示尚未過期(visit_date >= 今天)的已確認紀錄
+    // 已確認名單: 狀態非 in_progress 且 到訪日期 >= 今天 (不過期)
     function getValidConfirmed() {
       const today = new Date();
       today.setHours(0,0,0,0);
       return cachedData.filter(item => {
         if(item.status === 'in_progress') return false;
         const visitDate = new Date(item.visit_date);
-        return visitDate >= today;  // 只顯示到訪日期 >= 今天，過期不顯示
+        return visitDate >= today;
       });
     }
 
     function renderTables() {
-      // 處理中列表: 狀態in_progress + 符合截數邏輯 (未過今天15:00限制，且visit_date未過期)
+      // 處理中列表
       let inProgressList = cachedData.filter(item => isStillInProgress(item));
-      // 已確認名單: 非in_progress 且 到訪日期未過期(>=今天)
+      // 已確認名單 (有效)
       let confirmedList = getValidConfirmed();
       
-      let pt = document.getElementById('progressTable'), ct = document.getElementById('confirmedTable');
-      pt.innerHTML = inProgressList.map((i, idx) => `<tr><td>${idx + 1}</td><td>${i.ref_no || '-'}</td><td>${i.company || '-'}</td><td style="color:#d69e2e;font-weight:bold;">${i.vehicle_no || '-'}</td><td>${i.contact_person || '-'}</td><td>${i.tel_no || '-'}</td><td>${i.visit_time || '-'}</td><td>${i.purpose || '-'}</td><td>${i.vehicle_type || '-'}</td></tr>`).join('');
-      ct.innerHTML = confirmedList.map((i, idx) => `<tr><td>${idx + 1}</td><td>${i.ref_no || '-'}</td><td>${i.company || '-'}</td><td style="color:#38a169;font-weight:bold;">${i.vehicle_no || '-'}</td><td>${i.contact_person || '-'}</td><td>${i.tel_no || '-'}</td><td>${i.visit_time || '-'}</td><td>${i.purpose || '-'}</td><td>${i.vehicle_type || '-'}</td></tr>`).join('');
+      let pt = document.getElementById('progressTable');
+      pt.innerHTML = inProgressList.map((i, idx) => `<tr>
+        <td>${idx + 1}</td>
+        <td>${i.ref_no || '-'}</td>
+        <td>${i.company || '-'}</td>
+        <td style="color:#d69e2e;font-weight:bold;">${i.vehicle_no || '-'}</td>
+        <td>${i.contact_person || '-'}</td>
+        <td>${i.tel_no || '-'}</td>
+        <td>${i.visit_time || '-'}</td>
+        <td>${i.purpose || '-'}</td>
+        <td>${i.vehicle_type || '-'}</td>
+       </tr>`).join('');
       if (!inProgressList.length) pt.innerHTML = '<tr><td colspan="9" class="text-center">暫無處理中申請 / No pending applications</td></tr>';
-      if (!confirmedList.length) ct.innerHTML = '<tr><td colspan="9" class="text-center">暫無有效已確認名單 / No valid confirmed records</td></tr>';
+      
+      // 已確認表格: 加入 visit_date (對應Google Sheet K欄) 以及 time_in (Google Sheet G欄)
+      let ct = document.getElementById('confirmedTable');
+      ct.innerHTML = confirmedList.map((i, idx) => {
+        // 注意: 從Google Sheets匯入的欄位對應: visit_date 可能是 K 欄; time_in 對應原本儲存的入站時間 (G欄)
+        // 為了清晰，顯示 visit_date (到訪日期) 以及 time_in (入站時間)
+        const visitDateDisplay = i.visit_date || '-';
+        const timeInDisplay = i.time_in || i.visit_time || '-';  // 若無time_in則回退visit_time
+        return `<tr>
+          <td>${idx + 1}</td>
+          <td>${i.ref_no || '-'}</td>
+          <td>${i.company || '-'}</td>
+          <td style="color:#38a169;font-weight:bold;">${i.vehicle_no || '-'}</td>
+          <td>${i.contact_person || '-'}</td>
+          <td>${i.tel_no || '-'}</td>
+          <td style="font-weight:500;">${visitDateDisplay}</td>
+          <td style="font-weight:500;">${timeInDisplay}</td>
+          <td>${i.purpose || '-'}</td>
+          <td>${i.vehicle_type || '-'}</td>
+         </tr>`;
+      }).join('');
+      if (!confirmedList.length) ct.innerHTML = '<tr><td colspan="10" class="text-center">暫無有效已確認名單 / No valid confirmed records</td></tr>';
     }
 
     function filterTable() {
       let kw = document.getElementById('searchInput').value.toUpperCase();
       document.querySelectorAll('#progressTable tr, #confirmedTable tr').forEach(r => {
         if(r.cells.length < 3) return;
+        // 車牌通常在第三欄(index 3 在progress，第四欄在confirmed但統一用包含車牌的儲存格)
         let plateCell = r.cells[3];
         if (plateCell) r.style.display = plateCell.innerText.toUpperCase().includes(kw) ? '' : 'none';
       });
