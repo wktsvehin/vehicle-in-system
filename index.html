@@ -22,6 +22,7 @@
     .form-label { display: block; font-weight: 600; font-size: 0.9rem; color: #2d3748; }
     .form-sub { font-size: 0.7rem; color: #718096; display: block; }
     .form-control, .form-select { width: 100%; padding: 12px 14px; font-size: 1rem; border: 1px solid #cbd5e0; border-radius: 12px; background: #fff; }
+    input[type="tel"] { width: 100%; padding: 12px 14px; font-size: 1rem; border: 1px solid #cbd5e0; border-radius: 12px; background: #fff; }
     .btn-gold { width: 100%; background: linear-gradient(135deg,#ffb020,#f59e0b); border: none; color: #1e293b; font-weight: 800; font-size: 1.2rem; padding: 14px; border-radius: 16px; cursor: pointer; }
     .btn-success { background: #38a169; border: none; color: #fff; padding: 12px 20px; border-radius: 40px; font-weight: 600; cursor: pointer; }
     .btn-outline { background: transparent; border: 2px solid #cbd5e0; padding: 12px 20px; border-radius: 40px; font-weight: 600; cursor: pointer; }
@@ -50,6 +51,8 @@
     .loading-spinner { background: white; padding: 20px 30px; border-radius: 16px; text-align: center; }
     .loading-spinner .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: #2c7a7b; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 12px; }
     @keyframes spin { to { transform: rotate(360deg); } }
+    /* 確保 flatpickr 在桌面正常顯示 */
+    .flatpickr-calendar { z-index: 99999 !important; }
     @media (max-width:480px) { body { padding: 12px; } .card { padding: 16px; } .preview-row { flex-direction: column; } .preview-label, .preview-value { width: 100%; } }
   </style>
 </head>
@@ -75,7 +78,7 @@
       <div class="form-group"><label class="form-label">公司名 <span class="form-sub">Company Name</span></label><input type="text" class="form-control" id="company" placeholder="e.g. China Harbour Engineering" required></div>
       <div class="form-group"><label class="form-label">車牌號碼 <span class="form-sub">Vehicle No.</span></label><input type="text" class="form-control plate-input" id="vehicleNo" placeholder="AB1234" required></div>
       <div class="form-group"><label class="form-label">聯絡人 <span class="form-sub">Contact Person</span></label><input type="text" class="form-control" id="contactPerson" placeholder="Chan Tai Man" required></div>
-      <div class="form-group"><label class="form-label">電話號碼 <span class="form-sub">Tel. No.</span></label><input type="tel" class="form-control" id="telNo" placeholder="91234567" required></div>
+      <div class="form-group"><label class="form-label">電話號碼 <span class="form-sub">Tel. No.</span></label><input type="tel" class="form-control" id="telNo" placeholder="91234567" inputmode="numeric" pattern="[0-9]*" required></div>
       <div class="form-group"><label class="form-label">進入目的/工作内容 <span class="form-sub">Purpose/Work Description</span></label><input type="text" class="form-control" id="purpose" placeholder="廢物運輸 / Waste Transportation" required></div>
       <div class="form-group"><label class="form-label">車輛種類 <span class="form-sub">Vehicle Type</span></label><select class="form-select" id="vehicleType" required><option value="">請選擇/Select</option><option>私家車/Private Car</option><option>客貨車/Van</option><option>中型貨車/Medium Truck</option><option>重型貨車/Heavy Truck</option><option>工程車/Engineering Vehicle</option><option>其他/Other</option></select></div>
       <div class="form-group"><label class="form-label">預計到訪日期 <span class="form-sub">Visit Date (7天内)</span></label><input type="text" id="visitDatePicker" class="form-control" placeholder="點擊選擇日期" readonly required></div>
@@ -111,9 +114,9 @@
     <div class="flex" style="justify-content:space-between;align-items:center;margin-bottom:16px"><h4>🚗 關口核對系統</h4><div class="flex"><input type="date" id="exportDate" class="form-control" style="width:140px"><button class="btn-success" onclick="exportPDF()">📄 匯出PDF</button><button class="btn-outline" onclick="logout()">🚪 登出</button></div></div>
     <input type="text" id="searchInput" class="form-control plate-input mb-3" placeholder="🔍 搜尋車牌" oninput="filterTable()">
     <div class="section-title">📋 申請處理中 <span class="eng-text">(未過15:00)</span></div>
-    <div class="table-responsive"> <table> <thead> <tr> <th>#</th> <th>參考編號</th> <th>公司</th> <th>車牌</th> <th>聯絡人</th> <th>電話</th> <th>時間</th> <th>目的</th> <th>車型</th> </tr> </thead> <tbody id="progressTable"></tbody> </table> </div>
+    <div class="table-responsive"> <table> <thead> <tr> <th>#</th> <th>參考編號</th> <th>公司</th> <th>車牌</th> <th>聯絡人</th> <th>電話</th> <th>時間</th> <th>目的</th> <th>車型</th> </tr> </thead> <tbody id="progressTable"></tbody> <table> </div>
     <div class="section-title">✅ 已確認名單 <span class="eng-text">(今天或之後)</span></div>
-    <div class="table-responsive"> <tr> <thead> <tr> <th>#</th> <th>參考編號</th> <th>公司</th> <th>車牌</th> <th>聯絡人</th> <th>電話</th> <th>到訪日期</th> <th>入站時間</th> <th>目的</th> <th>車型</th> </tr> </thead> <tbody id="confirmedTable"></tbody> </table> </div>
+    <div class="table-responsive"> <table> <thead> <tr> <th>#</th> <th>參考編號</th> <th>公司</th> <th>車牌</th> <th>聯絡人</th> <th>電話</th> <th>到訪日期</th> <th>入站時間</th> <th>目的</th> <th>車型</th> </tr> </thead> <tbody id="confirmedTable"></tbody> </table> </div>
   </div>
 </div>
 
@@ -183,7 +186,18 @@ function initDatePicker() {
   let max = new Date();
   min.setDate(now.getDate() + offset);
   max.setDate(now.getDate() + 7);
-  flatpickr(p, { locale: "zh", dateFormat: "Y-m-d", minDate: min, maxDate: max, disableMobile: true });
+  
+  // 移除 disableMobile: true，讓 flatpickr 喺所有裝置都用同一套日曆彈窗
+  // 咁樣桌面電腦同手機都保證有日期選擇對話框
+  flatpickr(p, { 
+    locale: "zh", 
+    dateFormat: "Y-m-d", 
+    minDate: min, 
+    maxDate: max,
+    // 唔再用 disableMobile，等 flatpickr 自己決定
+    // 強制使用 flatpickr 介面而唔係手機原生日期選擇器
+    disableMobile: false
+  });
 }
 
 function initTimeSelects() {
@@ -228,7 +242,7 @@ function verifyLogin() {
 function logout() { isLoggedIn = false; showLogin(); }
 
 function loadData() {
-  document.getElementById('progressTable').innerHTML = '<tr><td colspan="9">載入中......</td></tr>';
+  document.getElementById('progressTable').innerHTML = '<tr><td colspan="9">載入中...</td></tr>';
   fetch(API).then(r => r.json()).then(data => {
     console.log("API資料:", data);
     if (!Array.isArray(data)) { console.error("資料不是陣列"); return; }
@@ -277,7 +291,7 @@ function renderTables() {
           <td>${idx+1}</td><td>${escapeHtml(i.ref_no)}</td><td>${escapeHtml(i.company)}</td><td style="color:#d69e2e">${escapeHtml(i.vehicle_no)}</td>
           <td>${escapeHtml(i.contact_person)}</td><td>${escapeHtml(i.tel_no)}</td><td>${escapeHtml(i.visit_time)}</td>
           <td>${escapeHtml(i.purpose)}</td><td>${escapeHtml(i.vehicle_type)}</td>
-      </tr>`).join('');
+        </tr>`).join('');
   }
   const confirmBody = document.getElementById('confirmedTable');
   if (confirmed.length === 0) confirmBody.innerHTML = '<tr><td colspan="10">暫無有效已確認名單</td></tr>';
@@ -286,7 +300,7 @@ function renderTables() {
           <td>${idx+1}</td><td>${escapeHtml(i.ref_no)}</td><td>${escapeHtml(i.company)}</td><td>${escapeHtml(i.vehicle_no)}</td>
           <td>${escapeHtml(i.contact_person)}</td><td>${escapeHtml(i.tel_no)}</td><td>${escapeHtml(i.visit_date)}</td>
           <td>${escapeHtml(i.visit_time)}</td><td>${escapeHtml(i.purpose)}</td><td>${escapeHtml(i.vehicle_type)}</td>
-      </tr>`).join('');
+        </tr>`).join('');
   }
 }
 
@@ -312,47 +326,59 @@ function showLoading(show, message = '正在提交資料...') {
   }
 }
 
-// 修改為使用 GET 方法提交（透過 URL 參數），兼容 Google Apps Script
 async function submitToGoogleSheet(formData, refNo) {
-  // 對應 Google Sheet 嘅欄位：B=ref_no, C=company, D=vehicle_no, E=contact_person, F=tel_no, 
-  // G=time_in, I=purpose, J=vehicle_type, K=visit_date
-  const params = new URLSearchParams();
-  params.append('ref_no', refNo);
-  params.append('company', formData.company);
-  params.append('vehicle_no', formData.vehicleNo);
-  params.append('contact_person', formData.contactPerson);
-  params.append('tel_no', formData.telNo);
-  params.append('time_in', formData.visitTime);
-  params.append('purpose', formData.purpose);
-  params.append('vehicle_type', formData.vehicleType);
-  params.append('visit_date', formData.visitDate);
-  params.append('status', 'in_progress');
-  params.append('timestamp', new Date().toISOString());
+  const dataToSend = {
+    ref_no: refNo,
+    company: formData.company,
+    vehicle_no: formData.vehicleNo,
+    contact_person: formData.contactPerson,
+    tel_no: formData.telNo,
+    time_in: formData.visitTime,
+    purpose: formData.purpose,
+    vehicle_type: formData.vehicleType,
+    visit_date: formData.visitDate,
+    status: 'in_progress',
+    timestamp: new Date().toISOString()
+  };
   
-  const url = `${API}?${params.toString()}`;
-  console.log("提交 URL:", url);
+  console.log("準備提交資料:", dataToSend);
   
   try {
-    // 使用 GET 方法提交（no-cors 模式確保請求可以送出）
-    const response = await fetch(url, {
-      method: 'GET',
-      mode: 'no-cors'
+    await fetch(API, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dataToSend)
     });
-    console.log("提交完成 (no-cors mode, 無法讀取回應內容)");
-    // 由於 no-cors 模式下無法讀取回應，預設為成功
+    console.log("POST 提交完成");
     return { success: true, message: '提交成功' };
-  } catch (error) {
-    console.error("提交錯誤:", error);
-    return { success: false, message: error.message };
+  } catch (postError) {
+    console.error("POST 提交失敗:", postError);
+    try {
+      const params = new URLSearchParams();
+      for (let key in dataToSend) params.append(key, dataToSend[key]);
+      await fetch(`${API}?${params.toString()}`, { method: 'GET', mode: 'no-cors' });
+      console.log("GET 備用提交完成");
+      return { success: true, message: '提交成功' };
+    } catch (getError) {
+      console.error("GET 備用提交失敗:", getError);
+      return { success: false, message: getError.message };
+    }
   }
 }
 
 function generateRefNo() {
   let d = new Date();
-  let date = `${d.getFullYear()}${(d.getMonth()+1).toString().padStart(2,'0')}${d.getDate().toString().padStart(2,'0')}`;
-  let chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand = '';
+  let year = d.getFullYear();
+  let month = (d.getMonth() + 1).toString().padStart(2, '0');
+  let day = d.getDate().toString().padStart(2, '0');
+  let hours = d.getHours().toString().padStart(2, '0');
+  let minutes = d.getMinutes().toString().padStart(2, '0');
+  let seconds = d.getSeconds().toString().padStart(2, '0');
+  let chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  let rand = '';
   for (let i = 0; i < 4; i++) rand += chars[Math.floor(Math.random() * chars.length)];
-  return `${date}-${rand}`;
+  return `${year}${month}${day}-${hours}${minutes}${seconds}-${rand}`;
 }
 
 function showPreview(e) {
@@ -370,14 +396,8 @@ function showPreview(e) {
   if (!c || !v || !cp || !t || !p || !vt || !d) { alert('請填寫所有欄位'); return false; }
   
   pendingSubmissionData = {
-    company: c,
-    vehicleNo: v,
-    contactPerson: cp,
-    telNo: t,
-    purpose: p,
-    vehicleType: vt,
-    visitDate: d,
-    visitTime: tm
+    company: c, vehicleNo: v, contactPerson: cp, telNo: t,
+    purpose: p, vehicleType: vt, visitDate: d, visitTime: tm
   };
   
   document.getElementById('pCompany').innerText = c;
@@ -400,33 +420,24 @@ function backToForm() {
 }
 
 async function submitFinal() {
-  if (!pendingSubmissionData) {
-    alert('沒有可提交的資料');
-    return;
-  }
-  
+  if (!pendingSubmissionData) { alert('沒有可提交的資料'); return; }
   const refNo = generateRefNo();
   document.getElementById('refNumber').innerText = refNo;
-  
   showLoading(true, '正在提交資料到 Google Sheets...');
-  
   try {
     const result = await submitToGoogleSheet(pendingSubmissionData, refNo);
     showLoading(false);
-    
     if (result.success) {
       document.getElementById('previewSection').classList.add('hidden');
       document.getElementById('successSection').classList.remove('hidden');
       pendingSubmissionData = null;
-      if (isLoggedIn) {
-        loadData();
-      }
+      if (isLoggedIn) loadData();
     } else {
-      alert(`提交失敗: ${result.message}\n\n請檢查網絡連線後重試。\n參考編號: ${refNo}\n請保留此編號以便日後查詢。`);
+      alert(`❌ 提交失敗: ${result.message}\n\n參考編號: ${refNo}`);
     }
   } catch (error) {
     showLoading(false);
-    alert(`提交時發生錯誤: ${error.message}\n\n參考編號: ${refNo}\n請稍後再試或聯絡管理員。`);
+    alert(`❌ 提交時發生錯誤: ${error.message}\n\n參考編號: ${refNo}`);
   }
 }
 
@@ -440,16 +451,13 @@ function resetForm() {
 async function exportPDF() {
   let selectedDate = document.getElementById('exportDate').value;
   if (!selectedDate) { alert('請先選擇要匯出的日期'); return; }
-  
   let normalizedSelected = normalizeDateForCompare(selectedDate);
   let list = cachedData.filter(item => item.visit_date === normalizedSelected);
-  
   if (list.length === 0) {
     let uniqueDates = [...new Set(cachedData.map(i => i.visit_date).filter(d => d))];
     alert(`沒有 ${selectedDate} 的車輛紀錄\n\n系統中現有嘅日期：${uniqueDates.join(', ') || '無'}`);
     return;
   }
-  
   if (!confirm(`確認匯出 ${selectedDate} 的 ${list.length} 筆紀錄？\n\n匯出後請手動從 Google Sheet 刪除這些資料。`)) return;
   
   let loadingDiv = document.createElement('div');
@@ -463,7 +471,6 @@ async function exportPDF() {
     list.forEach((item, idx) => {
       tableRows += `<tr style="background:#fff;"><td style="border:1px solid #000;padding:8px;vertical-align:top;">${idx+1}</td><td style="border:1px solid #000;padding:8px;vertical-align:top;">${escapeHtml(item.company)}</td><td style="border:1px solid #000;padding:8px;vertical-align:top;">${escapeHtml(item.vehicle_no)}</td><td style="border:1px solid #000;padding:8px;vertical-align:top;">${escapeHtml(item.contact_person)}</td><td style="border:1px solid #000;padding:8px;vertical-align:top;">${escapeHtml(item.tel_no)}</td><td style="border:1px solid #000;padding:8px;vertical-align:top;">${item.visit_time}</td><td style="border:1px solid #000;padding:8px;vertical-align:top;">---</td><td style="border:1px solid #000;padding:8px;vertical-align:top;">${escapeHtml(item.purpose)}</td></tr>`;
     });
-    
     const pdfContainer = document.createElement('div');
     pdfContainer.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:900px;background:white;padding:20px';
     pdfContainer.innerHTML = `
@@ -476,12 +483,10 @@ async function exportPDF() {
       <table style="width:100%;border-collapse:collapse;font-size:10px;"><thead><tr style="background:#fff;"><th style="border:1px solid #000;padding:10px 6px;">項目</th><th style="border:1px solid #000;padding:10px 6px;">公司名稱</th><th style="border:1px solid #000;padding:10px 6px;">車牌號碼</th><th style="border:1px solid #000;padding:10px 6px;">聯絡人</th><th style="border:1px solid #000;padding:10px 6px;">電話號碼</th><th style="border:1px solid #000;padding:10px 6px;">進入時間</th><th style="border:1px solid #000;padding:10px 6px;">離開時間</th><th style="border:1px solid #000;padding:10px 6px;">進入目的/工作內容</th></tr></thead><tbody>${tableRows}</tbody></table>
       <div style="margin-top:18px;font-size:8px;text-align:center;">系統產生之記錄，請核對無誤後簽署</div>
     `;
-    
     document.body.appendChild(pdfContainer);
     await new Promise(r => setTimeout(r, 250));
     const canvas = await html2canvas(pdfContainer, { scale: 2.8, backgroundColor: '#ffffff' });
     document.body.removeChild(pdfContainer);
-    
     const imgData = canvas.toDataURL('image/png');
     const { jsPDF } = window.jspdf;
     const imgWidth = 280;
@@ -489,7 +494,6 @@ async function exportPDF() {
     const pdf = new jsPDF('l', 'mm', 'a4');
     pdf.addImage(imgData, 'PNG', 10, 8, imgWidth, imgHeight);
     pdf.save(`WKTS_VehicleLog_${selectedDate}.pdf`);
-    
     document.body.removeChild(loadingDiv);
     alert(`✅ PDF 已下載！\n\n請記得手動從 Google Sheet 刪除 ${selectedDate} 的 ${list.length} 筆紀錄`);
   } catch (err) {
