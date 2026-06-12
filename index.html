@@ -196,9 +196,13 @@
             <div class="col-12 col-md-6 ps-md-2 form-group-spaced"><label class="form-label fw-bold biling-label">預計到訪日期 <span class="required-star">*</span><span class="biling-sub">Expected Visit Date</span></label><select id="visit_date" class="form-select" required></select></div>
           </div>
           <div class="form-group-spaced">
-            <label class="form-label fw-bold biling-label">預計到訪時間 <span class="required-star">*</span><span class="biling-sub">Estimated Time of Arrival (24h)</span></label>
-            <div class="d-flex gap-2 mobile-time-wrapper"><select id="visitHour" class="form-select text-center" required></select><span class="align-self-center fw-bold fs-4 px-1">:</span><select id="visitMin" class="form-select text-center" required></select></div>
-          </div>
+<label class="form-label fw-bold biling-label">預計到訪時間 <span class="biling-sub">Estimated Time of Arrival (24h)</span></label>
+<div class="d-flex gap-2 mobile-time-wrapper">
+  <select id="visitHour" class="form-select text-center"></select>
+  <span class="align-self-center fw-bold fs-4 px-1">:</span>
+  <select id="visitMin" class="form-select text-center"></select>
+</div>
+</div>
           <button type="submit" class="btn btn-gold-action w-100 py-3 mt-3">🚀 提交申請<span class="fw-normal d-block" style="font-size: 0.8rem; opacity: 0.9; margin-top: 2px;">Application Submission</span></button>
         </form>
       </div>
@@ -526,7 +530,7 @@ function finalSubmitData() {
         purpose: document.getElementById('purpose').value.trim(),
         vehicleType: document.getElementById('vehicle_type').value,
         visitDate: document.getElementById('visit_date').value,
-        visitTime: `${document.getElementById('visitHour').value}:${document.getElementById('visitMin').value}`
+        visitTime: (document.getElementById('visitHour').value && document.getElementById('visitMin').value) ? `${document.getElementById('visitHour').value}:${document.getElementById('visitMin').value}` : '未填寫 / Not Specified'
     };
 
     // 3. 將生成的英數隨機單號寫入成功框並顯現畫面
@@ -708,7 +712,7 @@ function loadInternalDataLists() {
     } else {
       inProgressCars.forEach(item => {
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${item.item || '-'}</td><td class="fw-bold text-secondary">${item.ref_no || '-'}</td><td>${item.company || '-'}</td><td class="fw-bold text-uppercase text-warning">${item.vehicle_no || '-'}</td><td>${item.contact_person || '-'}</td><td>${item.tel_no || '-'}</td><td>${item.time_in || '---'}</td><td>${item.time_out || '---'}</td><td>${item.purpose || '-'}</td><td><span class="badge bg-secondary">${item.vehicle_type || '-'}</span></td>`;
+        tr.innerHTML = `<td>${item.item || '-'}</td><td class="fw-bold text-secondary">${item.ref_no || '-'}</td><td>${item.company || '-'}</td><td class="fw-bold text-uppercase text-warning">${item.vehicle_no || '-'}</td><td>${item.contact_person || '-'}</td><td>${item.tel_no || '-'}</td><td>${item.visit_time || '---'}</td><td>${item.time_out || '---'}</td><td>${item.purpose || '-'}</td><td><span class="badge bg-secondary">${item.vehicle_type || '-'}</span></td>`;
         todayTbody.appendChild(tr);
       });
     }
@@ -720,7 +724,7 @@ function loadInternalDataLists() {
     } else {
       confirmedCars.forEach(item => {
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${item.item || '-'}</td><td class="fw-bold text-secondary">${item.ref_no || '-'}</td><td>${item.company || '-'}</td><td class="fw-bold text-uppercase text-success">${item.vehicle_no || '-'}</td><td>${item.contact_person || '-'}</td><td>${item.tel_no || '-'}</td><td>${item.time_in || '---'}</td><td>${item.time_out || '---'}</td><td>${item.purpose || '-'}</td><td><span class="badge bg-success">${item.vehicle_type || '-'}</span></td>`;
+        tr.innerHTML = `<td>${item.item || '-'}</td><td class="fw-bold text-secondary">${item.ref_no || '-'}</td><td>${item.company || '-'}</td><td class="fw-bold text-uppercase text-success">${item.vehicle_no || '-'}</td><td>${item.contact_person || '-'}</td><td>${item.tel_no || '-'}</td><td>${item.visit_time || '---'}</td><td>${item.time_out || '---'}</td><td>${item.purpose || '-'}</td><td><span class="badge bg-success">${item.vehicle_type || '-'}</span></td>`;
         tomorrowTbody.appendChild(tr);
       });
     }
