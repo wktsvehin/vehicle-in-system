@@ -269,13 +269,16 @@ style="width: 100% !important; max-width: 100% !important;" required>
               <option value="其他 Others">其他 Others</option>
             </select>
           </div>
-          <!-- 7. 預計到訪⽇期 (已修正損壞的標籤與網格) -->
-          <div class="form-group-spaced">
-            <label class="form-label fw-bold biling-label">預計到訪⽇期 <span class="required-
-star">*</span><br><small class="text-secondary fw-normal">Expected Visit Date</small></label>
-            <input type="text" id="visitDate" class="form-control" placeholder="請選擇⽇期 Select 
-Date" style="width: 100% !important; max-width: 100% !important;" required>
-          </div>
+<!-- 7. 預計到訪日期 - 日曆對話框版 -->
+<div class="form-group-spaced">
+    <label class="form-label fw-bold billing-label">預計到訪日期 <span class="required-star">*</span><br><small class="text-secondary fw-normal">Expected Visit Date (點擊選擇)</small></label>
+    <input type="text" id="visitDatePicker" class="form-control" 
+           placeholder="📅 點擊這裡打開日曆" 
+           style="width: 100% !important; max-width: 100% !important; background-color: #fff; cursor: pointer;" 
+           readonly 
+           required>
+    <small class="text-muted" style="font-size: 0.7rem; display: block; margin-top: 5px;">※ 點擊輸入框會彈出日曆對話框，請直接選擇日期</small>
+</div>
           <div class="form-group-spaced">
 <label class="form-label fw-bold biling-label">預計到訪時間 <span class="biling-sub">Estimated Time 
 of Arrival (24h)</span></label>
