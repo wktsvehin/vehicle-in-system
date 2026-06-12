@@ -162,27 +162,37 @@
  </div>
         
         <!-- 登記表單實體 -->
-        <form id="regForm" autocomplete="off" onsubmit="showPreviewScreen(event)">
-          <div class="form-group-spaced"><label class="form-label fw-bold biling-label">公司名稱 <span class="required-star">*</span><span class="biling-sub">Company Name</span></label><input type="text" id="company" class="form-control" placeholder="e.g. ABC Engineering Co." required></div>
-          <div class="form-group-spaced"><label class="form-label fw-bold biling-label">車牌號碼 <span class="required-star">*</span><span class="biling-sub">Vehicle Registration Mark</span></label><input type="text" id="vehicle_no" class="form-control form-control-lg plate-input" placeholder="e.g. AB1234" required></div>
-          <div class="row g-0 m-0">
-            <div class="col-12 col-md-6 pe-md-2 form-group-spaced"><label class="form-label fw-bold biling-label">聯絡人 <span class="required-star">*</span><span class="biling-sub">Contact Person</span></label><input type="text" id="contact_person" class="form-control" placeholder="e.g. Chan Tai Man" required></div>
-            <div class="col-12 col-md-6 ps-md-2 form-group-spaced"><label class="form-label fw-bold biling-label">電話號碼 (香港 8 位數字) <span class="required-star">*</span><span class="biling-sub">Tel. No. (HK 8 digits)</span></label><input type="tel" id="tel_no" class="form-control" placeholder="e.g. 91234567" required pattern="\d{8}" maxlength="8" oninput="this.value=this.value.replace(/[^0-9]/g,'');"></div>
-          </div>
-          <div class="form-group-spaced"><label class="form-label fw-bold biling-label">進入目的 / 工作內容 <span class="required-star">*</span><span class="biling-sub">Purpose of Entry / Work Content</span></label><input type="text" id="purpose" class="form-control" placeholder="e.g. Delivery / Maintenance" required></div>
-          <div class="row g-0 m-0">
-            <div class="col-12 col-md-6 pe-md-2 form-group-spaced">
-              <label class="form-label fw-bold biling-label">車輛種類 <span class="required-star">*</span><span class="biling-sub">Vehicle Type</span></label>
-              <select id="vehicle_type" class="form-select" required>
-                <option value="" disabled selected>-- 請選擇 Please Select --</option>
-                <option value="私家車 Private Car">私家車 Private Car</option>
-                <option value="輕型貨車 LGV">輕型貨車 LGV</option>
-                <option value="工程車 Construction Vehicle">工程車 Construction Vehicle</option>
-                <option value="中型貨車 MGV">中型貨車 MGV</option>
-                <option value="大型貨車 HGV">大型貨車 HGV</option>
-                <option value="其他 Others">其他 Others</option>
-              </select>
-            </div>
+<form id="regForm" autocomplete="off" onsubmit="showPreviewScreen(event)">
+  <!-- 1. 公司名稱 -->
+  <div class="form-group-spaced">
+    <label class="form-label fw-bold biling-label">公司名稱 <span class="required-star">*</span><span class="biling-sub">Company Name</span></label>
+    <input type="text" class="form-control" id="companyName" placeholder="e.g. ABC Engineering Co." style="width: 100% !important; max-width: 100% !important;" required>
+  </div>
+
+  <!-- 2. 車牌號碼 -->
+  <div class="form-group-spaced">
+    <label class="form-label fw-bold biling-label">車牌號碼 <span class="required-star">*</span><span class="biling-sub">Vehicle Registration Mark</span></label>
+    <input type="text" class="form-control text-uppercase" id="vehNo" placeholder="E.G. AB1234" style="width: 100% !important; max-width: 100% !important;" required>
+  </div>
+
+  <!-- 3. 聯絡人 -->
+  <div class="form-group-spaced">
+    <label class="form-label fw-bold biling-label">聯絡人 <span class="required-star">*</span><span class="biling-sub">Contact Person</span></label>
+    <input type="text" class="form-control" id="contactPerson" placeholder="e.g. Chan Tai Man" style="width: 100% !important; max-width: 100% !important;" required>
+  </div>
+
+  <!-- 4. 電話號碼 -->
+  <div class="form-group-spaced">
+    <label class="form-label fw-bold biling-label">電話號碼 (香港 8 位數字) <span class="required-star">*</span><span class="biling-sub">Tel. No. (HK 8 digits)</span></label>
+    <input type="tel" class="form-control" id="telNo" placeholder="e.g. 91234567" style="width: 100% !important; max-width: 100% !important;" required>
+  </div>
+
+  <!-- 5. 填入目的 / 工作內容 -->
+  <div class="form-group-spaced">
+    <label class="form-label fw-bold biling-label">填入目的 / 工作內容 <span class="required-star">*</span><span class="biling-sub">Purpose of Entry / Work Content</span></label>
+    <input type="text" class="form-control" id="purpose" placeholder="e.g. Delivery / Maintenance" style="width: 100% !important; max-width: 100% !important;" required>
+  </div>
+
             <div class="col-12 col-md-6 ps-md-2 form-group-spaced"><label class="form-label fw-bold biling-label">預計到訪日期 <span class="required-star">*</span><span class="biling-sub">Expected Visit Date</span></label><select id="visit_date" class="form-select" required></select></div>
           </div>
           <div class="form-group-spaced">
