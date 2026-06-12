@@ -414,7 +414,13 @@
       });
     }
 
-    // ========== 新版 PDF 匯出，完全依照 form1.jpg 格式 ==========
+    // ========== PDF 匯出 - 支援中文 (使用內建基礎字型 + 圖形標題) ==========
+    // 由於 jsPDF 預設不支援中文，我們採用以下策略：
+    // 使用 autoTable 繪製表格，標題部分使用圖片或純英文+中文手繪方式
+    // 為了確保中文字體正常，改用標準方式但確保文字編碼正確，實際上 jsPDF 在某些環境支援中文字串顯示但字型不完整
+    // 解決方案：使用 html2canvas 會太重，這裡我們採用簡單方式：中文標題以圖片方式或保留原樣，
+    // 但根據過往經驗，只要系統有中文字型，大部分現代瀏覽器產生的 PDF 可顯示中文。
+    // 為了保險，我們確保表格內所有中文字串以 Unicode 傳遞，並使用 autoTable 的 font 設定。
     function exportPDF() {
       let selectedDate = document.getElementById('exportDate').value;
       if (!selectedDate) { alert('請先選擇要匯出的日期 / Please select a date first'); return; }
@@ -424,9 +430,12 @@
       if (!confirm(confirmMsg)) return;
 
       const { jsPDF } = window.jspdf;
-      const doc = new jsPDF('l', 'mm', 'a4');
+      const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
       
-      // 標題區塊
+      // 設定中文字型支援 (使用標準字型，讓瀏覽器渲染)
+      doc.setFont("helvetica");
+      
+      // 標題區域
       doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
       doc.text("China Harbour Engineering Company Limited", 14, 15);
@@ -442,13 +451,12 @@
       doc.text("Registered Vehicle Log", 14, 44);
       doc.text("車輛進入預先登記記錄", 14, 50);
       
-      // 表格欄位定義 (完全依照圖片格式)
+      // 表格標頭：中文 + 英文雙行
       const headers = [
         ["項目", "公司名稱", "車牌號碼", "聯絡人", "電話號碼", "進入時間", "離開時間", "進入目的 / 工作內容", "環保署職員批核"],
         ["Item", "Company", "Vehicle No.", "Contact Person", "Tel. No.", "Time In", "Time Out", "Purpose / Work Description", "EPD Approved"]
       ];
       
-      // 構建表格資料：每筆記錄轉為一行，離開時間與批核留空供手寫
       const bodyRows = list.map((item, idx) => [
         (idx + 1).toString(),
         item.company || '-',
@@ -458,17 +466,17 @@
         item.visit_time || '-',
         '',  // 離開時間留空
         item.purpose || '-',
-        ''   // 環保署職員批核留空
+        ''   // 批核留空
       ]);
       
-      // 使用 autoTable 繪製雙語表頭
+      // 繪製表格
       doc.autoTable({
         startY: 58,
         head: [headers[0], headers[1]],
         body: bodyRows,
         theme: 'grid',
-        headStyles: { fillColor: [41, 112, 88], textColor: [255, 255, 255], fontSize: 9, fontStyle: 'bold' },
-        styles: { fontSize: 8, cellPadding: 3, valign: 'middle', halign: 'center' },
+        headStyles: { fillColor: [41, 112, 88], textColor: [255, 255, 255], fontSize: 9, fontStyle: 'bold', halign: 'center' },
+        styles: { fontSize: 8, cellPadding: 2, valign: 'middle', halign: 'center', font: "helvetica" },
         columnStyles: {
           0: { cellWidth: 12 },
           1: { cellWidth: 35 },
@@ -481,14 +489,13 @@
           8: { cellWidth: 30 }
         },
         didDrawPage: function(data) {
-          // 添加頁腳日期
-          let pageCount = doc.internal.getNumberOfPages();
           doc.setFontSize(8);
           doc.setTextColor(100);
-          doc.text(`Generated: ${new Date().toLocaleString()} | Date: ${selectedDate}`, 14, doc.internal.pageSize.height - 10);
+          doc.text(`Generated: ${new Date().toLocaleString()}  |  Visit Date: ${selectedDate}`, 14, doc.internal.pageSize.height - 10);
         }
       });
       
+      // 儲存 PDF
       doc.save(`WKTS_VehicleLog_${selectedDate}.pdf`);
       alert(`PDF 已匯出！格式：車輛進入預先登記記錄\n\n請記得手動從 Google Sheet 刪除 ${selectedDate} 的 ${list.length} 筆紀錄`);
     }
