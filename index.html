@@ -7,9 +7,9 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh.js"></script>
-<!-- 使用 html2canvas + jspdf 組合 -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<!-- jsPDF 核心 + html 插件 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#eef2f5;padding:20px 12px;font-family:'Helvetica Neue','Noto Sans TC','Microsoft YaHei','PingFang SC',Arial,sans-serif;max-width:600px;margin:0 auto}
@@ -107,9 +107,9 @@ th{background:#f1f5f9;font-weight:600}
 <div class="flex" style="justify-content:space-between;align-items:center;margin-bottom:16px"><h4>🚗 關口核對系統</h4><div class="flex"><input type="date" id="exportDate" class="form-control" style="width:140px"><button class="btn-success" onclick="exportPDF()">📄 匯出PDF</button><button class="btn-outline" onclick="logout()">🚪 登出</button></div></div>
 <input type="text" id="searchInput" class="form-control plate-input mb-3" placeholder="🔍 搜尋車牌" oninput="filterTable()">
 <div class="section-title">📋 申請處理中 <span class="eng-text">(未過15:00)</span></div>
-<div class="table-responsive">\n<table><thead><tr><th>#</th><th>參考編號</th><th>公司</th><th>車牌</th><th>聯絡人</th><th>電話</th><th>時間</th><th>目的</th><th>車型</th></tr></thead><tbody id="progressTable"></tbody></table></div>
+<div class="table-responsive">\n<table>\n<thead>\n<tr>\n<th>#</th><th>參考編號</th><th>公司</th><th>車牌</th><th>聯絡人</th><th>電話</th><th>時間</th><th>目的</th><th>車型</th>\n</tr>\n</thead>\n<tbody id="progressTable"></tbody>\n</table>\n</div>
 <div class="section-title">✅ 已確認名單 <span class="eng-text">(今天或之後)</span></div>
-<div class="table-responsive">\n<table><thead><tr><th>#</th><th>參考編號</th><th>公司</th><th>車牌</th><th>聯絡人</th><th>電話</th><th>到訪日期</th><th>入站時間</th><th>目的</th><th>車型</th></tr></thead><tbody id="confirmedTable"></tbody></table></div>
+<div class="table-responsive">\n<table>\n<thead>\n<tr>\n<th>#</th><th>參考編號</th><th>公司</th><th>車牌</th><th>聯絡人</th><th>電話</th><th>到訪日期</th><th>入站時間</th><th>目的</th><th>車型</th>\n</tr>\n</thead>\n<tbody id="confirmedTable"></tbody>\n</table>\n</div>
 </div>
 </div>
 
@@ -222,7 +222,7 @@ function renderTables(){
 }
 function filterTable(){let kw=document.getElementById('searchInput').value.toUpperCase();document.querySelectorAll('#progressTable tr,#confirmedTable tr').forEach(r=>{let c=r.cells[3];if(c)r.style.display=c.innerText.toUpperCase().includes(kw)?'':'none';});}
 
-// ========== 使用 html2canvas + jsPDF 直接下載 PDF ==========
+// ========== 直接產生並下載 PDF (使用 html2canvas + jsPDF 確保下載觸發) ==========
 async function exportPDF() {
     let selectedDate = document.getElementById('exportDate').value;
     if (!selectedDate) { alert('請先選擇要匯出的日期'); return; }
@@ -239,12 +239,15 @@ async function exportPDF() {
     
     // 顯示載入提示
     let loadingDiv = document.createElement('div');
-    loadingDiv.innerText = '正在產生 PDF，請稍候...';
-    loadingDiv.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.8);color:#fff;padding:15px 30px;border-radius:10px;z-index:9999;font-size:16px';
+    loadingDiv.innerText = '正在產生 PDF，請稍候... (這可能需要幾秒鐘)';
+    loadingDiv.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.85);color:#fff;padding:15px 30px;border-radius:10px;z-index:9999;font-size:16px;text-align:center;min-width:200px';
     document.body.appendChild(loadingDiv);
     
+    // 強制讓畫面更新
+    await new Promise(r => setTimeout(r, 100));
+    
     try {
-        // 建立要轉換成 PDF 的 HTML 內容
+        // 建立 HTML 內容
         let tableRows = '';
         list.forEach((item, idx) => {
             tableRows += `
@@ -262,74 +265,82 @@ async function exportPDF() {
             `;
         });
         
-        const pdfHtml = `
-            <div id="pdfContent" style="font-family:'Noto Sans TC','Microsoft YaHei','PingFang SC','Helvetica Neue',Arial,sans-serif;padding:30px 20px;background:white;width:100%;box-sizing:border-box;">
-                <div style="text-align:center;margin-bottom:25px;">
-                    <div style="font-size:16px;font-weight:bold;">China Harbour Engineering Company Limited</div>
-                    <div style="font-size:16px;font-weight:bold;">中國港灣工程有限責任公司</div>
-                    <div style="font-size:14px;margin-top:8px;">West Kowloon Transfer Station | 西九龍廢物轉運站</div>
-                    <div style="font-size:18px;font-weight:bold;margin-top:15px;">Registered Vehicle Log</div>
-                    <div style="font-size:14px;margin-bottom:20px;">車輛進入預先登記記錄</div>
-                </div>
-                <table style="width:100%;border-collapse:collapse;font-size:10px;">
-                    <thead>
-                        <tr style="background-color:#2c7a7b;color:white;">
-                            <th style="border:1px solid #000;padding:8px;">項目<br>Item</th>
-                            <th style="border:1px solid #000;padding:8px;">公司名稱<br>Company</th>
-                            <th style="border:1px solid #000;padding:8px;">車牌號碼<br>Vehicle No.</th>
-                            <th style="border:1px solid #000;padding:8px;">聯絡人<br>Contact Person</th>
-                            <th style="border:1px solid #000;padding:8px;">電話號碼<br>Tel. No.</th>
-                            <th style="border:1px solid #000;padding:8px;">進入時間<br>Time In</th>
-                            <th style="border:1px solid #000;padding:8px;">離開時間<br>Time Out</th>
-                            <th style="border:1px solid #000;padding:8px;">進入目的/工作內容<br>Purpose/Work Description</th>
-                            <th style="border:1px solid #000;padding:8px;">環保署職員批核<br>EPD Approved</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${tableRows}
-                    </tbody>
-                </table>
-                <div style="margin-top:20px;font-size:9px;text-align:center;color:#666;">
-                    匯出日期: ${new Date().toLocaleString()} | 到訪日期: ${selectedDate}
-                </div>
+        // 建立一個離屏元素來渲染 PDF 內容
+        const pdfContainer = document.createElement('div');
+        pdfContainer.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:800px;background:white;padding:20px;font-family:"Noto Sans TC","Microsoft YaHei","PingFang SC","Helvetica Neue",Arial,sans-serif';
+        pdfContainer.innerHTML = `
+            <div style="text-align:center;margin-bottom:25px;">
+                <div style="font-size:16px;font-weight:bold;">China Harbour Engineering Company Limited</div>
+                <div style="font-size:16px;font-weight:bold;">中國港灣工程有限責任公司</div>
+                <div style="font-size:14px;margin-top:8px;">West Kowloon Transfer Station | 西九龍廢物轉運站</div>
+                <div style="font-size:18px;font-weight:bold;margin-top:15px;">Registered Vehicle Log</div>
+                <div style="font-size:14px;margin-bottom:20px;">車輛進入預先登記記錄</div>
+            </div>
+            <table style="width:100%;border-collapse:collapse;font-size:10px;">
+                <thead>
+                    <tr style="background-color:#2c7a7b;color:white;">
+                        <th style="border:1px solid #000;padding:8px;">項目<br>Item</th>
+                        <th style="border:1px solid #000;padding:8px;">公司名稱<br>Company</th>
+                        <th style="border:1px solid #000;padding:8px;">車牌號碼<br>Vehicle No.</th>
+                        <th style="border:1px solid #000;padding:8px;">聯絡人<br>Contact Person</th>
+                        <th style="border:1px solid #000;padding:8px;">電話號碼<br>Tel. No.</th>
+                        <th style="border:1px solid #000;padding:8px;">進入時間<br>Time In</th>
+                        <th style="border:1px solid #000;padding:8px;">離開時間<br>Time Out</th>
+                        <th style="border:1px solid #000;padding:8px;">進入目的/工作內容<br>Purpose/Work Description</th>
+                        <th style="border:1px solid #000;padding:8px;">環保署職員批核<br>EPD Approved</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${tableRows}
+                </tbody>
+            </table>
+            <div style="margin-top:20px;font-size:9px;text-align:center;color:#666;">
+                匯出日期: ${new Date().toLocaleString()} | 到訪日期: ${selectedDate}
             </div>
         `;
+        document.body.appendChild(pdfContainer);
         
-        // 建立臨時元素
-        const tempDiv = document.createElement('div');
-        tempDiv.style.position = 'absolute';
-        tempDiv.style.left = '-9999px';
-        tempDiv.style.top = '-9999px';
-        tempDiv.style.width = '800px';
-        tempDiv.style.backgroundColor = 'white';
-        tempDiv.innerHTML = pdfHtml;
-        document.body.appendChild(tempDiv);
+        // 等待渲染
+        await new Promise(r => setTimeout(r, 200));
         
         // 使用 html2canvas 轉換
-        const canvas = await html2canvas(tempDiv, {
-            scale: 2,
+        const canvas = await html2canvas(pdfContainer, {
+            scale: 2.5,
             backgroundColor: '#ffffff',
             logging: false,
-            useCORS: true
+            useCORS: true,
+            windowWidth: pdfContainer.scrollWidth,
+            windowHeight: pdfContainer.scrollHeight
         });
+        
+        // 移除臨時元素
+        document.body.removeChild(pdfContainer);
         
         const imgData = canvas.toDataURL('image/png');
         const { jsPDF } = window.jspdf;
         const imgWidth = 280; // A4橫向寬度 (mm)
         const imgHeight = (canvas.height * imgWidth) / canvas.width;
         const pdf = new jsPDF('l', 'mm', 'a4');
-        pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+        
+        // 計算垂直位置，讓內容置中
+        let yPos = 10;
+        if (imgHeight < 190) {
+            yPos = (190 - imgHeight) / 2;
+        }
+        pdf.addImage(imgData, 'PNG', 10, yPos, imgWidth, imgHeight);
+        
+        // 觸發下載
         pdf.save(`WKTS_VehicleLog_${selectedDate}.pdf`);
         
-        // 清理
-        document.body.removeChild(tempDiv);
+        // 移除載入提示
         document.body.removeChild(loadingDiv);
-        alert(`PDF 已下載！\n\n檔案名稱: WKTS_VehicleLog_${selectedDate}.pdf\n\n請記得手動從 Google Sheet 刪除 ${selectedDate} 的 ${list.length} 筆紀錄`);
+        
+        alert(`✅ PDF 已下載！\n\n檔案名稱: WKTS_VehicleLog_${selectedDate}.pdf\n\n請記得手動從 Google Sheet 刪除 ${selectedDate} 的 ${list.length} 筆紀錄`);
         
     } catch (err) {
         console.error("PDF生成錯誤:", err);
-        document.body.removeChild(loadingDiv);
-        alert('PDF 生成失敗: ' + err.message);
+        if (loadingDiv && loadingDiv.parentNode) document.body.removeChild(loadingDiv);
+        alert('❌ PDF 生成失敗: ' + err.message + '\n\n請檢查網路連線後重試');
     }
 }
 
