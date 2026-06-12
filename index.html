@@ -46,6 +46,10 @@
     .plate-input { text-transform: uppercase; font-weight: bold; }
     .chi-text { display: block; }
     .eng-text { display: block; font-size: 0.7rem; color: #718096; }
+    .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 10000; }
+    .loading-spinner { background: white; padding: 20px 30px; border-radius: 16px; text-align: center; }
+    .loading-spinner .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: #2c7a7b; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 12px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
     @media (max-width:480px) { body { padding: 12px; } .card { padding: 16px; } .preview-row { flex-direction: column; } .preview-label, .preview-value { width: 100%; } }
   </style>
 </head>
@@ -109,7 +113,7 @@
     <div class="section-title">📋 申請處理中 <span class="eng-text">(未過15:00)</span></div>
     <div class="table-responsive"> <table> <thead> <tr> <th>#</th> <th>參考編號</th> <th>公司</th> <th>車牌</th> <th>聯絡人</th> <th>電話</th> <th>時間</th> <th>目的</th> <th>車型</th> </tr> </thead> <tbody id="progressTable"></tbody> </table> </div>
     <div class="section-title">✅ 已確認名單 <span class="eng-text">(今天或之後)</span></div>
-    <div class="table-responsive"> </table> <thead> <tr> <th>#</th> <th>參考編號</th> <th>公司</th> <th>車牌</th> <th>聯絡人</th> <th>電話</th> <th>到訪日期</th> <th>入站時間</th> <th>目的</th> <th>車型</th> </tr> </thead> <tbody id="confirmedTable"></tbody> </table> </div>
+    <div class="table-responsive"> <tr> <thead> <tr> <th>#</th> <th>參考編號</th> <th>公司</th> <th>車牌</th> <th>聯絡人</th> <th>電話</th> <th>到訪日期</th> <th>入站時間</th> <th>目的</th> <th>車型</th> </tr> </thead> <tbody id="confirmedTable"></tbody> </table> </div>
   </div>
 </div>
 
@@ -117,6 +121,8 @@
 let isLoggedIn = false;
 let cachedData = [];
 const API = "https://script.google.com/macros/s/AKfycbz6L1lO15lIwMUcKT6Veg6RoTndla90i0pKLVTzE4qGmvHl2pZULMYhmdhnqJt-aVE9/exec";
+
+let pendingSubmissionData = null;
 
 function safeString(str) {
   if (str === undefined || str === null) return '';
@@ -133,15 +139,10 @@ function escapeHtml(str) {
   });
 }
 
-// 加強版日期標準化函數 - 可以處理各種格式
 function normalizeDateForCompare(dateStr) {
   if (!dateStr) return '';
   let str = safeString(dateStr).trim();
-  
-  // 如果已經係 YYYY-MM-DD 格式，直接返回
   if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
-  
-  // 處理 YYYY-MM-DD HH:MM:SS 或 YYYY-MM-DDTHH:MM:SS 格式
   let match = str.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
   if (match) {
     let year = match[1];
@@ -149,23 +150,6 @@ function normalizeDateForCompare(dateStr) {
     let day = match[3].padStart(2, '0');
     return `${year}-${month}-${day}`;
   }
-  
-  // 處理 DD/MM/YYYY 或 MM/DD/YYYY 格式 (假設係 YYYY-MM-DD 優先)
-  let slashMatch = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-  if (slashMatch) {
-    // 假設格式係 YYYY/MM/DD，但唔一定，呢度假設第三組係年份
-    let year = slashMatch[3];
-    let month = slashMatch[1].padStart(2, '0');
-    let day = slashMatch[2].padStart(2, '0');
-    // 如果月份大於12，可能係 DD/MM/YYYY
-    if (parseInt(month) > 12) {
-      month = slashMatch[2].padStart(2, '0');
-      day = slashMatch[1].padStart(2, '0');
-    }
-    return `${year}-${month}-${day}`;
-  }
-  
-  // 最後嘗試用 new Date 解析
   let d = new Date(str);
   if (!isNaN(d.getTime())) {
     let year = d.getFullYear();
@@ -173,7 +157,6 @@ function normalizeDateForCompare(dateStr) {
     let day = d.getDate().toString().padStart(2, '0');
     return `${year}-${month}-${day}`;
   }
-  
   return str;
 }
 
@@ -245,38 +228,25 @@ function verifyLogin() {
 function logout() { isLoggedIn = false; showLogin(); }
 
 function loadData() {
-  document.getElementById('progressTable').innerHTML = '<tr><td colspan="9">載入中...</td></tr>';
+  document.getElementById('progressTable').innerHTML = '<tr><td colspan="9">載入中......</td></tr>';
   fetch(API).then(r => r.json()).then(data => {
     console.log("API資料:", data);
     if (!Array.isArray(data)) { console.error("資料不是陣列"); return; }
     cachedData = data.map(item => {
       let rawDate = item.visit_date || item.到訪日期 || item.date || item.Date || '';
-      let company = item.company || item.公司 || item.Company || '';
-      let vehicleNo = item.vehicle_no || item.車牌 || item.vehicleNo || '';
-      let contact = item.contact_person || item.聯絡人 || item.contactPerson || '';
-      let tel = item.tel_no || item.電話 || item.telNo || '';
-      let visitTime = item.visit_time || item.到訪時間 || item.visitTime || '';
-      let purpose = item.purpose || item.目的 || item.Purpose || '';
-      let vehicleType = item.vehicle_type || item.車型 || item.vehicleType || '';
-      let refNo = item.ref_no || item.參考編號 || item.refNo || ('REF' + Math.random().toString(36).substr(2, 6));
-      let status = item.status || item.Status || 'in_progress';
-      
-      // 標準化日期
       let normalizedDate = normalizeDateForCompare(rawDate);
-      
       return {
-        ref_no: safeString(refNo),
-        company: safeString(company),
-        vehicle_no: safeString(vehicleNo),
-        contact_person: safeString(contact),
-        tel_no: safeString(tel),
-        visit_time: normTime(visitTime),
-        purpose: safeString(purpose),
-        vehicle_type: safeString(vehicleType),
+        ref_no: safeString(item.ref_no || item.參考編號 || item.refNo || ''),
+        company: safeString(item.company || item.公司 || item.Company || ''),
+        vehicle_no: safeString(item.vehicle_no || item.車牌 || item.vehicleNo || ''),
+        contact_person: safeString(item.contact_person || item.聯絡人 || item.contactPerson || ''),
+        tel_no: safeString(item.tel_no || item.電話 || item.telNo || ''),
+        visit_time: normTime(item.visit_time || item.到訪時間 || item.visitTime || ''),
+        purpose: safeString(item.purpose || item.目的 || item.Purpose || ''),
+        vehicle_type: safeString(item.vehicle_type || item.車型 || item.vehicleType || ''),
         visit_date: normalizedDate,
-        raw_visit_date: rawDate,
-        status: safeString(status),
-        time_in: normTime(visitTime)
+        status: safeString(item.status || item.Status || 'in_progress'),
+        time_in: normTime(item.time_in || item.進入時間 || '')
       };
     });
     renderTables();
@@ -328,130 +298,52 @@ function filterTable() {
   });
 }
 
-// PDF 匯出 - 完整修復日期比對問題
-async function exportPDF() {
-  let selectedDate = document.getElementById('exportDate').value;
-  if (!selectedDate) { alert('請先選擇要匯出的日期'); return; }
-  
-  // 標準化選取嘅日期
-  let normalizedSelected = normalizeDateForCompare(selectedDate);
-  
-  // 收集所有日期用嚟除錯
-  let allDates = cachedData.map(i => i.visit_date).filter(d => d);
-  let uniqueDates = [...new Set(allDates)];
-  
-  // 用標準化後嘅日期做比對
-  let list = cachedData.filter(item => item.visit_date === normalizedSelected);
-  
-  if (list.length === 0) {
-    alert(`❌ 沒有 ${selectedDate} 的車輛紀錄\n\n📅 系統中現有嘅日期：\n${uniqueDates.join(', ') || '無'}\n\n💡 提示：請檢查 Google Sheet 入面嘅日期格式是否正確`);
-    return;
+function showLoading(show, message = '正在提交資料...') {
+  let existing = document.getElementById('globalLoading');
+  if (show) {
+    if (existing) existing.remove();
+    let div = document.createElement('div');
+    div.id = 'globalLoading';
+    div.className = 'loading-overlay';
+    div.innerHTML = `<div class="loading-spinner"><div class="spinner"></div><div>${message}</div></div>`;
+    document.body.appendChild(div);
+  } else {
+    if (existing) existing.remove();
   }
+}
+
+// 修改為使用 GET 方法提交（透過 URL 參數），兼容 Google Apps Script
+async function submitToGoogleSheet(formData, refNo) {
+  // 對應 Google Sheet 嘅欄位：B=ref_no, C=company, D=vehicle_no, E=contact_person, F=tel_no, 
+  // G=time_in, I=purpose, J=vehicle_type, K=visit_date
+  const params = new URLSearchParams();
+  params.append('ref_no', refNo);
+  params.append('company', formData.company);
+  params.append('vehicle_no', formData.vehicleNo);
+  params.append('contact_person', formData.contactPerson);
+  params.append('tel_no', formData.telNo);
+  params.append('time_in', formData.visitTime);
+  params.append('purpose', formData.purpose);
+  params.append('vehicle_type', formData.vehicleType);
+  params.append('visit_date', formData.visitDate);
+  params.append('status', 'in_progress');
+  params.append('timestamp', new Date().toISOString());
   
-  if (!confirm(`確認匯出 ${selectedDate} 的 ${list.length} 筆紀錄？\n\n匯出後請手動從 Google Sheet 刪除這些資料。`)) return;
-  
-  let loadingDiv = document.createElement('div');
-  loadingDiv.innerText = '正在產生 PDF，請稍候... (這可能需要幾秒鐘)';
-  loadingDiv.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.85);color:#fff;padding:15px 30px;border-radius:10px;z-index:9999;font-size:16px;text-align:center;min-width:200px';
-  document.body.appendChild(loadingDiv);
-  await new Promise(r => setTimeout(r, 100));
+  const url = `${API}?${params.toString()}`;
+  console.log("提交 URL:", url);
   
   try {
-    let tableRows = '';
-    list.forEach((item, idx) => {
-      let timeInDisplay = normTime(item.visit_time);
-      let timeOutDisplay = '---';
-      tableRows += `
-        <tr style="background-color: #ffffff;">
-          <td style="border: 1px solid #000000; padding: 8px; color: #000000; vertical-align: top;">${idx + 1}</td>
-          <td style="border: 1px solid #000000; padding: 8px; color: #000000; vertical-align: top;">${escapeHtml(item.company)}</td>
-          <td style="border: 1px solid #000000; padding: 8px; color: #000000; vertical-align: top;">${escapeHtml(item.vehicle_no)}</td>
-          <td style="border: 1px solid #000000; padding: 8px; color: #000000; vertical-align: top;">${escapeHtml(item.contact_person)}</td>
-          <td style="border: 1px solid #000000; padding: 8px; color: #000000; vertical-align: top;">${escapeHtml(item.tel_no)}</td>
-          <td style="border: 1px solid #000000; padding: 8px; color: #000000; vertical-align: top;">${timeInDisplay}</td>
-          <td style="border: 1px solid #000000; padding: 8px; color: #000000; vertical-align: top;">${timeOutDisplay}</td>
-          <td style="border: 1px solid #000000; padding: 8px; color: #000000; vertical-align: top;">${escapeHtml(item.purpose)}</td>
-        </tr>
-      `;
+    // 使用 GET 方法提交（no-cors 模式確保請求可以送出）
+    const response = await fetch(url, {
+      method: 'GET',
+      mode: 'no-cors'
     });
-    
-    const pdfContainer = document.createElement('div');
-    pdfContainer.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:900px;background:white;padding:20px;font-family:"Noto Sans TC","Microsoft YaHei","PingFang SC","Helvetica Neue",Arial,sans-serif';
-    
-    pdfContainer.innerHTML = `
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; border-bottom: 2px solid #1f6e6e; padding-bottom: 10px;">
-        <div style="text-align: left;">
-          <div style="font-size: 14px; font-weight: bold; color: #1f6e6e;">中國港灣工程有限責任公司</div>
-          <div style="font-size: 12px; color: #000000;">China Harbour Engineering Company Limited</div>
-          <div style="font-size: 11px; margin-top: 5px; color: #000000;">西九龍廢物轉運站 | West Kowloon Transfer Station</div>
-        </div>
-        <div style="text-align: right;">
-          <div style="font-size: 12px; font-weight: bold; color: #000000;">環境保護署查閱 / Checked By EPD: _________________</div>
-        </div>
-      </div>
-      
-      <div style="text-align: center; margin: 15px 0 20px 0;">
-        <div style="font-size: 22px; font-weight: bold; color: #1a5c5c; background: #e6f7f7; display: inline-block; padding: 8px 25px; border-radius: 40px; letter-spacing: 2px;">
-          📅 到訪日期 / Visit Date：${selectedDate}
-        </div>
-      </div>
-      
-      <div style="font-size: 16px; font-weight: bold; text-align: center; margin-bottom: 12px; color: #000000;">車輛進入預先登記記錄<br>Registered Vehicle Log</div>
-      
-      <table style="width:100%; border-collapse: collapse; font-size: 10px; background-color: #ffffff;">
-        <thead>
-          <tr style="background-color: #ffffff; color: #000000; text-align: center;">
-            <th style="border: 1px solid #000000; padding: 10px 6px; font-weight: bold; vertical-align: top;">項目<br>Item</th>
-            <th style="border: 1px solid #000000; padding: 10px 6px; font-weight: bold; vertical-align: top;">公司名稱<br>Company</th>
-            <th style="border: 1px solid #000000; padding: 10px 6px; font-weight: bold; vertical-align: top;">車牌號碼<br>Vehicle No.</th>
-            <th style="border: 1px solid #000000; padding: 10px 6px; font-weight: bold; vertical-align: top;">聯絡人<br>Contact Person</th>
-            <th style="border: 1px solid #000000; padding: 10px 6px; font-weight: bold; vertical-align: top;">電話號碼<br>Tel. No.</th>
-            <th style="border: 1px solid #000000; padding: 10px 6px; font-weight: bold; vertical-align: top;">進入時間<br>Time In</th>
-            <th style="border: 1px solid #000000; padding: 10px 6px; font-weight: bold; vertical-align: top;">離開時間<br>Time Out</th>
-            <th style="border: 1px solid #000000; padding: 10px 6px; font-weight: bold; vertical-align: top;">進入目的/工作內容<br>Purpose/Work Description</th>
-          </tr>
-        </thead>
-        <tbody style="background-color: #ffffff; color: #000000;">
-          ${tableRows}
-        </tbody>
-      </table>
-      
-      <div style="margin-top: 18px; font-size: 8px; text-align: center; color: #000000;">
-        系統產生之記錄，請核對無誤後簽署
-      </div>
-    `;
-    
-    document.body.appendChild(pdfContainer);
-    await new Promise(r => setTimeout(r, 250));
-    
-    const canvas = await html2canvas(pdfContainer, {
-      scale: 2.8,
-      backgroundColor: '#ffffff',
-      logging: false,
-      useCORS: true,
-      windowWidth: pdfContainer.scrollWidth,
-      windowHeight: pdfContainer.scrollHeight
-    });
-    
-    document.body.removeChild(pdfContainer);
-    
-    const imgData = canvas.toDataURL('image/png');
-    const { jsPDF } = window.jspdf;
-    const imgWidth = 280;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    const pdf = new jsPDF('l', 'mm', 'a4');
-    let yPos = 8;
-    if (imgHeight < 190) yPos = (190 - imgHeight) / 2;
-    pdf.addImage(imgData, 'PNG', 10, yPos, imgWidth, imgHeight);
-    pdf.save(`WKTS_VehicleLog_${selectedDate}.pdf`);
-    
-    document.body.removeChild(loadingDiv);
-    alert(`✅ PDF 已下載！\n\n檔案名稱: WKTS_VehicleLog_${selectedDate}.pdf\n\n請記得手動從 Google Sheet 刪除 ${selectedDate} 的 ${list.length} 筆紀錄`);
-    
-  } catch (err) {
-    console.error("PDF生成錯誤:", err);
-    if (loadingDiv && loadingDiv.parentNode) document.body.removeChild(loadingDiv);
-    alert('❌ PDF 生成失敗: ' + err.message);
+    console.log("提交完成 (no-cors mode, 無法讀取回應內容)");
+    // 由於 no-cors 模式下無法讀取回應，預設為成功
+    return { success: true, message: '提交成功' };
+  } catch (error) {
+    console.error("提交錯誤:", error);
+    return { success: false, message: error.message };
   }
 }
 
@@ -476,6 +368,18 @@ function showPreview(e) {
   let m = document.getElementById('minute').value;
   let tm = (h && m) ? `${h}:${m}` : '未選';
   if (!c || !v || !cp || !t || !p || !vt || !d) { alert('請填寫所有欄位'); return false; }
+  
+  pendingSubmissionData = {
+    company: c,
+    vehicleNo: v,
+    contactPerson: cp,
+    telNo: t,
+    purpose: p,
+    vehicleType: vt,
+    visitDate: d,
+    visitTime: tm
+  };
+  
   document.getElementById('pCompany').innerText = c;
   document.getElementById('pVehicle').innerText = v;
   document.getElementById('pContact').innerText = cp;
@@ -492,18 +396,107 @@ function showPreview(e) {
 function backToForm() {
   document.getElementById('previewSection').classList.add('hidden');
   document.getElementById('formSection').classList.remove('hidden');
+  pendingSubmissionData = null;
 }
 
-function submitFinal() {
-  document.getElementById('refNumber').innerText = generateRefNo();
-  document.getElementById('previewSection').classList.add('hidden');
-  document.getElementById('successSection').classList.remove('hidden');
+async function submitFinal() {
+  if (!pendingSubmissionData) {
+    alert('沒有可提交的資料');
+    return;
+  }
+  
+  const refNo = generateRefNo();
+  document.getElementById('refNumber').innerText = refNo;
+  
+  showLoading(true, '正在提交資料到 Google Sheets...');
+  
+  try {
+    const result = await submitToGoogleSheet(pendingSubmissionData, refNo);
+    showLoading(false);
+    
+    if (result.success) {
+      document.getElementById('previewSection').classList.add('hidden');
+      document.getElementById('successSection').classList.remove('hidden');
+      pendingSubmissionData = null;
+      if (isLoggedIn) {
+        loadData();
+      }
+    } else {
+      alert(`提交失敗: ${result.message}\n\n請檢查網絡連線後重試。\n參考編號: ${refNo}\n請保留此編號以便日後查詢。`);
+    }
+  } catch (error) {
+    showLoading(false);
+    alert(`提交時發生錯誤: ${error.message}\n\n參考編號: ${refNo}\n請稍後再試或聯絡管理員。`);
+  }
 }
 
 function resetForm() {
   document.getElementById('regForm').reset();
   document.getElementById('successSection').classList.add('hidden');
   document.getElementById('formSection').classList.remove('hidden');
+  pendingSubmissionData = null;
+}
+
+async function exportPDF() {
+  let selectedDate = document.getElementById('exportDate').value;
+  if (!selectedDate) { alert('請先選擇要匯出的日期'); return; }
+  
+  let normalizedSelected = normalizeDateForCompare(selectedDate);
+  let list = cachedData.filter(item => item.visit_date === normalizedSelected);
+  
+  if (list.length === 0) {
+    let uniqueDates = [...new Set(cachedData.map(i => i.visit_date).filter(d => d))];
+    alert(`沒有 ${selectedDate} 的車輛紀錄\n\n系統中現有嘅日期：${uniqueDates.join(', ') || '無'}`);
+    return;
+  }
+  
+  if (!confirm(`確認匯出 ${selectedDate} 的 ${list.length} 筆紀錄？\n\n匯出後請手動從 Google Sheet 刪除這些資料。`)) return;
+  
+  let loadingDiv = document.createElement('div');
+  loadingDiv.innerText = '正在產生 PDF，請稍候...';
+  loadingDiv.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.85);color:#fff;padding:15px 30px;border-radius:10px;z-index:9999';
+  document.body.appendChild(loadingDiv);
+  await new Promise(r => setTimeout(r, 100));
+  
+  try {
+    let tableRows = '';
+    list.forEach((item, idx) => {
+      tableRows += `<tr style="background:#fff;"><td style="border:1px solid #000;padding:8px;vertical-align:top;">${idx+1}</td><td style="border:1px solid #000;padding:8px;vertical-align:top;">${escapeHtml(item.company)}</td><td style="border:1px solid #000;padding:8px;vertical-align:top;">${escapeHtml(item.vehicle_no)}</td><td style="border:1px solid #000;padding:8px;vertical-align:top;">${escapeHtml(item.contact_person)}</td><td style="border:1px solid #000;padding:8px;vertical-align:top;">${escapeHtml(item.tel_no)}</td><td style="border:1px solid #000;padding:8px;vertical-align:top;">${item.visit_time}</td><td style="border:1px solid #000;padding:8px;vertical-align:top;">---</td><td style="border:1px solid #000;padding:8px;vertical-align:top;">${escapeHtml(item.purpose)}</td></tr>`;
+    });
+    
+    const pdfContainer = document.createElement('div');
+    pdfContainer.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:900px;background:white;padding:20px';
+    pdfContainer.innerHTML = `
+      <div style="display:flex;justify-content:space-between;margin-bottom:15px;border-bottom:2px solid #1f6e6e;padding-bottom:10px;">
+        <div><div style="font-size:14px;font-weight:bold;color:#1f6e6e;">中國港灣工程有限責任公司</div><div style="font-size:12px;">China Harbour Engineering Company Limited</div><div style="font-size:11px;">西九龍廢物轉運站 | West Kowloon Transfer Station</div></div>
+        <div><div style="font-size:12px;font-weight:bold;">環境保護署查閱 / Checked By EPD: _________________</div></div>
+      </div>
+      <div style="text-align:center;margin:15px 0;"><div style="font-size:22px;font-weight:bold;color:#1a5c5c;background:#e6f7f7;display:inline-block;padding:8px 25px;border-radius:40px;">📅 到訪日期 / Visit Date：${selectedDate}</div></div>
+      <div style="font-size:16px;font-weight:bold;text-align:center;margin-bottom:12px;">車輛進入預先登記記錄<br>Registered Vehicle Log</div>
+      <table style="width:100%;border-collapse:collapse;font-size:10px;"><thead><tr style="background:#fff;"><th style="border:1px solid #000;padding:10px 6px;">項目</th><th style="border:1px solid #000;padding:10px 6px;">公司名稱</th><th style="border:1px solid #000;padding:10px 6px;">車牌號碼</th><th style="border:1px solid #000;padding:10px 6px;">聯絡人</th><th style="border:1px solid #000;padding:10px 6px;">電話號碼</th><th style="border:1px solid #000;padding:10px 6px;">進入時間</th><th style="border:1px solid #000;padding:10px 6px;">離開時間</th><th style="border:1px solid #000;padding:10px 6px;">進入目的/工作內容</th></tr></thead><tbody>${tableRows}</tbody></table>
+      <div style="margin-top:18px;font-size:8px;text-align:center;">系統產生之記錄，請核對無誤後簽署</div>
+    `;
+    
+    document.body.appendChild(pdfContainer);
+    await new Promise(r => setTimeout(r, 250));
+    const canvas = await html2canvas(pdfContainer, { scale: 2.8, backgroundColor: '#ffffff' });
+    document.body.removeChild(pdfContainer);
+    
+    const imgData = canvas.toDataURL('image/png');
+    const { jsPDF } = window.jspdf;
+    const imgWidth = 280;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    const pdf = new jsPDF('l', 'mm', 'a4');
+    pdf.addImage(imgData, 'PNG', 10, 8, imgWidth, imgHeight);
+    pdf.save(`WKTS_VehicleLog_${selectedDate}.pdf`);
+    
+    document.body.removeChild(loadingDiv);
+    alert(`✅ PDF 已下載！\n\n請記得手動從 Google Sheet 刪除 ${selectedDate} 的 ${list.length} 筆紀錄`);
+  } catch (err) {
+    console.error(err);
+    if (loadingDiv) loadingDiv.remove();
+    alert('❌ PDF 生成失敗: ' + err.message);
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
