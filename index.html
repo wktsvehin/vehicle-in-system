@@ -481,9 +481,10 @@ function showPreviewScreen(event) {
     const purpose = document.getElementById('purpose').value.trim();
     const vehicleType = document.getElementById('vehicle_type').value;
     const visitDate = document.getElementById('visit_date').value;
-    const visitHour = document.getElementById('visitHour').value;
-    const visitMin = document.getElementById('visitMin').value;
-    const fullTime = `${visitHour}:${visitMin}`;
+const visitHour = document.getElementById("visitHour") ? document.getElementById("visitHour").value : '';
+const visitMin = document.getElementById("visitMin") ? document.getElementById("visitMin").value : '';
+const fullTime = (visitHour && visitMin) ? `${visitHour}:${visitMin}` : '未填寫 / Not Specified';
+
 
     // 🎯 資料精準注入預覽欄位
     document.getElementById('p-company').innerText = company || '---';
