@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>西九龍廢物轉運站車輪登記系統 | WKTS Vehicle Registration System</title>
+  <title>西九龍廢物轉運站車輛登記系統 | WKTS Vehicle Registration System</title>
   <!-- Flatpickr 日期選擇器 CSS/JS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
@@ -46,6 +46,7 @@
       text-align: center;
       font-weight: 700;
       cursor: pointer;
+      transition: all 0.2s;
     }
     .btn-tab.active { background: #2c7a7b; border-color: #236162; color: #fff; }
     .btn-tab.staff { background: linear-gradient(135deg, #2c7a7b, #236162); border-color: #236162; color: #fff; }
@@ -126,7 +127,6 @@
     }
     .plate-input { text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px; }
     input[type="date"] { cursor: pointer; }
-    /* 中英文分行樣式：輔助span換行 */
     .chi-text { display: block; font-weight: normal; }
     .eng-text { display: block; font-size: 0.7rem; font-weight: normal; color: #4a5568; }
     .btn-tab span.eng-text, .section-title small.eng-text { font-size: 0.6rem; display: inline-block; margin-left: 4px; }
@@ -263,9 +263,8 @@
       <div class="table-responsive"><table><thead><tr><th>#</th><th>參考編號 / Ref</th><th>公司 / Company</th><th>車牌 / Plate</th><th>聯絡人 / Contact</th><th>電話 / Tel</th><th>時間(ETA) / Time</th><th>目的 / Purpose</th><th>車型 / Type</th></tr></thead><tbody id="progressTable"></tbody></table>
       </div>
       
-      <div class="section-title">✅ 已確認名單 <span class="eng-text" style="font-size:0.7rem;">Confirmed List (Valid entries)</span></div>
-      <div class="table-responsive"><table><thead><tr><th>#</th><th>參考編號 / Ref</th><th>公司 / Company</th><th>車牌 / Plate</th><th>聯絡人 / Contact</th><th>電話 / Tel</th><th>到訪日期 / Visit Date</th><th>入站時間 / Time In</th><th>目的 / Purpose</th><th>車型 / Type</th></tr></thead><tbody id="confirmedTable"></tbody></table>
-      </div>
+      <div class="section-title">✅ 已確認名單 <span class="eng-text" style="font-size:0.7rem;">Confirmed List (Today & Future)</span></div>
+      <div class="table-responsive">\n<table>\n<thead>\n<tr>\n<th>#</th><th>參考編號 / Ref</th><th>公司 / Company</th><th>車牌 / Plate</th><th>聯絡人 / Contact</th><th>電話 / Tel</th><th>到訪日期 / Visit Date</th><th>入站時間 / Time In</th><th>目的 / Purpose</th><th>車型 / Type</th>\n</tr>\n</thead>\n<tbody id="confirmedTable"></tbody>\n</table>\n</div>
     </div>
   </div>
 
@@ -273,8 +272,24 @@
     // ==================== 全域變數 ====================
     let isLoggedIn = false;
     let cachedData = [];
-    // Google Sheets API 地址 (維持原本)
+    // Google Sheets API 地址
     const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbz6L1lO15lIwMUcKT6Veg6RoTndla90i0pKLVTzE4qGmvHl2pZULMYhmdhnqJt-aVE9/exec";
+
+    // ==================== 輔助函式：標準化日期 (移除時間部分，只取 YYYY-MM-DD) ====================
+    function normalizeDate(dateStr) {
+      if (!dateStr) return '';
+      // 處理 ISO 格式 "2026-06-11T16:00:00.000Z" -> "2026-06-11"
+      let parts = dateStr.split('T');
+      if (parts.length > 1) return parts[0];
+      // 處理已經為 YYYY-MM-DD 格式
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+      // 嘗試用 new Date 轉換後再格式化
+      let d = new Date(dateStr);
+      if (!isNaN(d.getTime())) {
+        return d.toISOString().split('T')[0];
+      }
+      return dateStr;
+    }
 
     // ==================== 日期選擇器（依據截數時間動態）====================
     function initDatePicker() {
@@ -350,41 +365,48 @@
       showLogin(); 
     }
 
-    // ==================== 數據加載與過濾邏輯 ====================
+    // ==================== 數據加載與過濾邏輯 (修正日期過期與格式) ====================
     function loadData() {
       let pt = document.getElementById('progressTable'), ct = document.getElementById('confirmedTable');
-      pt.innerHTML = '<tr><td colspan="9" class="text-center">加載中... / Loading...</td></tr>';
+      pt.innerHTML = '<table><td colspan="9" class="text-center">加載中... / Loading...</td></tr>';
       fetch(GOOGLE_API_URL).then(res => res.json()).then(data => {
-        cachedData = data;
+        // 預處理所有資料：標準化 visit_date
+        cachedData = data.map(item => ({
+          ...item,
+          visit_date: normalizeDate(item.visit_date)
+        }));
         renderTables();
       }).catch(() => {
         pt.innerHTML = '<tr><td colspan="9" class="text-center" style="color:red;">連線失敗，請檢查API網址 / Connection failed</td></tr>';
       });
     }
 
-    // 判斷是否仍在處理中 (未過今天15:00 且 status in_progress)
+    // 判斷是否仍在處理中 (未過今天15:00 且 status in_progress，且到訪日期 >= 今天)
     function isStillInProgress(item) {
       if(item.status !== 'in_progress') return false;
-      const now = new Date();
       const visitDateStr = item.visit_date;
       if(!visitDateStr) return false;
       const visitDate = new Date(visitDateStr);
       const today = new Date();
       today.setHours(0,0,0,0);
+      // 過期不顯示在處理中
       if(visitDate < today) return false;
+      const now = new Date();
+      // 若到訪日期就是今天，必須目前時間小於15:00才顯示處理中
       if(visitDate.getTime() === today.getTime()) {
         return now.getHours() < 15;
       }
       return true;
     }
 
-    // 已確認名單: 狀態非 in_progress 且 到訪日期 >= 今天 (不過期)
+    // 已確認名單: 狀態非 in_progress 且 到訪日期 >= 今天 (不顯示過期)
     function getValidConfirmed() {
       const today = new Date();
       today.setHours(0,0,0,0);
       return cachedData.filter(item => {
         if(item.status === 'in_progress') return false;
         const visitDate = new Date(item.visit_date);
+        // 只顯示今天及未來 (排除過期)
         return visitDate >= today;
       });
     }
@@ -392,7 +414,7 @@
     function renderTables() {
       // 處理中列表
       let inProgressList = cachedData.filter(item => isStillInProgress(item));
-      // 已確認名單 (有效)
+      // 已確認名單 (有效，僅今天及未來)
       let confirmedList = getValidConfirmed();
       
       let pt = document.getElementById('progressTable');
@@ -406,16 +428,16 @@
         <td>${i.visit_time || '-'}</td>
         <td>${i.purpose || '-'}</td>
         <td>${i.vehicle_type || '-'}</td>
-       </tr>`).join('');
+      </tr>`).join('');
       if (!inProgressList.length) pt.innerHTML = '<tr><td colspan="9" class="text-center">暫無處理中申請 / No pending applications</td></tr>';
       
-      // 已確認表格: 加入 visit_date (對應Google Sheet K欄) 以及 time_in (Google Sheet G欄)
+      // 已確認表格: 加入標準化的 visit_date (對應Google Sheet K欄) 以及 time_in (Google Sheet G欄)
       let ct = document.getElementById('confirmedTable');
       ct.innerHTML = confirmedList.map((i, idx) => {
-        // 注意: 從Google Sheets匯入的欄位對應: visit_date 可能是 K 欄; time_in 對應原本儲存的入站時間 (G欄)
-        // 為了清晰，顯示 visit_date (到訪日期) 以及 time_in (入站時間)
+        // 顯示格式化的日期 (已經是 YYYY-MM-DD)
         const visitDateDisplay = i.visit_date || '-';
-        const timeInDisplay = i.time_in || i.visit_time || '-';  // 若無time_in則回退visit_time
+        // time_in 若存在則顯示，否則顯示 visit_time 或 '-'
+        const timeInDisplay = i.time_in || i.visit_time || '-';
         return `<tr>
           <td>${idx + 1}</td>
           <td>${i.ref_no || '-'}</td>
@@ -427,16 +449,16 @@
           <td style="font-weight:500;">${timeInDisplay}</td>
           <td>${i.purpose || '-'}</td>
           <td>${i.vehicle_type || '-'}</td>
-         </tr>`;
+        </tr>`;
       }).join('');
-      if (!confirmedList.length) ct.innerHTML = '<tr><td colspan="10" class="text-center">暫無有效已確認名單 / No valid confirmed records</td></tr>';
+      if (!confirmedList.length) ct.innerHTML = '<tr><td colspan="10" class="text-center">暫無有效已確認名單 (今天或之後) / No valid confirmed records (Today or future)</td></tr>';
     }
 
     function filterTable() {
       let kw = document.getElementById('searchInput').value.toUpperCase();
       document.querySelectorAll('#progressTable tr, #confirmedTable tr').forEach(r => {
         if(r.cells.length < 3) return;
-        // 車牌通常在第三欄(index 3 在progress，第四欄在confirmed但統一用包含車牌的儲存格)
+        // 車牌欄位位置：progressTable 在第4欄(index 3)，confirmedTable 也在第4欄(index 3)
         let plateCell = r.cells[3];
         if (plateCell) r.style.display = plateCell.innerText.toUpperCase().includes(kw) ? '' : 'none';
       });
