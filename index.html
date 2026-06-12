@@ -265,18 +265,18 @@ function renderTables() {
   if (pending.length === 0) progressBody.innerHTML = '<tr><td colspan="9">暫無處理中申請</td></tr>';
   else {
     progressBody.innerHTML = pending.map((i, idx) => `<tr>
-       <td>${idx+1}</td><td>${escapeHtml(i.ref_no)}</td><td>${escapeHtml(i.company)}</td><td style="color:#d69e2e">${escapeHtml(i.vehicle_no)}</td>
-       <td>${escapeHtml(i.contact_person)}</td><td>${escapeHtml(i.tel_no)}</td><td>${escapeHtml(i.visit_time)}</td>
-       <td>${escapeHtml(i.purpose)}</td><td>${escapeHtml(i.vehicle_type)}</td>
+        <td>${idx+1}</td><td>${escapeHtml(i.ref_no)}</td><td>${escapeHtml(i.company)}</td><td style="color:#d69e2e">${escapeHtml(i.vehicle_no)}</td>
+        <td>${escapeHtml(i.contact_person)}</td><td>${escapeHtml(i.tel_no)}</td><td>${escapeHtml(i.visit_time)}</td>
+        <td>${escapeHtml(i.purpose)}</td><td>${escapeHtml(i.vehicle_type)}</td>
     </tr>`).join('');
   }
   const confirmBody = document.getElementById('confirmedTable');
   if (confirmed.length === 0) confirmBody.innerHTML = '<tr><td colspan="10">暫無有效已確認名單</td></tr>';
   else {
     confirmBody.innerHTML = confirmed.map((i, idx) => `<tr>
-       <td>${idx+1}</td><td>${escapeHtml(i.ref_no)}</td><td>${escapeHtml(i.company)}</td><td>${escapeHtml(i.vehicle_no)}</td>
-       <td>${escapeHtml(i.contact_person)}</td><td>${escapeHtml(i.tel_no)}</td><td>${escapeHtml(i.visit_date)}</td>
-       <td>${escapeHtml(i.visit_time)}</td><td>${escapeHtml(i.purpose)}</td><td>${escapeHtml(i.vehicle_type)}</td>
+        <td>${idx+1}</td><td>${escapeHtml(i.ref_no)}</td><td>${escapeHtml(i.company)}</td><td>${escapeHtml(i.vehicle_no)}</td>
+        <td>${escapeHtml(i.contact_person)}</td><td>${escapeHtml(i.tel_no)}</td><td>${escapeHtml(i.visit_date)}</td>
+        <td>${escapeHtml(i.visit_time)}</td><td>${escapeHtml(i.purpose)}</td><td>${escapeHtml(i.vehicle_type)}</td>
     </tr>`).join('');
   }
 }
@@ -289,7 +289,7 @@ function filterTable() {
   });
 }
 
-// PDF 匯出 (更新格式：淺藍底色、標題列深色、日期放大置頂、EPD批核欄在右上)
+// PDF 匯出（更新格式：標題列用深藍綠底色+白字，EPD 中英文並排，移除列印時間）
 async function exportPDF() {
   let selectedDate = document.getElementById('exportDate').value;
   if (!selectedDate) { alert('請先選擇要匯出的日期'); return; }
@@ -312,9 +312,8 @@ async function exportPDF() {
   try {
     let tableRows = '';
     list.forEach((item, idx) => {
-      // 使用 normTime 確保空值顯示 '---'
       let timeInDisplay = normTime(item.visit_time);
-      let timeOutDisplay = '---';  // 未有離開時間記錄
+      let timeOutDisplay = '---';
       tableRows += `
         <tr style="background-color: ${idx % 2 === 0 ? '#f0f8ff' : '#ffffff'};">
           <td style="border:1px solid #aaa; padding:8px;">${idx + 1}</td>
@@ -332,17 +331,16 @@ async function exportPDF() {
     const pdfContainer = document.createElement('div');
     pdfContainer.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:900px;background:white;padding:20px;font-family:"Noto Sans TC","Microsoft YaHei","PingFang SC","Helvetica Neue",Arial,sans-serif';
     
-    // 新排版：到訪日期放大置頂 + EPD Approval 在右上角
     pdfContainer.innerHTML = `
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; border-bottom: 2px solid #2c7a7b; padding-bottom: 10px;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; border-bottom: 2px solid #1f6e6e; padding-bottom: 10px;">
         <div style="text-align: left;">
           <div style="font-size: 14px; font-weight: bold; color: #1f6e6e;">中國港灣工程有限責任公司</div>
           <div style="font-size: 12px; color: #555;">China Harbour Engineering Company Limited</div>
           <div style="font-size: 11px; margin-top: 5px;">西九龍廢物轉運站 | West Kowloon Transfer Station</div>
         </div>
         <div style="text-align: right;">
-          <div style="font-size: 12px; font-weight: bold;">EPD Approval: _________________</div>
-          <div style="font-size: 10px; color: #666;">(環保署職員簽署)</div>
+          <div style="font-size: 12px; font-weight: bold;">EPD 審批 / EPD Approval: _________________</div>
+          <div style="font-size: 10px; color: #666;">(環保署職員簽署 / EPD Officer Signature)</div>
         </div>
       </div>
       
@@ -366,15 +364,15 @@ async function exportPDF() {
             <th style="border: 1px solid #0a4c4c; padding: 10px 6px;">進入時間<br>Time In</th>
             <th style="border: 1px solid #0a4c4c; padding: 10px 6px;">離開時間<br>Time Out</th>
             <th style="border: 1px solid #0a4c4c; padding: 10px 6px;">進入目的/工作內容<br>Purpose/Work Description</th>
-           </tr>
+          </tr>
         </thead>
         <tbody>
           ${tableRows}
         </tbody>
-      </table>
+      追赶
       
       <div style="margin-top: 18px; font-size: 8px; text-align: center; color: #888;">
-        匯出日期: ${new Date().toLocaleString()} | 系統產生之記錄，請核對無誤後簽署
+        系統產生之記錄，請核對無誤後簽署
       </div>
     `;
     
