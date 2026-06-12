@@ -129,7 +129,6 @@
     input[type="date"] { cursor: pointer; }
     .chi-text { display: block; font-weight: normal; }
     .eng-text { display: block; font-size: 0.7rem; font-weight: normal; color: #4a5568; }
-    .btn-tab span.eng-text, .section-title small.eng-text { font-size: 0.6rem; display: inline-block; margin-left: 4px; }
     @media (max-width: 480px) {
       body { padding: 12px; }
       .card { padding: 16px; }
@@ -139,14 +138,12 @@
   </style>
 </head>
 <body>
-  <!-- 標題與 Logo -->
   <div class="logo-container">
     <img src="epd.png" alt="Environmental Protection Department" class="epd-logo" onerror="this.style.display='none';">
   </div>
   <h2 class="text-center" style="color:#2c7a7b;">西九龍廢物轉運站<br>車輛登記</h2>
   <p class="text-center" style="color:#718096; font-size:0.75rem; margin-bottom:20px;">West Kowloon Transfer Station Vehicle Registration</p>
 
-  <!-- 切換按鈕 (中英文分行) -->
   <div class="flex" style="margin-bottom:20px;">
     <div id="btnVisitor" class="btn-tab active" onclick="switchTab('visitor')">
       <span class="chi-text">訪客登記</span>
@@ -172,7 +169,7 @@
       <form id="regForm" onsubmit="showPreview(event)">
         <div class="form-group">
           <label class="form-label">公司名 <span class="form-sub">Company Name</span></label>
-          <input type="text" class="form-control" id="company" placeholder="e.g. ABC Engineering" required>
+          <input type="text" class="form-control" id="company" placeholder="e.g. China Harbour Engineering" required>
         </div>
         <div class="form-group">
           <label class="form-label">車牌號碼 <span class="form-sub">Vehicle No.</span></label>
@@ -187,8 +184,8 @@
           <input type="tel" class="form-control" id="telNo" placeholder="91234567" required>
         </div>
         <div class="form-group">
-          <label class="form-label">進入目的 <span class="form-sub">Purpose</span></label>
-          <input type="text" class="form-control" id="purpose" placeholder="Delivery / Maintenance" required>
+          <label class="form-label">進入目的 / 工作內容 <span class="form-sub">Purpose / Work Description</span></label>
+          <input type="text" class="form-control" id="purpose" placeholder="e.g. 廢物運輸 / Waste Transportation" required>
         </div>
         <div class="form-group">
           <label class="form-label">車輛種類 <span class="form-sub">Vehicle Type</span></label>
@@ -213,12 +210,11 @@
       </form>
     </div>
 
-    <!-- 預覽畫面 -->
     <div id="previewSection" class="card hidden">
       <h3 class="text-center mb-2">請核對資料 / Verify Information</h3>
       <div class="alert-cutoff" style="background:#fff3cd; border-left-color:#f0ad4e; margin-bottom:20px;">
         <div style="font-weight:bold;">重要提醒：請核對資料</div>
-        <div class="eng-text">Important: Please verify all information before submission. This will be used as entry verification proof.</div>
+        <div class="eng-text">Important: Please verify all information before submission.</div>
       </div>
       <div class="preview-box">
         <div class="preview-row"><span class="preview-label">公司 / Company：</span><span id="pCompany" class="preview-value"></span></div>
@@ -233,7 +229,6 @@
       <div class="flex"><button class="btn-secondary w-100" onclick="backToForm()">← 返回修改 / Back</button><button class="btn-success w-100" onclick="submitFinal()">✓ 確認提交 / Confirm</button></div>
     </div>
 
-    <!-- 成功畫面 -->
     <div id="successSection" class="card hidden">
       <div class="ref-box"><h3 style="color:#38a169;">🎉 登記申請已送出 / Registration Submitted</h3><div style="background:#fff;border-radius:12px;padding:16px;margin:16px 0;"><span style="color:#718096;">參考編號 / Reference No.</span><h2 id="refNumber" style="color:#2c7a7b;">----</h2></div><p>請截圖保存此畫面 / Please screenshot this page</p></div>
       <button class="btn-outline w-100 mt-2" onclick="resetForm()">➕ 填寫新申請 / New Application</button>
@@ -268,54 +263,33 @@
   </div>
 
   <script>
-    // ==================== 全域變數 ====================
     let isLoggedIn = false;
     let cachedData = [];
-    // Google Sheets API 地址 (請換成實際部署的網址)
     const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbz6L1lO15lIwMUcKT6Veg6RoTndla90i0pKLVTzE4qGmvHl2pZULMYhmdhnqJt-aVE9/exec";
 
-    // ==================== 輔助函式：標準化日期 (移除時間部分，只取 YYYY-MM-DD) ====================
     function normalizeDate(dateStr) {
       if (!dateStr) return '';
       if (typeof dateStr !== 'string') dateStr = String(dateStr);
-      // 處理 ISO 格式 "2026-06-11T16:00:00.000Z" -> "2026-06-11"
       let parts = dateStr.split('T');
       if (parts.length > 1) return parts[0];
-      // 處理已經為 YYYY-MM-DD 格式
       if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
-      // 嘗試用 new Date 轉換後再格式化
       let d = new Date(dateStr);
-      if (!isNaN(d.getTime())) {
-        return d.toISOString().split('T')[0];
-      }
+      if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
       return dateStr;
     }
 
-    // ==================== 輔助函式：標準化時間為 HH:MM 格式 ====================
     function normalizeTime(timeStr) {
       if (!timeStr) return '-';
-      // 如果已經是 HH:MM 格式
       if (/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(timeStr)) return timeStr;
-      // 處理可能包含秒數或毫秒: "14:30:00" -> "14:30"
       if (timeStr.includes(':')) {
         let parts = timeStr.split(':');
-        if (parts.length >= 2) {
-          let hour = parts[0].padStart(2, '0');
-          let minute = parts[1].padStart(2, '0');
-          return `${hour}:${minute}`;
-        }
+        if (parts.length >= 2) return `${parts[0].padStart(2,'0')}:${parts[1].padStart(2,'0')}`;
       }
-      // 嘗試轉換 Date 物件
       let d = new Date(timeStr);
-      if (!isNaN(d.getTime())) {
-        let hour = d.getHours().toString().padStart(2, '0');
-        let minute = d.getMinutes().toString().padStart(2, '0');
-        return `${hour}:${minute}`;
-      }
+      if (!isNaN(d.getTime())) return `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
       return timeStr;
     }
 
-    // ==================== 日期選擇器（依據截數時間動態） ====================
     function initDatePicker() {
       const picker = document.getElementById('visitDatePicker');
       if (!picker) return;
@@ -326,17 +300,9 @@
       minDate.setDate(now.getDate() + startOffset);
       const maxDate = new Date();
       maxDate.setDate(now.getDate() + 7);
-      flatpickr(picker, {
-        locale: "zh",
-        dateFormat: "Y-m-d",
-        minDate: minDate,
-        maxDate: maxDate,
-        allowInput: false,
-        disableMobile: true,
-      });
+      flatpickr(picker, { locale: "zh", dateFormat: "Y-m-d", minDate: minDate, maxDate: maxDate, allowInput: false, disableMobile: true });
     }
 
-    // ==================== 時間選單 ====================
     function initTimeSelects() {
       let hourSel = document.getElementById('hour'), minSel = document.getElementById('minute');
       if (!hourSel) return;
@@ -346,7 +312,6 @@
       ['00', '15', '30', '45'].forEach(m => minSel.appendChild(new Option(m, m)));
     }
 
-    // ==================== 頁籤切換 ====================
     function switchTab(tab) {
       let v = document.getElementById('visitorPanel'), s = document.getElementById('staffPanel'), bv = document.getElementById('btnVisitor'), bs = document.getElementById('btnStaff');
       if (tab === 'visitor') {
@@ -389,17 +354,15 @@
       showLogin(); 
     }
 
-    // ==================== 數據加載與過濾邏輯 ====================
     function loadData() {
-      let pt = document.getElementById('progressTable'), ct = document.getElementById('confirmedTable');
+      let pt = document.getElementById('progressTable');
       pt.innerHTML = '<tr><td colspan="9" class="text-center">加載中... / Loading...</td></tr>';
       fetch(GOOGLE_API_URL).then(res => res.json()).then(data => {
-        // 預處理所有資料：標準化 visit_date 與 visit_time
         cachedData = data.map(item => ({
           ...item,
           visit_date: normalizeDate(item.visit_date),
           visit_time: normalizeTime(item.visit_time),
-          time_in: normalizeTime(item.time_in || item.visit_time) // 確保入站時間也標準化
+          time_in: normalizeTime(item.time_in || item.visit_time)
         }));
         renderTables();
       }).catch(() => {
@@ -407,7 +370,6 @@
       });
     }
 
-    // 判斷是否仍在處理中 (未過今天15:00 且 status in_progress，且到訪日期 >= 今天)
     function isStillInProgress(item) {
       if(item.status !== 'in_progress') return false;
       const visitDateStr = item.visit_date;
@@ -417,13 +379,10 @@
       today.setHours(0,0,0,0);
       if(visitDate < today) return false;
       const now = new Date();
-      if(visitDate.getTime() === today.getTime()) {
-        return now.getHours() < 15;
-      }
+      if(visitDate.getTime() === today.getTime()) return now.getHours() < 15;
       return true;
     }
 
-    // 已確認名單: 狀態非 in_progress 且 到訪日期 >= 今天 (不顯示過期)
     function getValidConfirmed() {
       const today = new Date();
       today.setHours(0,0,0,0);
@@ -437,39 +396,13 @@
     function renderTables() {
       let inProgressList = cachedData.filter(item => isStillInProgress(item));
       let confirmedList = getValidConfirmed();
-      
       let pt = document.getElementById('progressTable');
-      pt.innerHTML = inProgressList.map((i, idx) => `<tr>
-        <td>${idx + 1}</td>
-        <td>${i.ref_no || '-'}</td>
-        <td>${i.company || '-'}</td>
-        <td style="color:#d69e2e;font-weight:bold;">${i.vehicle_no || '-'}</td>
-        <td>${i.contact_person || '-'}</td>
-        <td>${i.tel_no || '-'}</td>
-        <td>${i.visit_time || '-'}</td>
-        <td>${i.purpose || '-'}</td>
-        <td>${i.vehicle_type || '-'}</td>
-      </tr>`).join('');
+      pt.innerHTML = inProgressList.map((i, idx) => `<tr><td>${idx + 1}</td><td>${i.ref_no || '-'}</td><td>${i.company || '-'}</td><td style="color:#d69e2e;font-weight:bold;">${i.vehicle_no || '-'}</td><td>${i.contact_person || '-'}</td><td>${i.tel_no || '-'}</td><td>${i.visit_time || '-'}</td><td>${i.purpose || '-'}</td><td>${i.vehicle_type || '-'}</td></tr>`).join('');
       if (!inProgressList.length) pt.innerHTML = '<tr><td colspan="9" class="text-center">暫無處理中申請 / No pending applications</td></tr>';
       
       let ct = document.getElementById('confirmedTable');
-      ct.innerHTML = confirmedList.map((i, idx) => {
-        const visitDateDisplay = i.visit_date || '-';
-        const timeInDisplay = i.time_in || i.visit_time || '-';
-        return `<tr>
-          <td>${idx + 1}</td>
-          <td>${i.ref_no || '-'}</td>
-          <td>${i.company || '-'}</td>
-          <td style="color:#38a169;font-weight:bold;">${i.vehicle_no || '-'}</td>
-          <td>${i.contact_person || '-'}</td>
-          <td>${i.tel_no || '-'}</td>
-          <td style="font-weight:500;">${visitDateDisplay}</td>
-          <td style="font-weight:500;">${timeInDisplay}</td>
-          <td>${i.purpose || '-'}</td>
-          <td>${i.vehicle_type || '-'}</td>
-        </tr>`;
-      }).join('');
-      if (!confirmedList.length) ct.innerHTML = '<tr><td colspan="10" class="text-center">暫無有效已確認名單 (今天或之後) / No valid confirmed records (Today or future)</td></tr>';
+      ct.innerHTML = confirmedList.map((i, idx) => `<tr><td>${idx + 1}</td><td>${i.ref_no || '-'}</td><td>${i.company || '-'}</td><td style="color:#38a169;font-weight:bold;">${i.vehicle_no || '-'}</td><td>${i.contact_person || '-'}</td><td>${i.tel_no || '-'}</td><td>${i.visit_date || '-'}</td><td>${i.time_in || i.visit_time || '-'}</td><td>${i.purpose || '-'}</td><td>${i.vehicle_type || '-'}</td></tr>`).join('');
+      if (!confirmedList.length) ct.innerHTML = '<tr><td colspan="10" class="text-center">暫無有效已確認名單 (今天或之後) / No valid confirmed records</td></tr>';
     }
 
     function filterTable() {
@@ -481,28 +414,85 @@
       });
     }
 
-    // ==================== PDF 匯出（可選擇日期） ====================
+    // ========== 新版 PDF 匯出，完全依照 form1.jpg 格式 ==========
     function exportPDF() {
       let selectedDate = document.getElementById('exportDate').value;
       if (!selectedDate) { alert('請先選擇要匯出的日期 / Please select a date first'); return; }
       let list = cachedData.filter(item => item.visit_date === selectedDate);
       if (list.length === 0) { alert(`沒有 ${selectedDate} 的車輛紀錄 / No records found for ${selectedDate}`); return; }
-      let confirmMsg = `確認匯出 ${selectedDate} 的 ${list.length} 筆紀錄？\n\n匯出後請手動從 Google Sheet 刪除這些資料。\n\nConfirm to export ${list.length} records for ${selectedDate}?\nPlease manually delete from Google Sheet after export.`;
+      let confirmMsg = `確認匯出 ${selectedDate} 的 ${list.length} 筆紀錄？\n\n匯出後請手動從 Google Sheet 刪除這些資料。\n\nConfirm to export ${list.length} records for ${selectedDate}?`;
       if (!confirm(confirmMsg)) return;
+
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF('l', 'mm', 'a4');
+      
+      // 標題區塊
       doc.setFontSize(14);
-      doc.text('WEST KOWLOON REFUSE TRANSFER STATION', 14, 15);
+      doc.setFont("helvetica", "bold");
+      doc.text("China Harbour Engineering Company Limited", 14, 15);
       doc.setFontSize(12);
-      doc.text(`Vehicle Log: ${selectedDate}`, 14, 22);
-      doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 29);
-      const rows = list.map((v, i) => [i + 1, v.company || '-', v.vehicle_no || '-', v.contact_person || '-', v.tel_no || '-', v.visit_time || '-', v.purpose || '-', v.vehicle_type || '-']);
-      doc.autoTable({ startY: 36, head: [['#', 'Company', 'Vehicle No.', 'Contact', 'Tel', 'Time', 'Purpose', 'Type']], body: rows, theme: 'grid', headStyles: { fillColor: '#2f855a', textColor: '#fff' }, styles: { fontSize: 9 } });
-      doc.save(`WKTS_${selectedDate}.pdf`);
-      alert(`PDF 已匯出！\n\n請記得手動從 Google Sheet 刪除 ${selectedDate} 的 ${list.length} 筆紀錄\n\nPDF exported!\nPlease manually delete ${list.length} records for ${selectedDate} from Google Sheet.`);
+      doc.text("中國港灣工程有限責任公司", 14, 22);
+      
+      doc.setFontSize(11);
+      doc.text("West Kowloon Transfer Station", 14, 30);
+      doc.text("西九龍廢物轉運站", 14, 36);
+      
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text("Registered Vehicle Log", 14, 44);
+      doc.text("車輛進入預先登記記錄", 14, 50);
+      
+      // 表格欄位定義 (完全依照圖片格式)
+      const headers = [
+        ["項目", "公司名稱", "車牌號碼", "聯絡人", "電話號碼", "進入時間", "離開時間", "進入目的 / 工作內容", "環保署職員批核"],
+        ["Item", "Company", "Vehicle No.", "Contact Person", "Tel. No.", "Time In", "Time Out", "Purpose / Work Description", "EPD Approved"]
+      ];
+      
+      // 構建表格資料：每筆記錄轉為一行，離開時間與批核留空供手寫
+      const bodyRows = list.map((item, idx) => [
+        (idx + 1).toString(),
+        item.company || '-',
+        item.vehicle_no || '-',
+        item.contact_person || '-',
+        item.tel_no || '-',
+        item.visit_time || '-',
+        '',  // 離開時間留空
+        item.purpose || '-',
+        ''   // 環保署職員批核留空
+      ]);
+      
+      // 使用 autoTable 繪製雙語表頭
+      doc.autoTable({
+        startY: 58,
+        head: [headers[0], headers[1]],
+        body: bodyRows,
+        theme: 'grid',
+        headStyles: { fillColor: [41, 112, 88], textColor: [255, 255, 255], fontSize: 9, fontStyle: 'bold' },
+        styles: { fontSize: 8, cellPadding: 3, valign: 'middle', halign: 'center' },
+        columnStyles: {
+          0: { cellWidth: 12 },
+          1: { cellWidth: 35 },
+          2: { cellWidth: 28 },
+          3: { cellWidth: 28 },
+          4: { cellWidth: 25 },
+          5: { cellWidth: 22 },
+          6: { cellWidth: 22 },
+          7: { cellWidth: 40 },
+          8: { cellWidth: 30 }
+        },
+        didDrawPage: function(data) {
+          // 添加頁腳日期
+          let pageCount = doc.internal.getNumberOfPages();
+          doc.setFontSize(8);
+          doc.setTextColor(100);
+          doc.text(`Generated: ${new Date().toLocaleString()} | Date: ${selectedDate}`, 14, doc.internal.pageSize.height - 10);
+        }
+      });
+      
+      doc.save(`WKTS_VehicleLog_${selectedDate}.pdf`);
+      alert(`PDF 已匯出！格式：車輛進入預先登記記錄\n\n請記得手動從 Google Sheet 刪除 ${selectedDate} 的 ${list.length} 筆紀錄`);
     }
 
-    // ==================== 訪客表單功能 ====================
     function generateRefNo() { 
       let d = new Date(), date = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`; 
       let chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand = ''; 
@@ -517,16 +507,8 @@
       let h = document.getElementById('hour').value, m = document.getElementById('minute').value;
       let tm = (h && m) ? `${h}:${m}` : '未選 / Not set';
       if (!c || !v || !cp || !t || !p || !vt || !d) { alert('請填寫所有必填欄位 / Please fill all required fields'); return false; } 
-      document.getElementById('pCompany').innerText = c; 
-      document.getElementById('pVehicle').innerText = v; 
-      document.getElementById('pContact').innerText = cp; 
-      document.getElementById('pTel').innerText = t; 
-      document.getElementById('pPurpose').innerText = p; 
-      document.getElementById('pType').innerText = vt; 
-      document.getElementById('pDate').innerText = d; 
-      document.getElementById('pTime').innerText = tm; 
-      document.getElementById('formSection').classList.add('hidden'); 
-      document.getElementById('previewSection').classList.remove('hidden'); 
+      document.getElementById('pCompany').innerText = c; document.getElementById('pVehicle').innerText = v; document.getElementById('pContact').innerText = cp; document.getElementById('pTel').innerText = t; document.getElementById('pPurpose').innerText = p; document.getElementById('pType').innerText = vt; document.getElementById('pDate').innerText = d; document.getElementById('pTime').innerText = tm; 
+      document.getElementById('formSection').classList.add('hidden'); document.getElementById('previewSection').classList.remove('hidden'); 
       return false; 
     }
 
@@ -534,7 +516,6 @@
     function submitFinal() { let ref = generateRefNo(); document.getElementById('refNumber').innerText = ref; document.getElementById('previewSection').classList.add('hidden'); document.getElementById('successSection').classList.remove('hidden'); } 
     function resetForm() { document.getElementById('regForm').reset(); document.getElementById('successSection').classList.add('hidden'); document.getElementById('formSection').classList.remove('hidden'); }
 
-    // ==================== 啟動 ====================
     document.addEventListener('DOMContentLoaded', () => { initTimeSelects(); initDatePicker(); });
   </script>
 </body>
