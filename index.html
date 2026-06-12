@@ -59,11 +59,24 @@
 
 <div id="visitorPanel">
     <div id="formSection" class="card">
+<!-- 第一个：截数提示 -->
 <div class="alert-cutoff">
     <div style="font-weight:bold;">⚠️ 預約截數提示：每天下午3:00截數</div>
     <div style="font-size:0.75rem;">3:00前申請 → 明日生效 | 3:00後申請 → 後日生效</div>
     <div style="font-size:0.7rem; color:#718096; margin-top:6px;">
-        📌 Cut-off: 3:00 PM daily | Before 3:00 PM → Next day | After 3:00 PM → Day after next
+        📌 Cut-off Time: Daily at 3:00 PM<br>
+        ✅ Before 3:00 PM → Effective tomorrow<br>
+        ⏳ After 3:00 PM → Effective day after tomorrow
+    </div>
+</div>
+
+<!-- 第二个：核对提醒（新增） -->
+<div class="alert-cutoff" style="margin-top: 12px;">
+    <div style="font-weight:bold;">📋 資料核對提醒</div>
+    <div style="font-size:0.75rem;">提交前請確認資料正確，此資只用作入站核對用。</div>
+    <div style="font-size:0.7rem; color:#718096; margin-top:6px;">
+        📌 Please verify all information before submission.<br>
+        📌 This will be used only as entry verification proof.
     </div>
 </div>
         <form id="regForm" onsubmit="showPreview(event)">
@@ -129,7 +142,7 @@
 </div>
 
 <div id="staffPanel" style="display:none;">
-    <div id="loginBox" class="card text-center"><h3>🔒 職員驗證</h3><input type="password" id="staffPwd" class="form-control mb-2" placeholder="請輸入密碼"><button class="btn-success w-100" onclick="verifyLogin()">登入系統</button><div id="loginError" class="hidden" style="color:#e53e3e;margin-top:12px;">密碼錯誤</div></div>
+    <div id="loginBox" class="card text-center"><h3>🔒 職員驗證 Staff Verification</h3><input type="password" id="staffPwd" class="form-control mb-2" placeholder="請輸入密碼"><button class="btn-success w-100" onclick="verifyLogin()">登入系統</button><div id="loginError" class="hidden" style="color:#e53e3e;margin-top:12px;">密碼錯誤</div></div>
     <div id="adminPanel" class="card hidden">
         <div class="flex" style="justify-content:space-between;margin-bottom:16px;"><h4>🚗 關口核對系統</h4><div class="flex"><button class="btn-success" onclick="exportPDF()">📄 PDF</button><button class="btn-outline" onclick="logout()">🚪 登出</button></div></div>
         <input type="text" id="searchInput" class="form-control plate-input mb-3" placeholder="🔍 搜尋車牌" oninput="filterTable()">
