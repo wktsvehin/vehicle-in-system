@@ -84,17 +84,16 @@
 <!-- ======================================================================== -->
 <!-- 【模組 2：段落一】網頁畫面佈局與使用者輸入表單 (完全隔離版) -->
 <!-- ======================================================================== -->
- <!-- ======================================================================== -->
- <!-- 2.1 頂部政府 EPD Logo 區塊 (白色背景卡片加高 3 倍且 Logo 完美置中版) -->
- <!-- ======================================================================== -->
- <div class="logo-container" style="background-color: #ffffff !important; border-radius: 12px !important; border: 1px solid #e2e8f0 !important; box-shadow: 0 4px 6px rgba(0,0,0,0.02) !important; width: 100% !important; height: 240px !important; display: flex !important; justify-content: center !important; align-items: center !important; margin-top: 25px !important; margin-bottom: 25px !important; padding: 20px !important;"> 
-     <img src="epd.png" 
-          alt="Environmental Protection Department" 
-          class="epd-logo" 
-          style="max-height: 100% !important; max-width: 100% !important; width: auto !important; height: auto !important; object-fit: contain !important; transition: all 0.3s ease;" 
-          onerror="this.style.display='none';"> 
- </div>
-
+<!-- ======================================================================== -->
+<!-- 2.1 頂部政府 EPD Logo 區塊 (響應式高度與精簡留白優化版) -->
+<!-- ======================================================================== -->
+<div class="logo-container" style="background-color: #ffffff !important; border-radius: 12px !important; border: 1px solid #e2e8f0 !important; box-shadow: 0 4px 6px rgba(0,0,0,0.02) !important; width: 100% !important; display: flex !important; justify-content: center !important; align-items: center !important; margin-top: 12px !important; margin-bottom: 16px !important; padding: 12px 20px !important;"> 
+ <img src="epd.png" 
+ alt="Environmental Protection Department" 
+ class="epd-logo" 
+ style="max-height: 56px !important; max-width: 100% !important; width: auto !important; height: auto !important; object-fit: contain !important; transition: all 0.3s ease;" 
+ onerror="this.style.display='none';"> 
+</div>
   
   <!-- 2.2 系統大主題標題 -->
   <h3 class="text-center my-1 fw-bold" style="color: #2c7a7b;">西九龍廢物轉運站車輛登記</h3>
