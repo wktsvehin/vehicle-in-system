@@ -153,9 +153,17 @@ function initTimeSelects(){
 function setMinDate(){
     let d=document.getElementById('visitDate');
     if(!d)return;
-    let now=new Date(),offset=now.getHours()>=15?2:1,minDate=new Date();
+    let now=new Date();
+    let offset=now.getHours()>=15?2:1;
+    let minDate=new Date();
     minDate.setDate(now.getDate()+offset);
+    
+    // 限制最多可选7天
+    let maxDate=new Date();
+    maxDate.setDate(now.getDate()+7);
+    
     d.min=minDate.toISOString().split('T')[0];
+    d.max=maxDate.toISOString().split('T')[0];
 }
 
 function switchTab(tab){
