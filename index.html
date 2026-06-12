@@ -59,10 +59,13 @@
 
 <div id="visitorPanel">
     <div id="formSection" class="card">
-        <div class="alert-cutoff">
-            <div style="font-weight:bold;">⚠️ 預約截數提示：每天下午3:00截數</div>
-            <div style="font-size:0.75rem;">3:00前申請 → 明日生效 | 3:00後申請 → 後日生效</div>
-        </div>
+<div class="alert-cutoff">
+    <div style="font-weight:bold;">⚠️ 預約截數提示：每天下午3:00截數</div>
+    <div style="font-size:0.75rem;">3:00前申請 → 明日生效 | 3:00後申請 → 後日生效</div>
+    <div style="font-size:0.7rem; color:#718096; margin-top:6px;">
+        📌 Cut-off: 3:00 PM daily | Before 3:00 PM → Next day | After 3:00 PM → Day after next
+    </div>
+</div>
         <form id="regForm" onsubmit="showPreview(event)">
             <div class="form-group">
                 <label class="form-label">公司名稱 <span class="form-sub">Company Name</span></label>
