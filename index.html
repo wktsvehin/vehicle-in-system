@@ -8,8 +8,9 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh.js"></script>
-  <!-- html2pdf.js - 支援手機與桌面 PDF 生成，完美支援中文 -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <!-- html2canvas + jspdf 組合 - 穩定產生中文 PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -129,23 +130,26 @@
     .chi-text { display: block; font-weight: normal; }
     .eng-text { display: block; font-size: 0.7rem; font-weight: normal; color: #4a5568; }
     
-    /* PDF 匯出專用樣式 - 完美顯示中文表格 */
+    /* PDF 匯出專用容器樣式 */
     .pdf-export-container {
       font-family: 'Helvetica Neue', 'Noto Sans TC', 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif;
-      padding: 20px;
+      padding: 30px 20px;
       background: white;
+      width: 100%;
+      box-sizing: border-box;
     }
     .pdf-header {
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
     }
     .pdf-company {
       font-size: 16px;
       font-weight: bold;
+      margin: 2px 0;
     }
     .pdf-station {
       font-size: 14px;
-      margin-top: 5px;
+      margin-top: 8px;
     }
     .pdf-title {
       font-size: 18px;
@@ -464,7 +468,7 @@
       });
     }
 
-    // ========== 使用 html2pdf.js 匯出 PDF (支援手機與桌面，完美中文) ==========
+    // ========== 使用 html2canvas + jspdf 匯出 PDF (支援手機與桌面，完美中文) ==========
     async function exportPDF() {
       let selectedDate = document.getElementById('exportDate').value;
       if (!selectedDate) { 
@@ -484,29 +488,29 @@
       list.forEach((item, idx) => {
         tableRows += `
           <tr>
-            <td>${idx + 1}</td>
-            <td>${item.company || '-'}</td>
-            <td>${item.vehicle_no || '-'}</td>
-            <td>${item.contact_person || '-'}</td>
-            <td>${item.tel_no || '-'}</td>
-            <td>${item.visit_time || '-'}</td>
-            <td></td>
-            <td>${item.purpose || '-'}</td>
-            <td></td>
+            <td style="border:1px solid #000;padding:8px 6px;">${idx + 1}</td>
+            <td style="border:1px solid #000;padding:8px 6px;">${escapeHtml(item.company || '-')}</td>
+            <td style="border:1px solid #000;padding:8px 6px;">${escapeHtml(item.vehicle_no || '-')}</td>
+            <td style="border:1px solid #000;padding:8px 6px;">${escapeHtml(item.contact_person || '-')}</td>
+            <td style="border:1px solid #000;padding:8px 6px;">${escapeHtml(item.tel_no || '-')}</td>
+            <td style="border:1px solid #000;padding:8px 6px;">${escapeHtml(item.visit_time || '-')}</td>
+            <td style="border:1px solid #000;padding:8px 6px;"></td>
+            <td style="border:1px solid #000;padding:8px 6px;">${escapeHtml(item.purpose || '-')}</td>
+            <td style="border:1px solid #000;padding:8px 6px;"></td>
           </tr>
         `;
       });
 
       const pdfHtml = `
-        <div class="pdf-export-container" style="font-family: 'Helvetica Neue', 'Noto Sans TC', 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif; padding: 20px; background: white;">
-          <div class="pdf-header" style="text-align: center; margin-bottom: 20px;">
-            <div class="pdf-company" style="font-size: 16px; font-weight: bold;">China Harbour Engineering Company Limited</div>
-            <div class="pdf-company" style="font-size: 16px; font-weight: bold;">中國港灣工程有限責任公司</div>
-            <div class="pdf-station" style="font-size: 14px; margin-top: 5px;">West Kowloon Transfer Station | 西九龍廢物轉運站</div>
-            <div class="pdf-title" style="font-size: 18px; font-weight: bold; margin-top: 15px;">Registered Vehicle Log</div>
-            <div class="pdf-subtitle" style="font-size: 14px; margin-bottom: 20px;">車輛進入預先登記記錄</div>
+        <div style="font-family: 'Helvetica Neue', 'Noto Sans TC', 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif; padding: 30px 20px; background: white; width: 100%; box-sizing: border-box;">
+          <div style="text-align: center; margin-bottom: 25px;">
+            <div style="font-size: 16px; font-weight: bold;">China Harbour Engineering Company Limited</div>
+            <div style="font-size: 16px; font-weight: bold;">中國港灣工程有限責任公司</div>
+            <div style="font-size: 14px; margin-top: 8px;">West Kowloon Transfer Station | 西九龍廢物轉運站</div>
+            <div style="font-size: 18px; font-weight: bold; margin-top: 15px;">Registered Vehicle Log</div>
+            <div style="font-size: 14px; margin-bottom: 20px;">車輛進入預先登記記錄</div>
           </div>
-          <table class="pdf-table" style="width: 100%; border-collapse: collapse; font-size: 10px;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
             <thead>
               <tr style="background-color: #2c7a7b; color: white;">
                 <th style="border: 1px solid #000; padding: 8px 6px;">項目<br>Item</th>
@@ -524,7 +528,7 @@
               ${tableRows}
             </tbody>
           </table>
-          <div class="pdf-footer" style="margin-top: 20px; font-size: 9px; text-align: center; color: #666;">
+          <div style="margin-top: 20px; font-size: 9px; text-align: center; color: #666;">
             匯出日期: ${new Date().toLocaleString()} | 到訪日期: ${selectedDate}
           </div>
         </div>
@@ -535,26 +539,64 @@
       tempDiv.style.position = 'absolute';
       tempDiv.style.left = '-9999px';
       tempDiv.style.top = '-9999px';
+      tempDiv.style.width = '800px';
+      tempDiv.style.backgroundColor = 'white';
       tempDiv.innerHTML = pdfHtml;
       document.body.appendChild(tempDiv);
 
       try {
-        // 使用 html2pdf 轉換為 PDF 並下載
-        const opt = {
-          margin: [0.5, 0.5, 0.5, 0.5],
-          filename: `WKTS_VehicleLog_${selectedDate}.pdf`,
-          image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2, letterRendering: true, useCORS: true, logging: false },
-          jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
-        };
-        await html2pdf().set(opt).from(tempDiv).save();
+        // 顯示載入提示
+        const loadingMsg = document.createElement('div');
+        loadingMsg.innerText = '正在產生 PDF，請稍候...';
+        loadingMsg.style.position = 'fixed';
+        loadingMsg.style.top = '50%';
+        loadingMsg.style.left = '50%';
+        loadingMsg.style.transform = 'translate(-50%, -50%)';
+        loadingMsg.style.backgroundColor = 'rgba(0,0,0,0.8)';
+        loadingMsg.style.color = 'white';
+        loadingMsg.style.padding = '15px 30px';
+        loadingMsg.style.borderRadius = '10px';
+        loadingMsg.style.zIndex = '9999';
+        loadingMsg.style.fontSize = '16px';
+        document.body.appendChild(loadingMsg);
+
+        // 使用 html2canvas 渲染
+        const canvas = await html2canvas(tempDiv, {
+          scale: 2,
+          backgroundColor: '#ffffff',
+          logging: false,
+          useCORS: true
+        });
+        
+        const imgData = canvas.toDataURL('image/png');
+        const { jsPDF } = window.jspdf;
+        const imgWidth = 280; // A4橫向寬度 (mm)
+        const pageHeight = 210; // A4橫向高度 (mm)
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        let pdf = new jsPDF('l', 'mm', 'a4');
+        let position = 0;
+        
+        pdf.addImage(imgData, 'PNG', 10, position + 10, imgWidth, imgHeight);
+        pdf.save(`WKTS_VehicleLog_${selectedDate}.pdf`);
+        
+        document.body.removeChild(loadingMsg);
         alert(`PDF 已匯出！\n\n檔案名稱: WKTS_VehicleLog_${selectedDate}.pdf\n\n請記得手動從 Google Sheet 刪除 ${selectedDate} 的 ${list.length} 筆紀錄`);
       } catch (err) {
         console.error('PDF 生成錯誤:', err);
-        alert('PDF 生成失敗，請重試或檢查網路。');
+        alert('PDF 生成失敗，請重試。錯誤訊息: ' + err.message);
       } finally {
         document.body.removeChild(tempDiv);
       }
+    }
+    
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+      });
     }
 
     function generateRefNo() { 
