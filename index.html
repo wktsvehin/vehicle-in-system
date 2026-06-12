@@ -3,11 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>西九龍廢物轉運站車輪登記系統 - 修復版</title>
+  <title>西九龍廢物轉運站車輛登記系統</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh.js"></script>
-  <!-- jsPDF 核心 + html 插件 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
@@ -119,7 +118,6 @@ let isLoggedIn = false;
 let cachedData = [];
 const API = "https://script.google.com/macros/s/AKfycbz6L1lO15lIwMUcKT6Veg6RoTndla90i0pKLVTzE4qGmvHl2pZULMYhmdhnqJt-aVE9/exec";
 
-// 安全轉字串，防止 null/undefined 導致 replace 錯誤
 function safeString(str) {
   if (str === undefined || str === null) return '';
   return String(str);
@@ -150,8 +148,9 @@ function toDateOnly(value) {
 }
 
 function normTime(t) {
-  if (!t) return '-';
+  if (!t) return '---';
   let s = safeString(t);
+  if (s.trim() === '') return '---';
   if (/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(s)) return s;
   let p = s.split(':');
   if (p.length >= 2) return `${p[0].padStart(2,'0')}:${p[1].padStart(2,'0')}`;
@@ -200,7 +199,8 @@ function showLogin() {
 }
 
 function verifyLogin() {
-  if (document.getElementById('staffPwd').value === 'wKts001') {
+  let inputPwd = document.getElementById('staffPwd').value.trim();
+  if (inputPwd === 'wKts001') {
     isLoggedIn = true;
     document.getElementById('loginBox').classList.add('hidden');
     document.getElementById('adminPanel').classList.remove('hidden');
@@ -265,18 +265,18 @@ function renderTables() {
   if (pending.length === 0) progressBody.innerHTML = '<tr><td colspan="9">暫無處理中申請</td></tr>';
   else {
     progressBody.innerHTML = pending.map((i, idx) => `<tr>
-      <td>${idx+1}</td><td>${escapeHtml(i.ref_no)}</td><td>${escapeHtml(i.company)}</td><td style="color:#d69e2e">${escapeHtml(i.vehicle_no)}</td>
-      <td>${escapeHtml(i.contact_person)}</td><td>${escapeHtml(i.tel_no)}</td><td>${escapeHtml(i.visit_time)}</td>
-      <td>${escapeHtml(i.purpose)}</td><td>${escapeHtml(i.vehicle_type)}</td>
+       <td>${idx+1}</td><td>${escapeHtml(i.ref_no)}</td><td>${escapeHtml(i.company)}</td><td style="color:#d69e2e">${escapeHtml(i.vehicle_no)}</td>
+       <td>${escapeHtml(i.contact_person)}</td><td>${escapeHtml(i.tel_no)}</td><td>${escapeHtml(i.visit_time)}</td>
+       <td>${escapeHtml(i.purpose)}</td><td>${escapeHtml(i.vehicle_type)}</td>
     </tr>`).join('');
   }
   const confirmBody = document.getElementById('confirmedTable');
   if (confirmed.length === 0) confirmBody.innerHTML = '<tr><td colspan="10">暫無有效已確認名單</td></tr>';
   else {
     confirmBody.innerHTML = confirmed.map((i, idx) => `<tr>
-      <td>${idx+1}</td><td>${escapeHtml(i.ref_no)}</td><td>${escapeHtml(i.company)}</td><td>${escapeHtml(i.vehicle_no)}</td>
-      <td>${escapeHtml(i.contact_person)}</td><td>${escapeHtml(i.tel_no)}</td><td>${escapeHtml(i.visit_date)}</td>
-      <td>${escapeHtml(i.visit_time)}</td><td>${escapeHtml(i.purpose)}</td><td>${escapeHtml(i.vehicle_type)}</td>
+       <td>${idx+1}</td><td>${escapeHtml(i.ref_no)}</td><td>${escapeHtml(i.company)}</td><td>${escapeHtml(i.vehicle_no)}</td>
+       <td>${escapeHtml(i.contact_person)}</td><td>${escapeHtml(i.tel_no)}</td><td>${escapeHtml(i.visit_date)}</td>
+       <td>${escapeHtml(i.visit_time)}</td><td>${escapeHtml(i.purpose)}</td><td>${escapeHtml(i.vehicle_type)}</td>
     </tr>`).join('');
   }
 }
@@ -289,14 +289,12 @@ function filterTable() {
   });
 }
 
-// ============= 修復 PDF 匯出 (修正 str.replace 錯誤) =============
+// PDF 匯出 (更新格式：淺藍底色、標題列深色、日期放大置頂、EPD批核欄在右上)
 async function exportPDF() {
   let selectedDate = document.getElementById('exportDate').value;
   if (!selectedDate) { alert('請先選擇要匯出的日期'); return; }
   
   let list = cachedData.filter(item => item.visit_date === selectedDate);
-  console.log("選日期:", selectedDate, "符合筆數:", list.length);
-  
   if (list.length === 0) {
     let existingDates = cachedData.map(i => i.visit_date).filter(d => d).join(', ');
     alert(`沒有 ${selectedDate} 的車輛紀錄\n\n目前資料中的日期：${existingDates || '無'}`);
@@ -305,7 +303,6 @@ async function exportPDF() {
   
   if (!confirm(`確認匯出 ${selectedDate} 的 ${list.length} 筆紀錄？\n\n匯出後請手動從 Google Sheet 刪除這些資料。`)) return;
   
-  // 顯示載入提示
   let loadingDiv = document.createElement('div');
   loadingDiv.innerText = '正在產生 PDF，請稍候... (這可能需要幾秒鐘)';
   loadingDiv.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.85);color:#fff;padding:15px 30px;border-radius:10px;z-index:9999;font-size:16px;text-align:center;min-width:200px';
@@ -313,62 +310,79 @@ async function exportPDF() {
   await new Promise(r => setTimeout(r, 100));
   
   try {
-    // 建立 HTML 表格內容，使用安全函數 escapeHtml
     let tableRows = '';
     list.forEach((item, idx) => {
+      // 使用 normTime 確保空值顯示 '---'
+      let timeInDisplay = normTime(item.visit_time);
+      let timeOutDisplay = '---';  // 未有離開時間記錄
       tableRows += `
-        <tr>
-          <td style="border:1px solid #000;padding:8px;">${idx + 1}</td>
-          <td style="border:1px solid #000;padding:8px;">${escapeHtml(item.company)}</td>
-          <td style="border:1px solid #000;padding:8px;">${escapeHtml(item.vehicle_no)}</td>
-          <td style="border:1px solid #000;padding:8px;">${escapeHtml(item.contact_person)}</td>
-          <td style="border:1px solid #000;padding:8px;">${escapeHtml(item.tel_no)}</td>
-          <td style="border:1px solid #000;padding:8px;">${escapeHtml(item.visit_time)}</td>
-          <td style="border:1px solid #000;padding:8px;"></td>
-          <td style="border:1px solid #000;padding:8px;">${escapeHtml(item.purpose)}</td>
-          <td style="border:1px solid #000;padding:8px;"></td>
+        <tr style="background-color: ${idx % 2 === 0 ? '#f0f8ff' : '#ffffff'};">
+          <td style="border:1px solid #aaa; padding:8px;">${idx + 1}</td>
+          <td style="border:1px solid #aaa; padding:8px;">${escapeHtml(item.company)}</td>
+          <td style="border:1px solid #aaa; padding:8px;">${escapeHtml(item.vehicle_no)}</td>
+          <td style="border:1px solid #aaa; padding:8px;">${escapeHtml(item.contact_person)}</td>
+          <td style="border:1px solid #aaa; padding:8px;">${escapeHtml(item.tel_no)}</td>
+          <td style="border:1px solid #aaa; padding:8px;">${timeInDisplay}</td>
+          <td style="border:1px solid #aaa; padding:8px;">${timeOutDisplay}</td>
+          <td style="border:1px solid #aaa; padding:8px;">${escapeHtml(item.purpose)}</td>
         </tr>
       `;
     });
     
-    // 建立離屏容器
     const pdfContainer = document.createElement('div');
-    pdfContainer.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:800px;background:white;padding:20px;font-family:"Noto Sans TC","Microsoft YaHei","PingFang SC","Helvetica Neue",Arial,sans-serif';
+    pdfContainer.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:900px;background:white;padding:20px;font-family:"Noto Sans TC","Microsoft YaHei","PingFang SC","Helvetica Neue",Arial,sans-serif';
+    
+    // 新排版：到訪日期放大置頂 + EPD Approval 在右上角
     pdfContainer.innerHTML = `
-      <div style="text-align:center;margin-bottom:25px;">
-        <div style="font-size:16px;font-weight:bold;">China Harbour Engineering Company Limited</div>
-        <div style="font-size:16px;font-weight:bold;">中國港灣工程有限責任公司</div>
-        <div style="font-size:14px;margin-top:8px;">West Kowloon Transfer Station | 西九龍廢物轉運站</div>
-        <div style="font-size:18px;font-weight:bold;margin-top:15px;">Registered Vehicle Log</div>
-        <div style="font-size:14px;margin-bottom:20px;">車輛進入預先登記記錄</div>
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; border-bottom: 2px solid #2c7a7b; padding-bottom: 10px;">
+        <div style="text-align: left;">
+          <div style="font-size: 14px; font-weight: bold; color: #1f6e6e;">中國港灣工程有限責任公司</div>
+          <div style="font-size: 12px; color: #555;">China Harbour Engineering Company Limited</div>
+          <div style="font-size: 11px; margin-top: 5px;">西九龍廢物轉運站 | West Kowloon Transfer Station</div>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-size: 12px; font-weight: bold;">EPD Approval: _________________</div>
+          <div style="font-size: 10px; color: #666;">(環保署職員簽署)</div>
+        </div>
       </div>
-      <table style="width:100%;border-collapse:collapse;font-size:10px;">
+      
+      <!-- 到訪日期放大置頂 -->
+      <div style="text-align: center; margin: 15px 0 20px 0;">
+        <div style="font-size: 22px; font-weight: bold; color: #1a5c5c; background: #e6f7f7; display: inline-block; padding: 8px 25px; border-radius: 40px; letter-spacing: 2px;">
+          📅 到訪日期 / Visit Date：${selectedDate}
+        </div>
+      </div>
+      
+      <div style="font-size: 16px; font-weight: bold; text-align: center; margin-bottom: 12px;">車輛進入預先登記記錄<br>Registered Vehicle Log</div>
+      
+      <table style="width:100%; border-collapse: collapse; font-size: 10px;">
         <thead>
-          <tr style="background-color:#2c7a7b;color:white;">
-            <th style="border:1px solid #000;padding:8px;">項目<br>Item</th>
-            <th style="border:1px solid #000;padding:8px;">公司名稱<br>Company</th>
-            <th style="border:1px solid #000;padding:8px;">車牌號碼<br>Vehicle No.</th>
-            <th style="border:1px solid #000;padding:8px;">聯絡人<br>Contact Person</th>
-            <th style="border:1px solid #000;padding:8px;">電話號碼<br>Tel. No.</th>
-            <th style="border:1px solid #000;padding:8px;">進入時間<br>Time In</th>
-            <th style="border:1px solid #000;padding:8px;">離開時間<br>Time Out</th>
-            <th style="border:1px solid #000;padding:8px;">進入目的/工作內容<br>Purpose/Work Description</th>
-            <th style="border:1px solid #000;padding:8px;">環保署職員批核<br>EPD Approved</th>
-          </tr>
+          <tr style="background-color: #1f6e6e; color: white; text-align: center;">
+            <th style="border: 1px solid #0a4c4c; padding: 10px 6px;">項目<br>Item</th>
+            <th style="border: 1px solid #0a4c4c; padding: 10px 6px;">公司名稱<br>Company</th>
+            <th style="border: 1px solid #0a4c4c; padding: 10px 6px;">車牌號碼<br>Vehicle No.</th>
+            <th style="border: 1px solid #0a4c4c; padding: 10px 6px;">聯絡人<br>Contact Person</th>
+            <th style="border: 1px solid #0a4c4c; padding: 10px 6px;">電話號碼<br>Tel. No.</th>
+            <th style="border: 1px solid #0a4c4c; padding: 10px 6px;">進入時間<br>Time In</th>
+            <th style="border: 1px solid #0a4c4c; padding: 10px 6px;">離開時間<br>Time Out</th>
+            <th style="border: 1px solid #0a4c4c; padding: 10px 6px;">進入目的/工作內容<br>Purpose/Work Description</th>
+           </tr>
         </thead>
         <tbody>
           ${tableRows}
         </tbody>
       </table>
-      <div style="margin-top:20px;font-size:9px;text-align:center;color:#666;">
-        匯出日期: ${new Date().toLocaleString()} | 到訪日期: ${selectedDate}
+      
+      <div style="margin-top: 18px; font-size: 8px; text-align: center; color: #888;">
+        匯出日期: ${new Date().toLocaleString()} | 系統產生之記錄，請核對無誤後簽署
       </div>
     `;
+    
     document.body.appendChild(pdfContainer);
-    await new Promise(r => setTimeout(r, 200));
+    await new Promise(r => setTimeout(r, 250));
     
     const canvas = await html2canvas(pdfContainer, {
-      scale: 2.5,
+      scale: 2.8,
       backgroundColor: '#ffffff',
       logging: false,
       useCORS: true,
@@ -383,7 +397,7 @@ async function exportPDF() {
     const imgWidth = 280;
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
     const pdf = new jsPDF('l', 'mm', 'a4');
-    let yPos = 10;
+    let yPos = 8;
     if (imgHeight < 190) yPos = (190 - imgHeight) / 2;
     pdf.addImage(imgData, 'PNG', 10, yPos, imgWidth, imgHeight);
     pdf.save(`WKTS_VehicleLog_${selectedDate}.pdf`);
