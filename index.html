@@ -107,9 +107,9 @@
     <div class="flex" style="justify-content:space-between;align-items:center;margin-bottom:16px"><h4>🚗 關口核對系統</h4><div class="flex"><input type="date" id="exportDate" class="form-control" style="width:140px"><button class="btn-success" onclick="exportPDF()">📄 匯出PDF</button><button class="btn-outline" onclick="logout()">🚪 登出</button></div></div>
     <input type="text" id="searchInput" class="form-control plate-input mb-3" placeholder="🔍 搜尋車牌" oninput="filterTable()">
     <div class="section-title">📋 申請處理中 <span class="eng-text">(未過15:00)</span></div>
-    <div class="table-responsive"><table><thead><tr><th>#</th><th>參考編號</th><th>公司</th><th>車牌</th><th>聯絡人</th><th>電話</th><th>時間</th><th>目的</th><th>車型</th></tr></thead><tbody id="progressTable"></tbody></table></div>
+    <div class="table-responsive"> <table> <thead> <tr> <th>#</th> <th>參考編號</th> <th>公司</th> <th>車牌</th> <th>聯絡人</th> <th>電話</th> <th>時間</th> <th>目的</th> <th>車型</th> </tr> </thead> <tbody id="progressTable"></tbody> </table> </div>
     <div class="section-title">✅ 已確認名單 <span class="eng-text">(今天或之後)</span></div>
-    <div class="table-responsive"><table><thead><tr><th>#</th><th>參考編號</th><th>公司</th><th>車牌</th><th>聯絡人</th><th>電話</th><th>到訪日期</th><th>入站時間</th><th>目的</th><th>車型</th></tr></thead><tbody id="confirmedTable"></tbody></table></div>
+    <div class="table-responsive"> </table> <thead> <tr> <th>#</th> <th>參考編號</th> <th>公司</th> <th>車牌</th> <th>聯絡人</th> <th>電話</th> <th>到訪日期</th> <th>入站時間</th> <th>目的</th> <th>車型</th> </tr> </thead> <tbody id="confirmedTable"></tbody> </table> </div>
   </div>
 </div>
 
@@ -133,18 +133,52 @@ function escapeHtml(str) {
   });
 }
 
-function toDateOnly(value) {
-  if (!value) return '';
-  let str = safeString(value);
-  if (str.includes('T')) return str.split('T')[0];
-  if (str.includes('/')) {
-    let parts = str.split('/');
-    if (parts.length === 3) return `${parts[0]}-${parts[1].padStart(2,'0')}-${parts[2].padStart(2,'0')}`;
-  }
+// 加強版日期標準化函數 - 可以處理各種格式
+function normalizeDateForCompare(dateStr) {
+  if (!dateStr) return '';
+  let str = safeString(dateStr).trim();
+  
+  // 如果已經係 YYYY-MM-DD 格式，直接返回
   if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+  
+  // 處理 YYYY-MM-DD HH:MM:SS 或 YYYY-MM-DDTHH:MM:SS 格式
+  let match = str.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+  if (match) {
+    let year = match[1];
+    let month = match[2].padStart(2, '0');
+    let day = match[3].padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+  
+  // 處理 DD/MM/YYYY 或 MM/DD/YYYY 格式 (假設係 YYYY-MM-DD 優先)
+  let slashMatch = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (slashMatch) {
+    // 假設格式係 YYYY/MM/DD，但唔一定，呢度假設第三組係年份
+    let year = slashMatch[3];
+    let month = slashMatch[1].padStart(2, '0');
+    let day = slashMatch[2].padStart(2, '0');
+    // 如果月份大於12，可能係 DD/MM/YYYY
+    if (parseInt(month) > 12) {
+      month = slashMatch[2].padStart(2, '0');
+      day = slashMatch[1].padStart(2, '0');
+    }
+    return `${year}-${month}-${day}`;
+  }
+  
+  // 最後嘗試用 new Date 解析
   let d = new Date(str);
-  if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
+  if (!isNaN(d.getTime())) {
+    let year = d.getFullYear();
+    let month = (d.getMonth() + 1).toString().padStart(2, '0');
+    let day = d.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+  
   return str;
+}
+
+function toDateOnly(value) {
+  return normalizeDateForCompare(value);
 }
 
 function normTime(t) {
@@ -226,6 +260,10 @@ function loadData() {
       let vehicleType = item.vehicle_type || item.車型 || item.vehicleType || '';
       let refNo = item.ref_no || item.參考編號 || item.refNo || ('REF' + Math.random().toString(36).substr(2, 6));
       let status = item.status || item.Status || 'in_progress';
+      
+      // 標準化日期
+      let normalizedDate = normalizeDateForCompare(rawDate);
+      
       return {
         ref_no: safeString(refNo),
         company: safeString(company),
@@ -235,7 +273,8 @@ function loadData() {
         visit_time: normTime(visitTime),
         purpose: safeString(purpose),
         vehicle_type: safeString(vehicleType),
-        visit_date: toDateOnly(rawDate),
+        visit_date: normalizedDate,
+        raw_visit_date: rawDate,
         status: safeString(status),
         time_in: normTime(visitTime)
       };
@@ -265,19 +304,19 @@ function renderTables() {
   if (pending.length === 0) progressBody.innerHTML = '<tr><td colspan="9">暫無處理中申請</td></tr>';
   else {
     progressBody.innerHTML = pending.map((i, idx) => `<tr>
-        <td>${idx+1}</td><td>${escapeHtml(i.ref_no)}</td><td>${escapeHtml(i.company)}</td><td style="color:#d69e2e">${escapeHtml(i.vehicle_no)}</td>
-        <td>${escapeHtml(i.contact_person)}</td><td>${escapeHtml(i.tel_no)}</td><td>${escapeHtml(i.visit_time)}</td>
-        <td>${escapeHtml(i.purpose)}</td><td>${escapeHtml(i.vehicle_type)}</td>
-    </tr>`).join('');
+          <td>${idx+1}</td><td>${escapeHtml(i.ref_no)}</td><td>${escapeHtml(i.company)}</td><td style="color:#d69e2e">${escapeHtml(i.vehicle_no)}</td>
+          <td>${escapeHtml(i.contact_person)}</td><td>${escapeHtml(i.tel_no)}</td><td>${escapeHtml(i.visit_time)}</td>
+          <td>${escapeHtml(i.purpose)}</td><td>${escapeHtml(i.vehicle_type)}</td>
+      </tr>`).join('');
   }
   const confirmBody = document.getElementById('confirmedTable');
   if (confirmed.length === 0) confirmBody.innerHTML = '<tr><td colspan="10">暫無有效已確認名單</td></tr>';
   else {
     confirmBody.innerHTML = confirmed.map((i, idx) => `<tr>
-        <td>${idx+1}</td><td>${escapeHtml(i.ref_no)}</td><td>${escapeHtml(i.company)}</td><td>${escapeHtml(i.vehicle_no)}</td>
-        <td>${escapeHtml(i.contact_person)}</td><td>${escapeHtml(i.tel_no)}</td><td>${escapeHtml(i.visit_date)}</td>
-        <td>${escapeHtml(i.visit_time)}</td><td>${escapeHtml(i.purpose)}</td><td>${escapeHtml(i.vehicle_type)}</td>
-    </table>`).join('');
+          <td>${idx+1}</td><td>${escapeHtml(i.ref_no)}</td><td>${escapeHtml(i.company)}</td><td>${escapeHtml(i.vehicle_no)}</td>
+          <td>${escapeHtml(i.contact_person)}</td><td>${escapeHtml(i.tel_no)}</td><td>${escapeHtml(i.visit_date)}</td>
+          <td>${escapeHtml(i.visit_time)}</td><td>${escapeHtml(i.purpose)}</td><td>${escapeHtml(i.vehicle_type)}</td>
+      </tr>`).join('');
   }
 }
 
@@ -289,15 +328,23 @@ function filterTable() {
   });
 }
 
-// PDF 匯出 - 表格標題列都係白底黑字
+// PDF 匯出 - 完整修復日期比對問題
 async function exportPDF() {
   let selectedDate = document.getElementById('exportDate').value;
   if (!selectedDate) { alert('請先選擇要匯出的日期'); return; }
   
-  let list = cachedData.filter(item => item.visit_date === selectedDate);
+  // 標準化選取嘅日期
+  let normalizedSelected = normalizeDateForCompare(selectedDate);
+  
+  // 收集所有日期用嚟除錯
+  let allDates = cachedData.map(i => i.visit_date).filter(d => d);
+  let uniqueDates = [...new Set(allDates)];
+  
+  // 用標準化後嘅日期做比對
+  let list = cachedData.filter(item => item.visit_date === normalizedSelected);
+  
   if (list.length === 0) {
-    let existingDates = cachedData.map(i => i.visit_date).filter(d => d).join(', ');
-    alert(`沒有 ${selectedDate} 的車輛紀錄\n\n目前資料中的日期：${existingDates || '無'}`);
+    alert(`❌ 沒有 ${selectedDate} 的車輛紀錄\n\n📅 系統中現有嘅日期：\n${uniqueDates.join(', ') || '無'}\n\n💡 提示：請檢查 Google Sheet 入面嘅日期格式是否正確`);
     return;
   }
   
@@ -316,14 +363,14 @@ async function exportPDF() {
       let timeOutDisplay = '---';
       tableRows += `
         <tr style="background-color: #ffffff;">
-          <td style="border: 1px solid #000000; padding: 8px; color: #000000;">${idx + 1}</td>
-          <td style="border: 1px solid #000000; padding: 8px; color: #000000;">${escapeHtml(item.company)}</td>
-          <td style="border: 1px solid #000000; padding: 8px; color: #000000;">${escapeHtml(item.vehicle_no)}</td>
-          <td style="border: 1px solid #000000; padding: 8px; color: #000000;">${escapeHtml(item.contact_person)}</td>
-          <td style="border: 1px solid #000000; padding: 8px; color: #000000;">${escapeHtml(item.tel_no)}</td>
-          <td style="border: 1px solid #000000; padding: 8px; color: #000000;">${timeInDisplay}</td>
-          <td style="border: 1px solid #000000; padding: 8px; color: #000000;">${timeOutDisplay}</td>
-          <td style="border: 1px solid #000000; padding: 8px; color: #000000;">${escapeHtml(item.purpose)}</td>
+          <td style="border: 1px solid #000000; padding: 8px; color: #000000; vertical-align: top;">${idx + 1}</td>
+          <td style="border: 1px solid #000000; padding: 8px; color: #000000; vertical-align: top;">${escapeHtml(item.company)}</td>
+          <td style="border: 1px solid #000000; padding: 8px; color: #000000; vertical-align: top;">${escapeHtml(item.vehicle_no)}</td>
+          <td style="border: 1px solid #000000; padding: 8px; color: #000000; vertical-align: top;">${escapeHtml(item.contact_person)}</td>
+          <td style="border: 1px solid #000000; padding: 8px; color: #000000; vertical-align: top;">${escapeHtml(item.tel_no)}</td>
+          <td style="border: 1px solid #000000; padding: 8px; color: #000000; vertical-align: top;">${timeInDisplay}</td>
+          <td style="border: 1px solid #000000; padding: 8px; color: #000000; vertical-align: top;">${timeOutDisplay}</td>
+          <td style="border: 1px solid #000000; padding: 8px; color: #000000; vertical-align: top;">${escapeHtml(item.purpose)}</td>
         </tr>
       `;
     });
@@ -343,7 +390,6 @@ async function exportPDF() {
         </div>
       </div>
       
-      <!-- 到訪日期放大置頂 -->
       <div style="text-align: center; margin: 15px 0 20px 0;">
         <div style="font-size: 22px; font-weight: bold; color: #1a5c5c; background: #e6f7f7; display: inline-block; padding: 8px 25px; border-radius: 40px; letter-spacing: 2px;">
           📅 到訪日期 / Visit Date：${selectedDate}
@@ -355,14 +401,14 @@ async function exportPDF() {
       <table style="width:100%; border-collapse: collapse; font-size: 10px; background-color: #ffffff;">
         <thead>
           <tr style="background-color: #ffffff; color: #000000; text-align: center;">
-            <th style="border: 1px solid #000000; padding: 10px 6px; font-weight: bold;">項目<br>Item</th>
-            <th style="border: 1px solid #000000; padding: 10px 6px; font-weight: bold;">公司名稱<br>Company</th>
-            <th style="border: 1px solid #000000; padding: 10px 6px; font-weight: bold;">車牌號碼<br>Vehicle No.</th>
-            <th style="border: 1px solid #000000; padding: 10px 6px; font-weight: bold;">聯絡人<br>Contact Person</th>
-            <th style="border: 1px solid #000000; padding: 10px 6px; font-weight: bold;">電話號碼<br>Tel. No.</th>
-            <th style="border: 1px solid #000000; padding: 10px 6px; font-weight: bold;">進入時間<br>Time In</th>
-            <th style="border: 1px solid #000000; padding: 10px 6px; font-weight: bold;">離開時間<br>Time Out</th>
-            <th style="border: 1px solid #000000; padding: 10px 6px; font-weight: bold;">進入目的/工作內容<br>Purpose/Work Description</th>
+            <th style="border: 1px solid #000000; padding: 10px 6px; font-weight: bold; vertical-align: top;">項目<br>Item</th>
+            <th style="border: 1px solid #000000; padding: 10px 6px; font-weight: bold; vertical-align: top;">公司名稱<br>Company</th>
+            <th style="border: 1px solid #000000; padding: 10px 6px; font-weight: bold; vertical-align: top;">車牌號碼<br>Vehicle No.</th>
+            <th style="border: 1px solid #000000; padding: 10px 6px; font-weight: bold; vertical-align: top;">聯絡人<br>Contact Person</th>
+            <th style="border: 1px solid #000000; padding: 10px 6px; font-weight: bold; vertical-align: top;">電話號碼<br>Tel. No.</th>
+            <th style="border: 1px solid #000000; padding: 10px 6px; font-weight: bold; vertical-align: top;">進入時間<br>Time In</th>
+            <th style="border: 1px solid #000000; padding: 10px 6px; font-weight: bold; vertical-align: top;">離開時間<br>Time Out</th>
+            <th style="border: 1px solid #000000; padding: 10px 6px; font-weight: bold; vertical-align: top;">進入目的/工作內容<br>Purpose/Work Description</th>
           </tr>
         </thead>
         <tbody style="background-color: #ffffff; color: #000000;">
@@ -405,7 +451,7 @@ async function exportPDF() {
   } catch (err) {
     console.error("PDF生成錯誤:", err);
     if (loadingDiv && loadingDiv.parentNode) document.body.removeChild(loadingDiv);
-    alert('❌ PDF 生成失敗: ' + err.message + '\n\n請檢查網路連線後重試');
+    alert('❌ PDF 生成失敗: ' + err.message);
   }
 }
 
