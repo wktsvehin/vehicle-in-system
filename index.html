@@ -192,8 +192,22 @@
     <label class="form-label fw-bold biling-label">填入目的 / 工作內容 <span class="required-star">*</span><span class="biling-sub">Purpose of Entry / Work Content</span></label>
     <input type="text" class="form-control" id="purpose" placeholder="e.g. Delivery / Maintenance" style="width: 100% !important; max-width: 100% !important;" required>
   </div>
+          <!-- 6. 車輛種類 (已完美補回，並 100% 撐滿對齊) -->
+          <div class="form-group-spaced">
+            <label class="form-label fw-bold biling-label">車輛種類 <span class="required-star">*</span><br><small class="text-secondary fw-normal">Vehicle Type</small></label>
+            <select class="form-select" id="vehType" style="width: 100% !important; max-width: 100% !important;" required>
+              <option value="" disabled selected>請選擇車輛種類 Select Vehicle Type</option>
+              <option value="私家車/客貨車 Private Car/Van">私家車/客貨車 Private Car/Van</option>
+              <option value="中型/重型貨車 Medium/Heavy Goods Vehicle">中型/重型貨車 Medium/Heavy Goods Vehicle</option>
+              <option value="掛接車/貨櫃車 Articulated Vehicle/Container Truck">掛接車/貨櫃車 Articulated Vehicle/Container Truck</option>
+              <option value="其他 Others">其他 Others</option>
+            </select>
+          </div>
 
-            <div class="col-12 col-md-6 ps-md-2 form-group-spaced"><label class="form-label fw-bold biling-label">預計到訪日期 <span class="required-star">*</span><span class="biling-sub">Expected Visit Date</span></label><select id="visit_date" class="form-select" required></select></div>
+          <!-- 7. 預計到訪日期 (已修正損壞的標籤與網格) -->
+          <div class="form-group-spaced">
+            <label class="form-label fw-bold biling-label">預計到訪日期 <span class="required-star">*</span><br><small class="text-secondary fw-normal">Expected Visit Date</small></label>
+            <input type="text" id="visitDate" class="form-control" placeholder="請選擇日期 Select Date" style="width: 100% !important; max-width: 100% !important;" required>
           </div>
           <div class="form-group-spaced">
 <label class="form-label fw-bold biling-label">預計到訪時間 <span class="biling-sub">Estimated Time of Arrival (24h)</span></label>
