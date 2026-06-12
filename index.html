@@ -469,37 +469,51 @@ function generateReferenceNumber() {
     return `${dateStr}-${randomStr}`;
 }
 
-// 👁️ 4.2 從填表畫面跳轉至【子畫面 B：資料核對預覽頁面】
+// 4.2 子畫面畫面切換與資料預覽【子畫面 B. 預覽確認畫面】
 function showPreviewScreen(event) {
-    if (event) event.preventDefault(); // 阻擋原網頁重新整理
+  if (event) event.preventDefault(); // 阻止表單預設重整
+  
+  try {
+    // 1. 提取使用者輸入的表單數據 (已修正對應 ID)
+    const company       = document.getElementById('companyName') ? document.getElementById('companyName').value.trim() : '';
+    const vehicle_no    = document.getElementById('vehNo') ? document.getElementById('vehNo').value.trim().toUpperCase() : '';
+    const contact_person= document.getElementById('contactPerson') ? document.getElementById('contactPerson').value.trim() : '';
+    const tel_no        = document.getElementById('telNo') ? document.getElementById('telNo').value.trim() : '';
+    const purpose       = document.getElementById('purpose') ? document.getElementById('purpose').value.trim() : '';
     
-    // 提取使用者輸入的即時數據
-    const company = document.getElementById('company').value.trim();
-    const vehicleNo = document.getElementById('vehicle_no').value.trim().toUpperCase(); // 車牌強轉大寫
-    const contact = document.getElementById('contact_person').value.trim();
-    const tel = document.getElementById('tel_no').value.trim();
-    const purpose = document.getElementById('purpose').value.trim();
-    const vehicleType = document.getElementById('vehicle_type').value;
-    const visitDate = document.getElementById('visit_date').value;
-const visitHour = document.getElementById("visitHour") ? document.getElementById("visitHour").value : '';
-const visitMin = document.getElementById("visitMin") ? document.getElementById("visitMin").value : '';
-const fullTime = (visitHour && visitMin) ? `${visitHour}:${visitMin}` : '未填寫 / Not Specified';
-
-
-    // 🎯 資料精準注入預覽欄位
-    document.getElementById('p-company').innerText = company || '---';
-    document.getElementById('p-vehicle_no').innerText = vehicleNo || '---';
-    document.getElementById('p-contact_person').innerText = contact || '---';
-    document.getElementById('p-tel_no').innerText = tel || '---';
-    document.getElementById('p-purpose').innerText = purpose || '---';
-    document.getElementById('p-vehicle_type').innerText = vehicleType || '---';
-    document.getElementById('p-visit_date').innerText = visitDate || '---';
-    document.getElementById('p-visitTime').innerText = fullTime || '---';
+    // 智慧相容車輛種類 ID
+    const vehTypeEl     = document.getElementById('vehType') || document.getElementById('vehicle_type');
+    const vehicletype   = vehTypeEl ? vehTypeEl.value : '';
     
-    // 透過隱藏類別切換子頁面
-    document.getElementById('formSection').classList.add('hidden-field');
-    document.getElementById('previewSection').classList.remove('hidden-field');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const visit_date    = document.getElementById('visitDate') ? document.getElementById('visitDate').value : '';
+    
+    // 2. 智慧安全判斷預計到訪時間
+    const visitHour     = document.getElementById('visitHour') ? document.getElementById('visitHour').value : '';
+    const visitMin      = document.getElementById('visitMin') ? document.getElementById('visitMin').value : '';
+    const fullTime      = (visitHour && visitMin) ? `${visitHour}:${visitMin}` : '未填寫 / Not Specified';
+
+    // 3. 將資料填入預覽標籤區
+    if(document.getElementById('p-company')) document.getElementById('p-company').innerText = company || '---';
+    if(document.getElementById('p-vehicle_no')) document.getElementById('p-vehicle_no').innerText = vehicle_no || '---';
+    if(document.getElementById('p-contact_person')) document.getElementById('p-contact_person').innerText = contact_person || '---';
+    if(document.getElementById('p-tel_no')) document.getElementById('p-tel_no').innerText = tel_no || '---';
+    if(document.getElementById('p-purpose')) document.getElementById('p-purpose').innerText = purpose || '---';
+    if(document.getElementById('p-vehicle_type')) document.getElementById('p-vehicle_type').innerText = vehicletype || '---';
+    if(document.getElementById('p-visit_date')) document.getElementById('p-visit_date').innerText = visit_date || '---';
+    if(document.getElementById('p-visitTime')) document.getElementById('p-visitTime').innerText = fullTime || '---';
+
+    // 4. 透過切換隱藏類別切換子畫面
+    const formSec = document.getElementById('formSection');
+    const prevSec = document.getElementById('previewSection');
+    if (formSec && prevSec) {
+      formSec.classList.add('hidden-field');
+      prevSec.classList.remove('hidden-field');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  } catch (err) {
+    console.error("預覽出錯:", err);
+    alert("系統微調出錯，請聯絡管理員: " + err.message);
+  }
 }
 
 // ⬅️ 4.3 從預覽頁面點擊「返回修改」，切換回原填表頁面
