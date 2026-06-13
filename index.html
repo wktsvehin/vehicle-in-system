@@ -137,7 +137,7 @@
     
     <div class="section-title icon-text">✅ 今日已確認名單 <span class="eng-text">Today's Confirmed List</span></div>
     <div class="table-responsive">
-      <table>
+      </table>
         <thead>
           <tr>
             <th>#</th>
@@ -180,30 +180,30 @@ function getCurrentHour() {
   return new Date().getHours();
 }
 
-// ✅ 提取日期並減 1 日（解決 UTC 時區問題）
+// 將日期減 1 日
+function subtractOneDay(dateStr) {
+  if (!dateStr) return '';
+  let parts = dateStr.split('-');
+  if (parts.length !== 3) return dateStr;
+  let year = parseInt(parts[0]);
+  let month = parseInt(parts[1]);
+  let day = parseInt(parts[2]);
+  let date = new Date(Date.UTC(year, month - 1, day));
+  date.setUTCDate(date.getUTCDate() - 1);
+  let y = date.getUTCFullYear();
+  let m = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+  let d = date.getUTCDate().toString().padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+// 提取日期（唔減）
 function extractDateOnly(dateStr) {
   if (!dateStr) return '';
   let str = String(dateStr).trim();
-  
-  // 如果已經是 YYYY-MM-DD 格式，直接返回
   if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
-  
-  // 從 ISO 格式提取 YYYY-MM-DD
   let match = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
   if (match) {
-    let year = parseInt(match[1]);
-    let month = parseInt(match[2]);
-    let day = parseInt(match[3]);
-    
-    // 🔧 減 1 日
-    let date = new Date(Date.UTC(year, month - 1, day));
-    date.setUTCDate(date.getUTCDate() - 1);
-    
-    let y = date.getUTCFullYear();
-    let m = (date.getUTCMonth() + 1).toString().padStart(2, '0');
-    let d = date.getUTCDate().toString().padStart(2, '0');
-    console.log(`日期轉換: ${str} -> ${y}-${m}-${d} (減1日)`);
-    return `${y}-${m}-${d}`;
+    return `${match[1]}-${match[2]}-${match[3]}`;
   }
   return str;
 }
@@ -343,7 +343,7 @@ function loadData() {
     })
     .catch(error => { 
       console.error("載入錯誤:", error); 
-      confirmTable.innerHTML = `</td><td colspan="10" style="color:red">❌ 連線失敗: ${error.message}<\/td><\/tr>`;
+      confirmTable.innerHTML = `<tr><td colspan="10" style="color:red">❌ 連線失敗: ${error.message}<\/td><\/tr>`;
     });
 }
 
@@ -503,17 +503,20 @@ function resetForm() {
   initDatePicker();
 }
 
-// ==================== PDF 匯出 ====================
+// ==================== PDF 匯出 (揀選日期自動減 1 日) ====================
 async function exportPDF() {
   let selectedDate = document.getElementById('exportDate').value;
   if (!selectedDate) { alert('請先選擇要匯出的日期'); return; }
   
+  // 🔧 關鍵修復：將選擇嘅日期減 1 日
+  let queryDate = subtractOneDay(selectedDate);
+  
   console.log("===== PDF 匯出 =====");
-  console.log("選擇匯出日期:", selectedDate);
+  console.log("你揀嘅日期:", selectedDate);
+  console.log("實際查詢日期 (減1日):", queryDate);
   console.log("cachedData 日期列表:", cachedData.map(d => `${d.company}: ${d.visit_date}`));
   
-  // 直接比對 visit_date（已經減咗 1 日）
-  let list = cachedData.filter(item => item.visit_date === selectedDate);
+  let list = cachedData.filter(item => item.visit_date === queryDate);
   console.log("符合條件筆數:", list.length);
   
   if (list.length === 0) {
@@ -637,7 +640,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   
-  console.log("系統初始化完成 (日期已減1日)");
+  console.log("系統初始化完成 (PDF匯出時會將揀選日期減1日)");
 });
 </script>
 </body>
