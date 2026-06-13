@@ -190,6 +190,7 @@ function getHKCurrentHour() {
   return hkTime.getUTCHours();
 }
 
+// 直接從 UTC 字串提取日期部分 (唔加 8 小時)
 function convertUTCtoHKDate(utcDateStr) {
   if (!utcDateStr) return '';
   let str = String(utcDateStr).trim();
@@ -298,7 +299,7 @@ function logout() { isLoggedIn = false; showLogin(); }
 
 function loadData() {
   const confirmTable = document.getElementById('confirmedTable');
-  if (confirmTable) confirmTable.innerHTML = '<tr><td colspan="10">⏳ 載入中...<\/td><\/tr>';
+  if (confirmTable) confirmTable.innerHTML = '</tr><td colspan="10">⏳ 載入中...<\/td><\/tr>';
   
   debugLog("===== 開始載入資料 =====");
   
@@ -320,6 +321,8 @@ function loadData() {
       cachedData = data.map(item => {
         let rawDate = item.visit_date || item.到訪日期 || item.date || '';
         let rawTime = item.time_in || item.入站時間 || '';
+        let convertedDate = convertUTCtoHKDate(rawDate);
+        debugLog(`原始日期: ${rawDate} -> 轉換後: ${convertedDate}`);
         return {
           ref_no: item.ref_no || item.參考編號 || '',
           company: item.company || item.公司 || '',
@@ -329,11 +332,13 @@ function loadData() {
           tel_no: item.tel_no || item.電話 || '',
           visit_time: formatTimeOnly(rawTime),
           purpose: item.purpose || item.目的 || '',
-          visit_date: convertUTCtoHKDate(rawDate)
+          visit_date: convertedDate,
+          raw_date: rawDate  // 保留原始日期用於除錯
         };
       });
       
       debugLog("轉換完成，共", cachedData.length, "筆");
+      debugLog("日期列表:", cachedData.map(d => `${d.company}:${d.visit_date}`));
       renderTables();
     })
     .catch(error => { 
@@ -353,7 +358,7 @@ function renderTables() {
   if (!confirmBody) return;
   
   if (confirmed.length === 0) {
-    confirmBody.innerHTML = '<table><td colspan="10">📭 今日暫無已確認車輛<\/td><\/tr>';
+    confirmBody.innerHTML = '<tr><td colspan="10">📭 今日暫無已確認車輛<\/td><\/tr>';
   } else {
     confirmBody.innerHTML = confirmed.map((i, idx) => `
       <tr>
@@ -503,7 +508,14 @@ async function exportPDF() {
   let selectedDate = document.getElementById('exportDate').value;
   if (!selectedDate) { alert('請先選擇要匯出的日期'); return; }
   
+  debugLog("===== PDF 匯出 =====");
+  debugLog("選擇匯出日期:", selectedDate);
+  debugLog("cachedData 日期列表:", cachedData.map(d => `${d.company}:${d.visit_date}`));
+  
+  // 直接比對字串
   let list = cachedData.filter(item => item.visit_date === selectedDate);
+  debugLog("符合條件筆數:", list.length);
+  
   if (list.length === 0) {
     alert(`沒有 ${selectedDate} 的車輛紀錄`);
     return;
