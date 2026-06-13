@@ -55,7 +55,6 @@
     .loading-spinner { background: white; padding: 20px 30px; border-radius: 16px; text-align: center; }
     .loading-spinner .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: #2c7a7b; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 12px; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    /* 搜尋框 - 無圖示版本 */
     .plate-input-search { padding-left: 12px !important; }
     @media (max-width:480px) { body { padding: 12px; max-width: 100%; } .card { padding: 16px; } .preview-row { flex-direction: column; } .preview-label, .preview-value { width: 100%; } th, td { padding: 8px 5px; font-size: 0.7rem; white-space: normal; } table { min-width: 600px; } }
   </style>
@@ -122,7 +121,6 @@
       <div class="flex"><input type="date" id="exportDate" class="form-control" style="width:140px"><button class="btn-success" onclick="exportPDF()">📄 匯出PDF / Export PDF</button><button class="btn-outline" onclick="logout()">🚪 登出 / Logout</button></div>
     </div>
     
-    <!-- 問題1 修復：移除搜尋圖示 -->
     <input type="text" id="searchInput" class="form-control plate-input-search mb-3" placeholder="搜尋車牌 / Search Vehicle No." oninput="filterTable()">
     
     <div class="section-title">✅ 今日已確認名單 <span class="eng-text">Today's Confirmed List</span></div>
@@ -161,7 +159,6 @@ function escapeHtml(str) {
   });
 }
 
-// 將 UTC 日期轉換為香港日期 (YYYY-MM-DD)
 function convertUTCtoHKDate(utcDateStr) {
   if (!utcDateStr) return '';
   let str = safeString(utcDateStr).trim();
@@ -180,54 +177,48 @@ function convertUTCtoHKDate(utcDateStr) {
   return str;
 }
 
-// 問題3 徹底修復：時間格式化 - 只提取 HH:MM，完全移除多餘分鐘
+// 徹底修復時間格式 - 正確處理 Excel 序列值
 function formatTimeOnly(timeStr) {
   if (!timeStr) return '---';
   let str = safeString(timeStr);
   if (str === '---') return '---';
   
-  // 方法1: 從 ISO 格式提取 T 之後嘅 HH:MM (例如 2026-06-14T15:00:00.000Z -> 15:00)
+  // 方法1: 從 ISO 格式提取 T 之後嘅 HH:MM
   let isoMatch = str.match(/T(\d{2}):(\d{2})/);
   if (isoMatch) {
-    let hour = isoMatch[1];
-    let minute = isoMatch[2];
-    return `${hour}:${minute}`;
+    return `${isoMatch[1]}:${isoMatch[2]}`;
   }
   
-  // 方法2: 匹配 HH:MM:SS 或 HH:MM (例如 15:00:00 -> 15:00)
+  // 方法2: 匹配 HH:MM:SS 或 HH:MM
   let timeMatch = str.match(/(\d{2}):(\d{2})/);
   if (timeMatch) {
-    let hour = timeMatch[1];
-    let minute = timeMatch[2];
-    // 確保分鐘係 00, 15, 30, 45 其中之一，如果唔係就四捨五入到最近嘅15分鐘
-    let minuteNum = parseInt(minute);
-    if (minuteNum !== 0 && minuteNum !== 15 && minuteNum !== 30 && minuteNum !== 45) {
-      // 如果分鐘唔係標準值，四捨五入到最近嘅15分鐘
-      let roundedMinute = Math.round(minuteNum / 15) * 15;
-      if (roundedMinute === 60) {
-        let newHour = (parseInt(hour) + 1).toString().padStart(2, '0');
-        return `${newHour}:00`;
-      }
-      minute = roundedMinute.toString().padStart(2, '0');
-    }
-    return `${hour}:${minute}`;
+    return `${timeMatch[1]}:${timeMatch[2]}`;
   }
   
-  // 方法3: 嘗試用 new Date 解析
+  // 方法3: 處理 Excel 序列值 (例如 0.645833333 = 15:30)
+  // 使用更精確嘅計算方式
+  if (/^\d+(\.\d+)?$/.test(str)) {
+    let num = parseFloat(str);
+    if (!isNaN(num) && num >= 0 && num <= 1) {
+      // 計算總分鐘數，加上 0.5 分鐘嘅修正避免浮點誤差
+      let totalMinutes = Math.round(num * 24 * 60);
+      let hours = Math.floor(totalMinutes / 60);
+      let minutes = totalMinutes % 60;
+      // 四捨五入到最近嘅15分鐘
+      let roundedMinutes = Math.round(minutes / 15) * 15;
+      if (roundedMinutes === 60) {
+        hours = (hours + 1) % 24;
+        roundedMinutes = 0;
+      }
+      return `${hours.toString().padStart(2, '0')}:${roundedMinutes.toString().padStart(2, '0')}`;
+    }
+  }
+  
+  // 方法4: 嘗試用 new Date 解析
   let testDate = new Date(str);
   if (!isNaN(testDate.getTime())) {
     let hours = testDate.getHours().toString().padStart(2, '0');
     let minutes = testDate.getMinutes().toString().padStart(2, '0');
-    // 同樣處理分鐘
-    let minuteNum = parseInt(minutes);
-    if (minuteNum !== 0 && minuteNum !== 15 && minuteNum !== 30 && minuteNum !== 45) {
-      let roundedMinute = Math.round(minuteNum / 15) * 15;
-      if (roundedMinute === 60) {
-        let newHour = (parseInt(hours) + 1).toString().padStart(2, '0');
-        return `${newHour}:00`;
-      }
-      minutes = roundedMinute.toString().padStart(2, '0');
-    }
     return `${hours}:${minutes}`;
   }
   
@@ -498,7 +489,8 @@ async function exportPDF() {
     alert(`沒有 ${selectedDate} 的車輛紀錄`);
     return;
   }
-  if (!confirm(`確認匯出 ${selectedDate} 的 ${list.length} 筆紀錄？\n\n匯出後請手動從 Google Sheet 刪除這些資料。`)) return;
+  // ✅ 問題2 修復：移除「匯出後請手動從 Google Sheet 刪除這些資料」嘅提示
+  if (!confirm(`確認匯出 ${selectedDate} 的 ${list.length} 筆紀錄？`)) return;
   
   let loadingDiv = document.createElement('div');
   loadingDiv.innerText = '正在產生 PDF，請稍候...';
@@ -536,7 +528,7 @@ async function exportPDF() {
         <tbody style="background-color:#ffffff;color:#000000;">
           ${tableRows}
         </tbody>
-      </table>
+      追赶
       <div style="margin-top:18px;font-size:8px;text-align:center;color:#000000;">系統產生之記錄，請核對無誤後簽署</div>
     `;
     document.body.appendChild(pdfContainer);
@@ -551,7 +543,7 @@ async function exportPDF() {
     pdf.addImage(imgData, 'PNG', 10, 8, imgWidth, imgHeight);
     pdf.save(`WKTS_VehicleLog_${selectedDate}.pdf`);
     document.body.removeChild(loadingDiv);
-    alert(`✅ PDF 已下載！\n\n請記得手動從 Google Sheet 刪除 ${selectedDate} 的 ${list.length} 筆紀錄`);
+    alert(`✅ PDF 已下載！`);
   } catch (err) {
     console.error(err);
     if (loadingDiv) loadingDiv.remove();
