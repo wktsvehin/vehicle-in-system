@@ -141,13 +141,14 @@
 </div>
 
 <script>
+// ==================== 全域變數 ====================
 let isLoggedIn = false;
 let cachedData = [];
 let isSubmitting = false;
 const API = "https://script.google.com/macros/s/AKfycbxzWm4hBTMZVKjZUv_0pLjKrp_VrDxCfmi6aLUVa4nB-x0N0MyEdDlSefU69MmbGb1D/exec";
-
 let pendingSubmissionData = null;
 
+// ==================== 輔助函數 ====================
 function safeString(str) {
   if (str === undefined || str === null) return '';
   return String(str);
@@ -163,6 +164,7 @@ function escapeHtml(str) {
   });
 }
 
+// ✅ 問題1+10 修復：將 UTC 日期轉換為香港日期 (YYYY-MM-DD)
 function convertUTCtoHKDate(utcDateStr) {
   if (!utcDateStr) return '';
   let str = safeString(utcDateStr).trim();
@@ -181,7 +183,7 @@ function convertUTCtoHKDate(utcDateStr) {
   return str;
 }
 
-// 徹底修復時間格式 - 直接從 ISO 字串提取 HH:MM
+// ✅ 問題3+10 修復：時間格式化 - 只提取 HH:MM
 function formatTimeOnly(timeStr) {
   if (!timeStr) return '---';
   let str = safeString(timeStr);
@@ -210,6 +212,7 @@ function formatTimeOnly(timeStr) {
   return '---';
 }
 
+// ==================== 初始化 ====================
 function initDatePicker() {
   let p = document.getElementById('visitDatePicker');
   if (!p) return;
@@ -235,6 +238,7 @@ function initTimeSelects() {
   ['00', '15', '30', '45'].forEach(v => m.appendChild(new Option(v, v)));
 }
 
+// ==================== 頁面切換 ====================
 function switchTab(t) {
   let v = document.getElementById('visitorPanel'), s = document.getElementById('staffPanel'), bv = document.getElementById('btnVisitor'), bs = document.getElementById('btnStaff');
   if (t === 'visitor') {
@@ -267,8 +271,11 @@ function verifyLogin() {
 
 function logout() { isLoggedIn = false; showLogin(); }
 
+// ==================== 資料載入與顯示 ====================
 function loadData() {
-  document.getElementById('confirmedTable').innerHTML = '<tr><td colspan="10">載入中...<\/td><\/tr>';
+  const confirmTable = document.getElementById('confirmedTable');
+  if (confirmTable) confirmTable.innerHTML = '<tr><td colspan="10">載入中...<\/td><\/tr>';
+  
   fetch(API)
     .then(r => r.json())
     .then(data => {
@@ -278,7 +285,8 @@ function loadData() {
         let rawVisitDate = item.visit_date || '';
         let rawTimeIn = item.time_in || '';
         let formattedTime = formatTimeOnly(rawTimeIn);
-        console.log(`原始時間: ${rawTimeIn} -> 格式化後: ${formattedTime}`);
+        // ✅ 問題5 修復：修正 console.log 語法
+        console.log("原始時間:", rawTimeIn, "-> 格式化後:", formattedTime);
         return {
           ref_no: safeString(item.ref_no || ''),
           company: safeString(item.company || ''),
@@ -288,13 +296,17 @@ function loadData() {
           visit_time: formattedTime,
           purpose: safeString(item.purpose || ''),
           vehicle_type: safeString(item.vehicle_type || ''),
+          // ✅ 問題1 修復：函數名稱統一為 convertUTCtoHKDate
           visit_date: convertUTCtoHKDate(rawVisitDate),
           status: 'in_progress'
         };
       });
       renderTables();
     })
-    .catch(error => { console.error(error); document.getElementById('confirmedTable').innerHTML = '<tr><td colspan="10" style="color:red">連線失敗<\/td><\/tr>'; });
+    .catch(error => { 
+      console.error(error); 
+      if (confirmTable) confirmTable.innerHTML = '<tr><td colspan="10" style="color:red">連線失敗<\/td><\/tr>';
+    });
 }
 
 function getTodayConfirmed() {
@@ -303,16 +315,18 @@ function getTodayConfirmed() {
   return cachedData.filter(item => item.visit_date === todayStr);
 }
 
+// ✅ 問題2+6 修復：正確取得 DOM 元素
 function renderTables() {
   let confirmed = getTodayConfirmed();
-  
   const confirmBody = document.getElementById('confirmedTable');
+  if (!confirmBody) return;
+  
   if (confirmed.length === 0) {
-    confirmBody.innerHTML = '<table><td colspan="10">今日暫無已確認車輛<\/td><\/tr>';
+    confirmBody.innerHTML = '<tr><td colspan="10">今日暫無已確認車輛<\/td><\/tr>';
   } else {
     confirmBody.innerHTML = confirmed.map((i, idx) => `
       <tr>
-        <td>${idx+1}</td>
+        <td>${idx+1}<\/td>
         <td>${escapeHtml(i.ref_no)}<\/td>
         <td>${escapeHtml(i.company)}<\/td>
         <td style="color:#2c7a7b;font-weight:bold;">${escapeHtml(i.vehicle_no)}<\/td>
@@ -322,7 +336,7 @@ function renderTables() {
         <td>${escapeHtml(i.visit_time)}<\/td>
         <td>${escapeHtml(i.purpose)}<\/td>
         <td>${escapeHtml(i.vehicle_type)}<\/td>
-      </tr>
+      <\/tr>
     `).join('');
   }
 }
@@ -338,6 +352,7 @@ function filterTable() {
   });
 }
 
+// ==================== 載入動畫 ====================
 function showLoading(show, message) {
   let existing = document.getElementById('globalLoading');
   if (show) {
@@ -352,6 +367,7 @@ function showLoading(show, message) {
   }
 }
 
+// ==================== 提交到 Google Sheets ====================
 function submitToGoogleSheet(formData, refNo) {
   return new Promise((resolve) => {
     const params = new URLSearchParams();
@@ -386,6 +402,7 @@ function generateRefNo() {
   return `${year}${month}${day}-${hours}${minutes}${seconds}-${rand}`;
 }
 
+// ==================== 訪客登記流程 ====================
 function showPreview(e) {
   e.preventDefault();
   let c = document.getElementById('company').value.trim();
@@ -419,6 +436,7 @@ function backToForm() {
   pendingSubmissionData = null;
 }
 
+// ✅ 問題9 修復：提交成功後重新加載數據
 async function submitFinal() {
   if (isSubmitting) { console.log("⚠️ 正在提交中，請勿重複點擊"); return; }
   if (!pendingSubmissionData) { alert('沒有可提交的資料'); return; }
@@ -433,6 +451,7 @@ async function submitFinal() {
       document.getElementById('previewSection').classList.add('hidden');
       document.getElementById('successSection').classList.remove('hidden');
       pendingSubmissionData = null;
+      // ✅ 問題9 修復：如果職員已登入，重新加載數據更新列表
       if (isLoggedIn) loadData();
     } else {
       alert(`❌ 提交失敗: ${result.message}\n\n參考編號: ${refNo}`);
@@ -453,6 +472,7 @@ function resetForm() {
   initDatePicker();
 }
 
+// ==================== PDF 匯出 ====================
 async function exportPDF() {
   let selectedDate = document.getElementById('exportDate').value;
   if (!selectedDate) { alert('請先選擇要匯出的日期'); return; }
@@ -472,7 +492,7 @@ async function exportPDF() {
   try {
     let tableRows = '';
     list.forEach((item, idx) => {
-      tableRows += `<tr style="background:#ffffff;"><td style="border:1px solid #000000;padding:8px;vertical-align:top;color:#000000;">${idx+1}</td><td style="border:1px solid #000000;padding:8px;vertical-align:top;color:#000000;">${escapeHtml(item.company)}<\/td><td style="border:1px solid #000000;padding:8px;vertical-align:top;color:#000000;">${escapeHtml(item.vehicle_no)}<\/td><td style="border:1px solid #000000;padding:8px;vertical-align:top;color:#000000;">${escapeHtml(item.contact_person)}<\/td><td style="border:1px solid #000000;padding:8px;vertical-align:top;color:#000000;">${escapeHtml(item.tel_no)}<\/td><td style="border:1px solid #000000;padding:8px;vertical-align:top;color:#000000;">${item.visit_time}<\/td><td style="border:1px solid #000000;padding:8px;vertical-align:top;color:#000000;">---<\/td><td style="border:1px solid #000000;padding:8px;vertical-align:top;color:#000000;">${escapeHtml(item.purpose)}<\/td><\/tr>`;
+      tableRows += `<tr style="background:#ffffff;"><td style="border:1px solid #000000;padding:8px;vertical-align:top;color:#000000;">${idx+1}<\/td><td style="border:1px solid #000000;padding:8px;vertical-align:top;color:#000000;">${escapeHtml(item.company)}<\/td><td style="border:1px solid #000000;padding:8px;vertical-align:top;color:#000000;">${escapeHtml(item.vehicle_no)}<\/td><td style="border:1px solid #000000;padding:8px;vertical-align:top;color:#000000;">${escapeHtml(item.contact_person)}<\/td><td style="border:1px solid #000000;padding:8px;vertical-align:top;color:#000000;">${escapeHtml(item.tel_no)}<\/td><td style="border:1px solid #000000;padding:8px;vertical-align:top;color:#000000;">${item.visit_time}<\/td><td style="border:1px solid #000000;padding:8px;vertical-align:top;color:#000000;">---<\/td><td style="border:1px solid #000000;padding:8px;vertical-align:top;color:#000000;">${escapeHtml(item.purpose)}<\/td><\/tr>`;
     });
     const pdfContainer = document.createElement('div');
     pdfContainer.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:900px;background:white;padding:20px';
