@@ -118,16 +118,6 @@
     </div>
     <input type="text" id="searchInput" class="form-control plate-input mb-3" placeholder="🔍 搜尋車牌 / Search Vehicle No." oninput="filterTable()">
     
-    <div class="section-title">📋 申請處理中 <span class="eng-text">Pending Applications (Before 3PM)</span></div>
-    <div class="table-responsive">
-      <table>
-        <thead>
-          <tr><th>#</th><th>參考編號<br>Ref No.</th><th>公司<br>Company</th><th>車牌<br>Vehicle No.</th><th>聯絡人<br>Contact</th><th>電話<br>Tel</th><th>時間<br>Time</th><th>目的<br>Purpose</th><th>車型<br>Vehicle Type</th></tr>
-        </thead>
-        <tbody id="progressTable"></tbody>
-      </table>
-    </div>
-    
     <div class="section-title">✅ 今日已確認名單 <span class="eng-text">Today's Confirmed List</span></div>
     <div class="table-responsive">
       <table>
@@ -163,7 +153,6 @@ function escapeHtml(str) {
   });
 }
 
-// 將 UTC 日期轉換為香港日期 (UTC+8)
 function convertUTCtoHKDate(utcDateStr) {
   if (!utcDateStr) return '';
   let str = safeString(utcDateStr).trim();
@@ -182,25 +171,31 @@ function convertUTCtoHKDate(utcDateStr) {
   return str;
 }
 
-// 修正時間格式：只提取 HH:MM，唔要額外嘅分鐘秒數
 function formatTimeOnly(timeStr) {
   if (!timeStr) return '---';
   let str = safeString(timeStr);
   if (str === '---') return '---';
   
-  // 處理 ISO 格式: 2026-06-14T16:00:00.000Z -> 只取時間部分
-  let timeMatch = str.match(/T(\d{2}):(\d{2})/);
+  let isoTimeMatch = str.match(/T(\d{2}):(\d{2})/);
+  if (isoTimeMatch) {
+    return `${isoTimeMatch[1]}:${isoTimeMatch[2]}`;
+  }
+  
+  let timeMatch = str.match(/^(\d{2}):(\d{2})/);
   if (timeMatch) {
     return `${timeMatch[1]}:${timeMatch[2]}`;
   }
   
-  // 處理 HH:MM:SS 格式
-  let hmsMatch = str.match(/^(\d{2}):(\d{2}):(\d{2})$/);
-  if (hmsMatch) {
-    return `${hmsMatch[1]}:${hmsMatch[2]}`;
+  if (/^\d+(\.\d+)?$/.test(str)) {
+    let num = parseFloat(str);
+    if (!isNaN(num) && num > 0 && num < 1) {
+      let totalMinutes = Math.floor(num * 24 * 60);
+      let hours = Math.floor(totalMinutes / 60);
+      let minutes = totalMinutes % 60;
+      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    }
   }
   
-  // 處理 HH:MM 格式
   if (/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(str)) {
     return str;
   }
@@ -266,7 +261,6 @@ function verifyLogin() {
 function logout() { isLoggedIn = false; showLogin(); }
 
 function loadData() {
-  document.getElementById('progressTable').innerHTML = '<tr><td colspan="9">載入中...<\/td><\/tr>';
   document.getElementById('confirmedTable').innerHTML = '<tr><td colspan="10">載入中...<\/td><\/tr>';
   fetch(API)
     .then(r => r.json())
@@ -276,44 +270,25 @@ function loadData() {
       cachedData = data.map(item => {
         let rawVisitDate = item.visit_date || '';
         let rawTimeIn = item.time_in || '';
+        let formattedTime = formatTimeOnly(rawTimeIn);
         return {
           ref_no: safeString(item.ref_no || ''),
           company: safeString(item.company || ''),
           vehicle_no: safeString(item.vehicle_no || ''),
           contact_person: safeString(item.contact_person || ''),
           tel_no: safeString(item.tel_no || ''),
-          visit_time: formatTimeOnly(rawTimeIn),
+          visit_time: formattedTime,
           purpose: safeString(item.purpose || ''),
           vehicle_type: safeString(item.vehicle_type || ''),
           visit_date: convertUTCtoHKDate(rawVisitDate),
-          raw_visit_date: rawVisitDate,
           status: 'in_progress'
         };
       });
-      console.log("處理後資料:", cachedData);
       renderTables();
     })
-    .catch(error => { console.error(error); document.getElementById('progressTable').innerHTML = '<tr><td colspan="9" style="color:red">連線失敗<\/td><\/tr>'; });
+    .catch(error => { console.error(error); document.getElementById('confirmedTable').innerHTML = '<tr><td colspan="10" style="color:red">連線失敗<\/td><\/tr>'; });
 }
 
-// 處理中申請：到訪日期 >= 今日，且今日未過15:00嘅申請
-function isPending(item) {
-  let today = new Date();
-  let todayStr = today.toISOString().split('T')[0];
-  let itemDate = item.visit_date;
-  
-  // 如果到訪日期 < 今日，唔顯示
-  if (itemDate < todayStr) return false;
-  
-  // 如果到訪日期 > 今日，直接顯示
-  if (itemDate > todayStr) return true;
-  
-  // 如果到訪日期 == 今日，只顯示未過15:00嘅申請
-  let currentHour = today.getHours();
-  return currentHour < 15;
-}
-
-// 今日已確認名單：只顯示到訪日期等於今日嘅申請
 function getTodayConfirmed() {
   let today = new Date();
   let todayStr = today.toISOString().split('T')[0];
@@ -321,27 +296,7 @@ function getTodayConfirmed() {
 }
 
 function renderTables() {
-  let pending = cachedData.filter(isPending);
   let confirmed = getTodayConfirmed();
-  
-  const progressBody = document.getElementById('progressTable');
-  if (pending.length === 0) {
-    progressBody.innerHTML = '<tr><td colspan="9">暫無處理中申請<\/td><\/tr>';
-  } else {
-    progressBody.innerHTML = pending.map((i, idx) => `
-      <tr>
-        <td>${idx+1}<\/td>
-        <td>${escapeHtml(i.ref_no)}<\/td>
-        <td>${escapeHtml(i.company)}<\/td>
-        <td style="color:#d69e2e;font-weight:bold;">${escapeHtml(i.vehicle_no)}<\/td>
-        <td>${escapeHtml(i.contact_person)}<\/td>
-        <td>${escapeHtml(i.tel_no)}<\/td>
-        <td>${escapeHtml(i.visit_time)}<\/td>
-        <td>${escapeHtml(i.purpose)}<\/td>
-        <td>${escapeHtml(i.vehicle_type)}<\/td>
-      <\/tr>
-    `).join('');
-  }
   
   const confirmBody = document.getElementById('confirmedTable');
   if (confirmed.length === 0) {
@@ -366,7 +321,7 @@ function renderTables() {
 
 function filterTable() {
   let kw = document.getElementById('searchInput').value.toUpperCase();
-  document.querySelectorAll('#progressTable tr, #confirmedTable tr').forEach(r => {
+  document.querySelectorAll('#confirmedTable tr').forEach(r => {
     if (r.cells.length < 4) return;
     let cell = r.cells[3];
     if (cell) {
@@ -509,19 +464,35 @@ async function exportPDF() {
   try {
     let tableRows = '';
     list.forEach((item, idx) => {
-      tableRows += `<tr style="background:#fff;"><td style="border:1px solid #000;padding:8px;vertical-align:top;">${idx+1}<\/td><td style="border:1px solid #000;padding:8px;vertical-align:top;">${escapeHtml(item.company)}<\/td><td style="border:1px solid #000;padding:8px;vertical-align:top;">${escapeHtml(item.vehicle_no)}<\/td><td style="border:1px solid #000;padding:8px;vertical-align:top;">${escapeHtml(item.contact_person)}<\/td><td style="border:1px solid #000;padding:8px;vertical-align:top;">${escapeHtml(item.tel_no)}<\/td><td style="border:1px solid #000;padding:8px;vertical-align:top;">${item.visit_time}<\/td><td style="border:1px solid #000;padding:8px;vertical-align:top;">---<\/td><td style="border:1px solid #000;padding:8px;vertical-align:top;">${escapeHtml(item.purpose)}<\/td><\/tr>`;
+      tableRows += `<tr style="background:#ffffff;"><td style="border:1px solid #000000;padding:8px;vertical-align:top;color:#000000;">${idx+1}<\/td><td style="border:1px solid #000000;padding:8px;vertical-align:top;color:#000000;">${escapeHtml(item.company)}<\/td><td style="border:1px solid #000000;padding:8px;vertical-align:top;color:#000000;">${escapeHtml(item.vehicle_no)}<\/td><td style="border:1px solid #000000;padding:8px;vertical-align:top;color:#000000;">${escapeHtml(item.contact_person)}<\/td><td style="border:1px solid #000000;padding:8px;vertical-align:top;color:#000000;">${escapeHtml(item.tel_no)}<\/td><td style="border:1px solid #000000;padding:8px;vertical-align:top;color:#000000;">${item.visit_time}<\/td><td style="border:1px solid #000000;padding:8px;vertical-align:top;color:#000000;">---<\/td><td style="border:1px solid #000000;padding:8px;vertical-align:top;color:#000000;">${escapeHtml(item.purpose)}<\/td><\/tr>`;
     });
     const pdfContainer = document.createElement('div');
     pdfContainer.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:900px;background:white;padding:20px';
     pdfContainer.innerHTML = `
-      <div style="display:flex;justify-content:space-between;margin-bottom:15px;border-bottom:2px solid #1f6e6e;padding-bottom:10px;">
-        <div><div style="font-size:14px;font-weight:bold;color:#1f6e6e;">中國港灣工程有限責任公司</div><div style="font-size:12px;">China Harbour Engineering Company Limited</div><div style="font-size:11px;">西九龍廢物轉運站 | West Kowloon Transfer Station</div></div>
-        <div><div style="font-size:12px;font-weight:bold;">環境保護署查閱 / Checked By EPD: _________________</div></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:15px;border-bottom:2px solid #cccccc;padding-bottom:10px;">
+        <div><div style="font-size:14px;font-weight:bold;color:#000000;">中國港灣工程有限責任公司</div><div style="font-size:12px;color:#000000;">China Harbour Engineering Company Limited</div><div style="font-size:11px;color:#000000;">西九龍廢物轉運站 | West Kowloon Transfer Station</div></div>
+        <div><div style="font-size:12px;font-weight:bold;color:#000000;">環境保護署查閱 / Checked By EPD: _________________</div></div>
       </div>
       <div style="text-align:center;margin:15px 0;"><div style="font-size:22px;font-weight:bold;color:#1a5c5c;background:#e6f7f7;display:inline-block;padding:8px 25px;border-radius:40px;">📅 到訪日期 / Visit Date：${selectedDate}</div></div>
-      <div style="font-size:16px;font-weight:bold;text-align:center;margin-bottom:12px;">車輛進入預先登記記錄<br>Registered Vehicle Log</div>
-      <table style="width:100%;border-collapse:collapse;font-size:10px;"><thead><tr style="background:#1f6e6e;color:white;"><th style="border:1px solid #000;padding:10px 6px;">項目<br>Item</th><th style="border:1px solid #000;padding:10px 6px;">公司名稱<br>Company</th><th style="border:1px solid #000;padding:10px 6px;">車牌號碼<br>Vehicle No.</th><th style="border:1px solid #000;padding:10px 6px;">聯絡人<br>Contact Person</th><th style="border:1px solid #000;padding:10px 6px;">電話號碼<br>Tel. No.</th><th style="border:1px solid #000;padding:10px 6px;">進入時間<br>Time In</th><th style="border:1px solid #000;padding:10px 6px;">離開時間<br>Time Out</th><th style="border:1px solid #000;padding:10px 6px;">進入目的/工作內容<br>Purpose/Work Description</th></tr></thead><tbody>${tableRows}</tbody>追赶
-      <div style="margin-top:18px;font-size:8px;text-align:center;">系統產生之記錄，請核對無誤後簽署</div>
+      <div style="font-size:16px;font-weight:bold;text-align:center;margin-bottom:12px;color:#000000;">車輛進入預先登記記錄<br>Registered Vehicle Log</div>
+      <table style="width:100%;border-collapse:collapse;font-size:10px;background-color:#ffffff;">
+        <thead>
+          <tr style="background-color:#ffffff;color:#000000;text-align:center;">
+            <th style="border:1px solid #000000;padding:10px 6px;font-weight:bold;color:#000000;">項目<br>Item</th>
+            <th style="border:1px solid #000000;padding:10px 6px;font-weight:bold;color:#000000;">公司名稱<br>Company</th>
+            <th style="border:1px solid #000000;padding:10px 6px;font-weight:bold;color:#000000;">車牌號碼<br>Vehicle No.</th>
+            <th style="border:1px solid #000000;padding:10px 6px;font-weight:bold;color:#000000;">聯絡人<br>Contact Person</th>
+            <th style="border:1px solid #000000;padding:10px 6px;font-weight:bold;color:#000000;">電話號碼<br>Tel. No.</th>
+            <th style="border:1px solid #000000;padding:10px 6px;font-weight:bold;color:#000000;">進入時間<br>Time In</th>
+            <th style="border:1px solid #000000;padding:10px 6px;font-weight:bold;color:#000000;">離開時間<br>Time Out</th>
+            <th style="border:1px solid #000000;padding:10px 6px;font-weight:bold;color:#000000;">進入目的/工作內容<br>Purpose/Work Description</th>
+          </tr>
+        </thead>
+        <tbody style="background-color:#ffffff;color:#000000;">
+          ${tableRows}
+        </tbody>
+      </table>
+      <div style="margin-top:18px;font-size:8px;text-align:center;color:#000000;">系統產生之記錄，請核對無誤後簽署</div>
     `;
     document.body.appendChild(pdfContainer);
     await new Promise(r => setTimeout(r, 250));
