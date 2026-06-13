@@ -177,52 +177,64 @@ function convertUTCtoHKDate(utcDateStr) {
   return str;
 }
 
-// 徹底修復時間格式 - 正確處理 Excel 序列值
+// ✅ 時間修正：減 23 分鐘，然後向下取整到最近嘅 15 分鐘
 function formatTimeOnly(timeStr) {
   if (!timeStr) return '---';
   let str = safeString(timeStr);
   if (str === '---') return '---';
   
+  // 提取小時和分鐘
+  let hour = 0;
+  let minute = 0;
+  let success = false;
+  
   // 方法1: 從 ISO 格式提取 T 之後嘅 HH:MM
   let isoMatch = str.match(/T(\d{2}):(\d{2})/);
   if (isoMatch) {
-    return `${isoMatch[1]}:${isoMatch[2]}`;
+    hour = parseInt(isoMatch[1]);
+    minute = parseInt(isoMatch[2]);
+    success = true;
   }
-  
   // 方法2: 匹配 HH:MM:SS 或 HH:MM
-  let timeMatch = str.match(/(\d{2}):(\d{2})/);
-  if (timeMatch) {
-    return `${timeMatch[1]}:${timeMatch[2]}`;
-  }
-  
-  // 方法3: 處理 Excel 序列值 (例如 0.645833333 = 15:30)
-  // 使用更精確嘅計算方式
-  if (/^\d+(\.\d+)?$/.test(str)) {
-    let num = parseFloat(str);
-    if (!isNaN(num) && num >= 0 && num <= 1) {
-      // 計算總分鐘數，加上 0.5 分鐘嘅修正避免浮點誤差
-      let totalMinutes = Math.round(num * 24 * 60);
-      let hours = Math.floor(totalMinutes / 60);
-      let minutes = totalMinutes % 60;
-      // 四捨五入到最近嘅15分鐘
-      let roundedMinutes = Math.round(minutes / 15) * 15;
-      if (roundedMinutes === 60) {
-        hours = (hours + 1) % 24;
-        roundedMinutes = 0;
+  else {
+    let timeMatch = str.match(/(\d{2}):(\d{2})/);
+    if (timeMatch) {
+      hour = parseInt(timeMatch[1]);
+      minute = parseInt(timeMatch[2]);
+      success = true;
+    }
+    // 方法3: 嘗試用 new Date 解析
+    else {
+      let testDate = new Date(str);
+      if (!isNaN(testDate.getTime())) {
+        hour = testDate.getHours();
+        minute = testDate.getMinutes();
+        success = true;
       }
-      return `${hours.toString().padStart(2, '0')}:${roundedMinutes.toString().padStart(2, '0')}`;
     }
   }
   
-  // 方法4: 嘗試用 new Date 解析
-  let testDate = new Date(str);
-  if (!isNaN(testDate.getTime())) {
-    let hours = testDate.getHours().toString().padStart(2, '0');
-    let minutes = testDate.getMinutes().toString().padStart(2, '0');
-    return `${hours}:${minutes}`;
+  if (!success) {
+    return '---';
   }
   
-  return '---';
+  // 步驟1: 減 23 分鐘
+  let totalMinutes = hour * 60 + minute - 23;
+  if (totalMinutes < 0) {
+    totalMinutes += 24 * 60;
+  }
+  
+  let newHour = Math.floor(totalMinutes / 60);
+  let newMinute = totalMinutes % 60;
+  
+  // 步驟2: 向下取整到最近嘅 15 分鐘 (floor, 唔係 round)
+  // 例如: 45-59 -> 45, 30-44 -> 30, 15-29 -> 15, 0-14 -> 0
+  let roundedMinute = Math.floor(newMinute / 15) * 15;
+  
+  // 如果 roundedMinute 係 0，保持 0
+  // 不需要處理 60 嘅情況，因為 floor 唔會到 60
+  
+  return `${newHour.toString().padStart(2, '0')}:${roundedMinute.toString().padStart(2, '0')}`;
 }
 
 // ==================== 初始化 ====================
@@ -298,7 +310,7 @@ function loadData() {
         let rawVisitDate = item.visit_date || '';
         let rawTimeIn = item.time_in || '';
         let formattedTime = formatTimeOnly(rawTimeIn);
-        console.log("原始時間:", rawTimeIn, "-> 格式化後:", formattedTime);
+        console.log("原始時間:", rawTimeIn, "-> 修正後:", formattedTime);
         return {
           ref_no: safeString(item.ref_no || ''),
           company: safeString(item.company || ''),
@@ -489,7 +501,6 @@ async function exportPDF() {
     alert(`沒有 ${selectedDate} 的車輛紀錄`);
     return;
   }
-  // ✅ 問題2 修復：移除「匯出後請手動從 Google Sheet 刪除這些資料」嘅提示
   if (!confirm(`確認匯出 ${selectedDate} 的 ${list.length} 筆紀錄？`)) return;
   
   let loadingDiv = document.createElement('div');
