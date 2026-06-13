@@ -48,7 +48,7 @@
     .mt-2 { margin-top: 16px; }
     .w-100 { width: 100%; }
     .table-responsive { overflow-x: auto; background: #fff; border-radius: 16px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.75rem; min-width: 900px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.75rem; min-width: 800px; }
     th, td { padding: 10px 8px; text-align: center; border-bottom: 1px solid #e2e8f0; white-space: nowrap; }
     th { background: #f1f5f9; font-weight: 600; }
     .section-title { color: #2c7a7b; font-weight: bold; margin: 16px 0 12px; padding-left: 8px; border-left: 4px solid #319795; font-size: 1rem; }
@@ -62,9 +62,7 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     .plate-input-search { padding-left: 12px !important; }
     .icon-text { display: inline-flex; align-items: center; gap: 6px; }
-    #pVehicle { color: #1a202c !important; font-weight: bold; }
-    .debug-console { background: #1a1a2e; color: #0f0; padding: 8px; font-family: monospace; font-size: 10px; border-radius: 8px; margin-top: 10px; max-height: 150px; overflow-y: auto; display: none; }
-    @media (max-width:480px) { body { padding: 12px; max-width: 100%; } .card { padding: 16px; } .preview-row { flex-direction: column; } .preview-label, .preview-value { width: 100%; } th, td { padding: 6px 3px; font-size: 0.65rem; white-space: normal; } table { min-width: 700px; } }
+    @media (max-width:480px) { body { padding: 12px; max-width: 100%; } .card { padding: 16px; } .preview-row { flex-direction: column; } .preview-label, .preview-value { width: 100%; } th, td { padding: 6px 3px; font-size: 0.65rem; white-space: normal; } table { min-width: 650px; } }
   </style>
 </head>
 <body>
@@ -154,7 +152,9 @@
             <th>🚙 車型<br>Vehicle Type</th>
           </tr>
         </thead>
-        <tbody id="confirmedTable"></tbody>
+        <tbody id="confirmedTable">
+          <tr><td colspan="10">登入後自動載入資料...</td></tr>
+        </tbody>
       </table>
     </div>
   </div>
@@ -173,7 +173,7 @@ function debugLog(...args) {
   console.log("[系統]", ...args);
 }
 
-// ==================== 香港時區核心函數 ====================
+// ==================== 核心函數 ====================
 
 function getHKTodayString() {
   let now = new Date();
@@ -181,9 +181,7 @@ function getHKTodayString() {
   let year = hkTime.getUTCFullYear();
   let month = (hkTime.getUTCMonth() + 1).toString().padStart(2, '0');
   let day = hkTime.getUTCDate().toString().padStart(2, '0');
-  let result = `${year}-${month}-${day}`;
-  debugLog("今日香港日期:", result);
-  return result;
+  return `${year}-${month}-${day}`;
 }
 
 function getHKCurrentHour() {
@@ -192,40 +190,24 @@ function getHKCurrentHour() {
   return hkTime.getUTCHours();
 }
 
-// 直接從 UTC 字串提取日期部分 (唔加 8 小時)
 function convertUTCtoHKDate(utcDateStr) {
   if (!utcDateStr) return '';
-  let str = safeString(utcDateStr).trim();
-  
-  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
-    return str;
-  }
-  
+  let str = String(utcDateStr).trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
   let isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})T/);
   if (isoMatch) {
     return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
   }
-  
-  let d = new Date(str);
-  if (!isNaN(d.getTime())) {
-    let year = d.getFullYear();
-    let month = (d.getMonth() + 1).toString().padStart(2, '0');
-    let day = d.getDate().toString().padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }
-  
   return str;
 }
 
 function formatTimeOnly(timeStr) {
   if (!timeStr) return '---';
-  let str = safeString(timeStr);
+  let str = String(timeStr);
   if (str === '---') return '---';
   
-  let hour = 0;
-  let minute = 0;
-  
   let isoMatch = str.match(/T(\d{2}):(\d{2}):(\d{2})/);
+  let hour = 0, minute = 0;
   if (isoMatch) {
     hour = parseInt(isoMatch[1]);
     minute = parseInt(isoMatch[2]);
@@ -235,13 +217,7 @@ function formatTimeOnly(timeStr) {
       hour = parseInt(timeMatch[1]);
       minute = parseInt(timeMatch[2]);
     } else {
-      let testDate = new Date(str);
-      if (!isNaN(testDate.getTime())) {
-        hour = testDate.getUTCHours();
-        minute = testDate.getUTCMinutes();
-      } else {
-        return '---';
-      }
+      return '---';
     }
   }
   
@@ -255,26 +231,9 @@ function formatTimeOnly(timeStr) {
   
   let newHour = Math.floor(totalMinutes / 60);
   let newMinute = totalMinutes % 60;
-  
-  // 向下取整到15分鐘
   let roundedMinute = Math.floor(newMinute / 15) * 15;
   
   return `${newHour.toString().padStart(2, '0')}:${roundedMinute.toString().padStart(2, '0')}`;
-}
-
-function safeString(str) {
-  if (str === undefined || str === null) return '';
-  return String(str);
-}
-
-function escapeHtml(str) {
-  if (!str) return '';
-  return safeString(str).replace(/[&<>]/g, function(m) {
-    if (m === '&') return '&amp;';
-    if (m === '<') return '&lt;';
-    if (m === '>') return '&gt;';
-    return m;
-  });
 }
 
 function initDatePicker() {
@@ -336,99 +295,76 @@ function logout() { isLoggedIn = false; showLogin(); }
 
 function loadData() {
   const confirmTable = document.getElementById('confirmedTable');
-  if (confirmTable) confirmTable.innerHTML = '<tr><td colspan="10">⏳ 載入中...<\/td><\/tr>';
+  if (confirmTable) confirmTable.innerHTML = '<tr><td colspan="10">⏳ 載入中...</td></tr>';
   
   debugLog("===== 開始載入資料 =====");
-  debugLog("API 網址:", API);
   
   fetch(API)
     .then(r => r.json())
     .then(data => {
-      debugLog("✅ API 回傳成功");
-      debugLog("📊 資料類型:", typeof data);
-      debugLog("📊 是否陣列:", Array.isArray(data));
-      debugLog("📊 資料筆數:", data ? data.length : 0);
+      debugLog("API 回傳成功，筆數:", data ? data.length : 0);
       
       if (!Array.isArray(data)) { 
-        console.error("❌ 資料不是陣列");
-        confirmTable.innerHTML = '<tr><td colspan="10" style="color:red">❌ 資料格式錯誤，請檢查 Google Apps Script<\/td><\/tr>';
+        confirmTable.innerHTML = '<tr><td colspan="10" style="color:red">❌ 資料格式錯誤</td></tr>';
         return; 
       }
       
       if (data.length === 0) {
-        debugLog("⚠️ 沒有資料");
-        confirmTable.innerHTML = '<tr><td colspan="10">📭 暫無任何登記記錄<\/td><\/tr>';
+        confirmTable.innerHTML = '<tr><td colspan="10">📭 暫無任何登記記錄</td></tr>';
         return;
       }
       
-      debugLog("📋 第一筆資料範例:", JSON.stringify(data[0]));
-      
-      // 唔再依賴 item 欄位，用 index 重新編號
-      cachedData = data.map((item, idx) => {
-        // 嘗試多種可能的欄位名稱
-        let rawVisitDate = item.visit_date || item.到訪日期 || item.date || item.Date || '';
-        let rawTimeIn = item.time_in || item.入站時間 || item.time_in || '';
-        let formattedTime = formatTimeOnly(rawTimeIn);
-        let convertedDate = convertUTCtoHKDate(rawVisitDate);
-        
-        debugLog(`[${idx+1}] 公司:${item.company || item.Company || '-'}, 原始日期:${rawVisitDate} -> 轉換後:${convertedDate}`);
-        
+      cachedData = data.map(item => {
+        let rawDate = item.visit_date || item.到訪日期 || item.date || '';
+        let rawTime = item.time_in || item.入站時間 || '';
         return {
-          ref_no: safeString(item.ref_no || item.參考編號 || item.RefNo || ''),
-          company: safeString(item.company || item.公司 || item.Company || ''),
-          vehicle_no: safeString(item.vehicle_no || item.車牌 || item.VehicleNo || ''),
-          contact_person: safeString(item.contact_person || item.聯絡人 || item.ContactPerson || ''),
-          tel_no: safeString(item.tel_no || item.電話 || item.TelNo || ''),
-          visit_time: formattedTime,
-          purpose: safeString(item.purpose || item.目的 || item.Purpose || ''),
-          vehicle_type: safeString(item.vehicle_type || item.車型 || item.VehicleType || ''),
-          visit_date: convertedDate,
-          status: 'in_progress'
+          ref_no: item.ref_no || item.參考編號 || '',
+          company: item.company || item.公司 || '',
+          vehicle_no: item.vehicle_no || item.車牌 || '',
+          contact_person: item.contact_person || item.聯絡人 || '',
+          tel_no: item.tel_no || item.電話 || '',
+          visit_time: formatTimeOnly(rawTime),
+          purpose: item.purpose || item.目的 || '',
+          vehicle_type: item.vehicle_type || item.車型 || '',
+          visit_date: convertUTCtoHKDate(rawDate)
         };
       });
       
-      debugLog("✅ 已轉換", cachedData.length, "筆資料");
-      debugLog("📅 所有日期列表:", cachedData.map(d => `${d.company}:${d.visit_date}`));
+      debugLog("轉換完成，共", cachedData.length, "筆");
       renderTables();
     })
     .catch(error => { 
-      console.error("❌ 載入錯誤:", error); 
-      confirmTable.innerHTML = `<td><td colspan="10" style="color:red">❌ 連線失敗: ${error.message}<\/td><\/tr>`;
+      console.error("載入錯誤:", error); 
+      confirmTable.innerHTML = '<tr><td colspan="10" style="color:red">❌ 連線失敗</td></tr>';
     });
 }
 
-function getTodayConfirmed() {
-  let todayStr = getHKTodayString();
-  debugLog("🔍 篩選今日日期:", todayStr);
-  let filtered = cachedData.filter(item => item.visit_date === todayStr);
-  debugLog(`📊 找到 ${filtered.length} 筆今日記錄`);
-  if (filtered.length > 0) {
-    filtered.forEach(f => debugLog(`   - ${f.company} (${f.vehicle_no}) 日期:${f.visit_date}`));
-  }
-  return filtered;
-}
-
 function renderTables() {
-  let confirmed = getTodayConfirmed();
+  let todayStr = getHKTodayString();
+  debugLog("今日日期:", todayStr);
+  
+  let confirmed = cachedData.filter(item => item.visit_date === todayStr);
+  debugLog("今日記錄筆數:", confirmed.length);
+  
   const confirmBody = document.getElementById('confirmedTable');
   if (!confirmBody) return;
   
   if (confirmed.length === 0) {
-    confirmBody.innerHTML = '</table><td colspan="10">📭 今日暫無已確認車輛<\/td><\/tr>';
+    confirmBody.innerHTML = '<tr><td colspan="10">📭 今日暫無已確認車輛</td></tr>';
   } else {
     confirmBody.innerHTML = confirmed.map((i, idx) => `
       <tr>
         <td>${idx+1}</td>
-        <td>${escapeHtml(i.ref_no)}<\/td>
-        <td>${escapeHtml(i.company)}<\/td>
-        <td style="color:#2c7a7b;font-weight:bold;">${escapeHtml(i.vehicle_no)}<\/td>
-        <td>${escapeHtml(i.contact_person)}<\/td>
-        <td>${escapeHtml(i.tel_no)}<\/td>
-        <td>${escapeHtml(i.visit_date)}<\/td>
-        <td>${escapeHtml(i.visit_time)}<\/td>
-        <td>${escapeHtml(i.purpose)}<\/td>
-        <td>${escapeHtml(i.vehicle_type)}<\/td>
-      <\/tr>
+        <td>${escapeHtml(i.ref_no)}</td>
+        <td>${escapeHtml(i.company)}</td>
+        <td style="color:#2c7a7b;font-weight:bold;">${escapeHtml(i.vehicle_no)}</td>
+        <td>${escapeHtml(i.contact_person)}</td>
+        <td>${escapeHtml(i.tel_no)}</td>
+        <td>${escapeHtml(i.visit_date)}</td>
+        <td>${escapeHtml(i.visit_time)}</td>
+        <td>${escapeHtml(i.purpose)}</td>
+        <td>${escapeHtml(i.vehicle_type)}</td>
+      </tr>
     `).join('');
   }
 }
@@ -439,6 +375,16 @@ function filterTable() {
     if (r.cells.length < 4) return;
     let cell = r.cells[3];
     if (cell) r.style.display = cell.innerText.toUpperCase().includes(kw) ? '' : 'none';
+  });
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>]/g, function(m) {
+    if (m === '&') return '&amp;';
+    if (m === '<') return '&lt;';
+    if (m === '>') return '&gt;';
+    return m;
   });
 }
 
@@ -470,8 +416,8 @@ function submitToGoogleSheet(formData, refNo) {
     params.append('visit_date', formData.visitDate);
     const url = `${API}?${params.toString()}`;
     fetch(url, { method: 'GET', mode: 'no-cors' })
-      .then(() => { resolve({ success: true }); })
-      .catch((e) => { resolve({ success: true }); });
+      .then(() => resolve({ success: true }))
+      .catch(() => resolve({ success: true }));
   });
 }
 
@@ -480,13 +426,10 @@ function generateRefNo() {
   let year = d.getFullYear();
   let month = (d.getMonth() + 1).toString().padStart(2, '0');
   let day = d.getDate().toString().padStart(2, '0');
-  let dateStr = `${year}${month}${day}`;
   let chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   let randomStr = '';
-  for (let i = 0; i < 4; i++) {
-    randomStr += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return `${dateStr}-${randomStr}`;
+  for (let i = 0; i < 4; i++) randomStr += chars[Math.floor(Math.random() * chars.length)];
+  return `${year}${month}${day}-${randomStr}`;
 }
 
 function showPreview(e) {
@@ -528,21 +471,17 @@ async function submitFinal() {
   isSubmitting = true;
   const refNo = generateRefNo();
   document.getElementById('refNumber').innerText = refNo;
-  showLoading(true, '正在提交資料到 Google Sheets...');
+  showLoading(true);
   try {
-    const result = await submitToGoogleSheet(pendingSubmissionData, refNo);
+    await submitToGoogleSheet(pendingSubmissionData, refNo);
     showLoading(false);
-    if (result.success) {
-      document.getElementById('previewSection').classList.add('hidden');
-      document.getElementById('successSection').classList.remove('hidden');
-      pendingSubmissionData = null;
-      if (isLoggedIn) loadData();
-    } else {
-      alert(`提交失敗: ${result.message}\n\n參考編號: ${refNo}`);
-    }
+    document.getElementById('previewSection').classList.add('hidden');
+    document.getElementById('successSection').classList.remove('hidden');
+    pendingSubmissionData = null;
+    if (isLoggedIn) loadData();
   } catch (error) {
     showLoading(false);
-    alert(`提交時發生錯誤: ${error.message}\n\n參考編號: ${refNo}`);
+    alert('提交失敗');
   } finally {
     isSubmitting = false;
   }
@@ -561,13 +500,7 @@ async function exportPDF() {
   let selectedDate = document.getElementById('exportDate').value;
   if (!selectedDate) { alert('請先選擇要匯出的日期'); return; }
   
-  debugLog("===== PDF 匯出 =====");
-  debugLog("選擇日期:", selectedDate);
-  debugLog("cachedData 日期列表:", cachedData.map(d => `${d.company}:${d.visit_date}`));
-  
   let list = cachedData.filter(item => item.visit_date === selectedDate);
-  debugLog("符合條件筆數:", list.length);
-  
   if (list.length === 0) {
     alert(`沒有 ${selectedDate} 的車輛紀錄`);
     return;
@@ -582,7 +515,7 @@ async function exportPDF() {
   
   try {
     const { jsPDF } = window.jspdf;
-    const ROWS_PER_PAGE = 12;
+    const ROWS_PER_PAGE = 15;
     const totalPages = Math.ceil(list.length / ROWS_PER_PAGE);
     const pdf = new jsPDF('l', 'mm', 'a4');
     
@@ -594,93 +527,62 @@ async function exportPDF() {
       let tableRows = '';
       pageData.forEach((item, idx) => {
         const globalIndex = start + idx + 1;
-        const displayTime = item.visit_time && item.visit_time !== '---' ? item.visit_time : '---';
         tableRows += `<tr style="background:#ffffff;">
-          <td style="border:1px solid #000000;padding:5px 3px;vertical-align:top;color:#000000;font-size:7px;">${globalIndex}<\/td>
-          <td style="border:1px solid #000000;padding:5px 3px;vertical-align:top;color:#000000;font-size:7px;">${escapeHtml(item.ref_no)}<\/td>
-          <td style="border:1px solid #000000;padding:5px 3px;vertical-align:top;color:#000000;font-size:7px;">${escapeHtml(item.company)}<\/td>
-          <td style="border:1px solid #000000;padding:5px 3px;vertical-align:top;color:#000000;font-size:7px;">${escapeHtml(item.vehicle_no)}<\/td>
-          <td style="border:1px solid #000000;padding:5px 3px;vertical-align:top;color:#000000;font-size:7px;">${escapeHtml(item.vehicle_type)}<\/td>
-          <td style="border:1px solid #000000;padding:5px 3px;vertical-align:top;color:#000000;font-size:7px;">${escapeHtml(item.contact_person)}<\/td>
-          <td style="border:1px solid #000000;padding:5px 3px;vertical-align:top;color:#000000;font-size:7px;">${escapeHtml(item.tel_no)}<\/td>
-          <td style="border:1px solid #000000;padding:5px 3px;vertical-align:top;color:#000000;font-size:7px;">${displayTime}<\/td>
-          <td style="border:1px solid #000000;padding:5px 3px;vertical-align:top;color:#000000;font-size:7px;">${escapeHtml(item.purpose)}<\/td>
+          <td style="border:1px solid #000000;padding:6px 4px;vertical-align:top;font-size:8px;">${globalIndex}<\/td>
+          <td style="border:1px solid #000000;padding:6px 4px;vertical-align:top;font-size:8px;">${escapeHtml(item.ref_no)}<\/td>
+          <td style="border:1px solid #000000;padding:6px 4px;vertical-align:top;font-size:8px;">${escapeHtml(item.company)}<\/td>
+          <td style="border:1px solid #000000;padding:6px 4px;vertical-align:top;font-size:8px;">${escapeHtml(item.vehicle_no)}<\/td>
+          <td style="border:1px solid #000000;padding:6px 4px;vertical-align:top;font-size:8px;">${escapeHtml(item.vehicle_type)}<\/td>
+          <td style="border:1px solid #000000;padding:6px 4px;vertical-align:top;font-size:8px;">${escapeHtml(item.contact_person)}<\/td>
+          <td style="border:1px solid #000000;padding:6px 4px;vertical-align:top;font-size:8px;">${escapeHtml(item.tel_no)}<\/td>
+          <td style="border:1px solid #000000;padding:6px 4px;vertical-align:top;font-size:8px;">${item.visit_time}<\/td>
+          <td style="border:1px solid #000000;padding:6px 4px;vertical-align:top;font-size:8px;">${escapeHtml(item.purpose)}<\/td>
         <\/tr>`;
       });
       
       const pdfContainer = document.createElement('div');
-      pdfContainer.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:950px;background:white;padding:10px';
+      pdfContainer.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:950px;background:white;padding:15px';
       
-      let pageInfo = '';
-      if (totalPages > 1) {
-        pageInfo = `<div style="text-align:right;font-size:8px;color:#666;margin-bottom:3px;">第 ${page + 1} 頁 / 共 ${totalPages} 頁</div>`;
-      }
+      let pageInfo = totalPages > 1 ? `<div style="text-align:right;font-size:9px;color:#666;">第 ${page+1} / ${totalPages} 頁</div>` : '';
       
       pdfContainer.innerHTML = `
-        <div style="display:flex;justify-content:space-between;margin-bottom:8px;border-bottom:1px solid #cccccc;padding-bottom:5px;">
-          <div>
-            <div style="font-size:11px;font-weight:bold;color:#000000;">中國港灣工程有限責任公司</div>
-            <div style="font-size:8px;color:#000000;">China Harbour Engineering Company Limited</div>
-            <div style="font-size:7px;color:#000000;">西九龍廢物轉運站 | West Kowloon Transfer Station</div>
-          </div>
-          <div>
-            <div style="font-size:8px;font-weight:bold;color:#000000;">環境保護署查閱 / Checked By EPD: _________________</div>
-          </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:10px;border-bottom:1px solid #ccc;padding-bottom:5px;">
+          <div><div style="font-size:12px;font-weight:bold;">中國港灣工程有限責任公司</div><div style="font-size:9px;">China Harbour Engineering Company Limited</div><div style="font-size:8px;">西九龍廢物轉運站 | West Kowloon Transfer Station</div></div>
+          <div><div style="font-size:9px;font-weight:bold;">環境保護署查閱 / Checked By EPD: _________________</div></div>
         </div>
-        <div style="text-align:center;margin:5px 0;">
-          <div style="font-size:14px;font-weight:bold;color:#1a5c5c;background:#e6f7f7;display:inline-block;padding:3px 12px;border-radius:20px;">📅 到訪日期 / Visit Date：${selectedDate}</div>
-        </div>
-        <div style="font-size:11px;font-weight:bold;text-align:center;margin-bottom:5px;color:#000000;">車輛進入預先登記記錄<br>Registered Vehicle Log</div>
+        <div style="text-align:center;margin:8px 0;"><div style="font-size:16px;font-weight:bold;color:#1a5c5c;background:#e6f7f7;display:inline-block;padding:4px 15px;border-radius:20px;">📅 到訪日期 / Visit Date：${selectedDate}</div></div>
+        <div style="font-size:12px;font-weight:bold;text-align:center;margin-bottom:8px;">車輛進入預先登記記錄<br>Registered Vehicle Log</div>
         ${pageInfo}
-        <table style="width:100%;border-collapse:collapse;font-size:8px;background-color:#ffffff;table-layout:fixed;">
-          <colgroup>
-            <col style="width:5%"><col style="width:10%"><col style="width:12%"><col style="width:10%"><col style="width:12%"><col style="width:10%"><col style="width:10%"><col style="width:8%"><col style="width:23%">
-          </colgroup>
-          <thead>
-            <tr style="background-color:#ffffff;color:#000000;text-align:center;">
-              <th style="border:1px solid #000000;padding:4px 2px;font-weight:bold;color:#000000;font-size:7px;">項目<br>Item</th>
-              <th style="border:1px solid #000000;padding:4px 2px;font-weight:bold;color:#000000;font-size:7px;">參考編號<br>Ref No.</th>
-              <th style="border:1px solid #000000;padding:4px 2px;font-weight:bold;color:#000000;font-size:7px;">公司名稱<br>Company</th>
-              <th style="border:1px solid #000000;padding:4px 2px;font-weight:bold;color:#000000;font-size:7px;">車牌號碼<br>Vehicle No.</th>
-              <th style="border:1px solid #000000;padding:4px 2px;font-weight:bold;color:#000000;font-size:7px;">車輛種類<br>Vehicle Type</th>
-              <th style="border:1px solid #000000;padding:4px 2px;font-weight:bold;color:#000000;font-size:7px;">聯絡人<br>Contact</th>
-              <th style="border:1px solid #000000;padding:4px 2px;font-weight:bold;color:#000000;font-size:7px;">電話<br>Tel</th>
-              <th style="border:1px solid #000000;padding:4px 2px;font-weight:bold;color:#000000;font-size:7px;">進入時間<br>Time In</th>
-              <th style="border:1px solid #000000;padding:4px 2px;font-weight:bold;color:#000000;font-size:7px;">目的<br>Purpose</th>
-            </tr>
-          </thead>
-          <tbody style="background-color:#ffffff;color:#000000;">
-            ${tableRows}
-          </tbody>
+        <table style="width:100%;border-collapse:collapse;font-size:8px;table-layout:fixed;">
+          <colgroup><col style="width:5%"><col style="width:10%"><col style="width:12%"><col style="width:10%"><col style="width:12%"><col style="width:10%"><col style="width:10%"><col style="width:8%"><col style="width:23%"></colgroup>
+          <thead><tr style="background:#fff;">
+            <th style="border:1px solid #000;padding:5px 3px;">項目</th><th style="border:1px solid #000;padding:5px 3px;">參考編號</th><th style="border:1px solid #000;padding:5px 3px;">公司名稱</th><th style="border:1px solid #000;padding:5px 3px;">車牌號碼</th><th style="border:1px solid #000;padding:5px 3px;">車輛種類</th><th style="border:1px solid #000;padding:5px 3px;">聯絡人</th><th style="border:1px solid #000;padding:5px 3px;">電話</th><th style="border:1px solid #000;padding:5px 3px;">進入時間</th><th style="border:1px solid #000;padding:5px 3px;">目的</th>
+          <tr></thead>
+          <tbody>${tableRows}</tbody>
         </table>
-        <div style="margin-top:8px;font-size:6px;text-align:center;color:#888;">系統產生之記錄，請核對無誤後簽署</div>
+        <div style="margin-top:8px;font-size:7px;text-align:center;">系統產生之記錄，請核對無誤後簽署</div>
       `;
       
       document.body.appendChild(pdfContainer);
       await new Promise(r => setTimeout(r, 200));
-      
-      const canvas = await html2canvas(pdfContainer, { scale: 2.8, backgroundColor: '#ffffff' });
+      const canvas = await html2canvas(pdfContainer, { scale: 2.5, backgroundColor: '#ffffff' });
       document.body.removeChild(pdfContainer);
       
       const imgData = canvas.toDataURL('image/png');
       const imgWidth = 280;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       
-      if (page === 0) {
-        pdf.addImage(imgData, 'PNG', 10, 8, imgWidth, imgHeight);
-      } else {
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 10, 8, imgWidth, imgHeight);
-      }
+      if (page === 0) pdf.addImage(imgData, 'PNG', 10, 8, imgWidth, imgHeight);
+      else { pdf.addPage(); pdf.addImage(imgData, 'PNG', 10, 8, imgWidth, imgHeight); }
     }
     
     pdf.save(`WKTS_VehicleLog_${selectedDate}.pdf`);
     document.body.removeChild(loadingDiv);
     alert(`✅ PDF 已下載！`);
   } catch (err) {
-    console.error("PDF 生成錯誤:", err);
+    console.error(err);
     if (loadingDiv) loadingDiv.remove();
-    alert('❌ PDF 生成失敗: ' + err.message);
+    alert('❌ PDF 生成失敗');
   }
 }
 
@@ -695,7 +597,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   
-  debugLog("===== 系統初始化完成 =====");
+  debugLog("系統初始化完成");
 });
 </script>
 </body>
