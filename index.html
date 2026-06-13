@@ -24,11 +24,13 @@
     .form-group { margin-bottom: 20px; }
     .form-label { display: block; font-weight: 600; font-size: 0.9rem; color: #2d3748; }
     .form-sub { font-size: 0.7rem; color: #718096; display: block; }
-    /* 輸入框背景白色，文字淺灰色 */
-    .form-control, .form-select { width: 100%; padding: 12px 14px; font-size: 1rem; border: 1px solid #cbd5e0; border-radius: 12px; background: #ffffff; color: #a0aec0; }
-    .form-control:focus, .form-select:focus { outline: none; border-color: #2c7a7b; color: #2d3748; }
-    input[type="tel"], input[type="date"] { width: 100%; padding: 12px 14px; font-size: 1rem; border: 1px solid #cbd5e0; border-radius: 12px; background: #ffffff; color: #a0aec0; font-family: inherit; }
-    input[type="tel"]:focus, input[type="date"]:focus { outline: none; border-color: #2c7a7b; color: #2d3748; }
+    /* 輸入框背景白色，placeholder 淺灰色，輸入文字黑色 */
+    .form-control, .form-select { width: 100%; padding: 12px 14px; font-size: 1rem; border: 1px solid #cbd5e0; border-radius: 12px; background: #ffffff; color: #1a202c; }
+    .form-control::placeholder, .form-select::placeholder { color: #a0aec0; }
+    input[type="tel"]::placeholder, input[type="date"]::placeholder { color: #a0aec0; }
+    .form-control:focus, .form-select:focus { outline: none; border-color: #2c7a7b; }
+    input[type="tel"], input[type="date"] { width: 100%; padding: 12px 14px; font-size: 1rem; border: 1px solid #cbd5e0; border-radius: 12px; background: #ffffff; color: #1a202c; font-family: inherit; }
+    input[type="tel"]:focus, input[type="date"]:focus { outline: none; border-color: #2c7a7b; }
     .btn-gold { width: 100%; background: linear-gradient(135deg,#ffb020,#f59e0b); border: none; color: #1e293b; font-weight: 800; font-size: 1.2rem; padding: 14px; border-radius: 16px; cursor: pointer; }
     .btn-success { background: #38a169; border: none; color: #fff; padding: 12px 20px; border-radius: 40px; font-weight: 600; cursor: pointer; }
     .btn-outline { background: transparent; border: 2px solid #cbd5e0; padding: 12px 20px; border-radius: 40px; font-weight: 600; cursor: pointer; }
