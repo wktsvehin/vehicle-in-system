@@ -143,11 +143,10 @@ let isSubmitting = false;
 const API = "https://script.google.com/macros/s/AKfycbxzWm4hBTMZVKjZUv_0pLjKrp_VrDxCfmi6aLUVa4nB-x0N0MyEdDlSefU69MmbGb1D/exec";
 let pendingSubmissionData = null;
 
-// ==================== 香港時區輔助函數 ====================
+// ==================== 香港時區核心函數 ====================
 // 獲取香港時區嘅今日日期 YYYY-MM-DD
 function getHKTodayString() {
   let now = new Date();
-  // 轉換為香港時間 (UTC+8)
   let hkTime = new Date(now.getTime() + 8 * 60 * 60 * 1000);
   let year = hkTime.getUTCFullYear();
   let month = (hkTime.getUTCMonth() + 1).toString().padStart(2, '0');
@@ -162,22 +161,45 @@ function getHKCurrentHour() {
   return hkTime.getUTCHours();
 }
 
-// 將 UTC 日期轉換為香港日期 (YYYY-MM-DD)
+// 將 UTC 日期字串轉換為香港日期 YYYY-MM-DD (核心修復)
 function convertUTCtoHKDate(utcDateStr) {
   if (!utcDateStr) return '';
   let str = safeString(utcDateStr).trim();
+  
+  // 如果已經係 YYYY-MM-DD 格式，直接返回
   if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
-  let isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})T/);
+  
+  // 處理 ISO 格式: 2026-06-19T16:00:00.000Z
+  // 加上 8 小時轉為香港日期
+  let isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/);
   if (isoMatch) {
-    return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
+    let year = parseInt(isoMatch[1]);
+    let month = parseInt(isoMatch[2]) - 1;
+    let day = parseInt(isoMatch[3]);
+    let hour = parseInt(isoMatch[4]);
+    
+    // 建立 UTC Date 物件
+    let utcDate = new Date(Date.UTC(year, month, day, hour, 0, 0));
+    // 轉為香港時間 (UTC+8)
+    let hkDate = new Date(utcDate.getTime() + 8 * 60 * 60 * 1000);
+    
+    let y = hkDate.getFullYear();
+    let m = (hkDate.getMonth() + 1).toString().padStart(2, '0');
+    let d = hkDate.getDate().toString().padStart(2, '0');
+    return `${y}-${m}-${d}`;
   }
+  
+  // 嘗試用 new Date 解析
   let d = new Date(str);
   if (!isNaN(d.getTime())) {
-    let year = d.getFullYear();
-    let month = (d.getMonth() + 1).toString().padStart(2, '0');
-    let day = d.getDate().toString().padStart(2, '0');
+    // 加上 8 小時
+    let hkDate = new Date(d.getTime() + 8 * 60 * 60 * 1000);
+    let year = hkDate.getFullYear();
+    let month = (hkDate.getMonth() + 1).toString().padStart(2, '0');
+    let day = hkDate.getDate().toString().padStart(2, '0');
     return `${year}-${month}-${day}`;
   }
+  
   return str;
 }
 
@@ -320,7 +342,7 @@ function logout() { isLoggedIn = false; showLogin(); }
 // ==================== 資料載入與顯示 ====================
 function loadData() {
   const confirmTable = document.getElementById('confirmedTable');
-  if (confirmTable) confirmTable.innerHTML = '</tr><td colspan="10">載入中...<\/td><\/tr>';
+  if (confirmTable) confirmTable.innerHTML = '<tr><td colspan="10">載入中...<\/td><\/tr>';
   
   fetch(API)
     .then(r => r.json())
@@ -331,7 +353,9 @@ function loadData() {
         let rawVisitDate = item.visit_date || '';
         let rawTimeIn = item.time_in || '';
         let formattedTime = formatTimeOnly(rawTimeIn);
-        console.log("原始時間:", rawTimeIn, "-> 修正後:", formattedTime);
+        let convertedDate = convertUTCtoHKDate(rawVisitDate);
+        console.log(`原始日期: ${rawVisitDate} -> 香港日期: ${convertedDate}`);
+        console.log(`原始時間: ${rawTimeIn} -> 修正後: ${formattedTime}`);
         return {
           ref_no: safeString(item.ref_no || ''),
           company: safeString(item.company || ''),
@@ -341,7 +365,7 @@ function loadData() {
           visit_time: formattedTime,
           purpose: safeString(item.purpose || ''),
           vehicle_type: safeString(item.vehicle_type || ''),
-          visit_date: convertUTCtoHKDate(rawVisitDate),
+          visit_date: convertedDate,
           status: 'in_progress'
         };
       });
@@ -357,6 +381,7 @@ function loadData() {
 function getTodayConfirmed() {
   let todayStr = getHKTodayString();
   console.log("今日日期 (香港):", todayStr);
+  console.log("cachedData 日期列表:", cachedData.map(d => d.visit_date));
   return cachedData.filter(item => item.visit_date === todayStr);
 }
 
@@ -518,7 +543,14 @@ function resetForm() {
 async function exportPDF() {
   let selectedDate = document.getElementById('exportDate').value;
   if (!selectedDate) { alert('請先選擇要匯出的日期'); return; }
+  
+  console.log("匯出選擇日期:", selectedDate);
+  console.log("cachedData 日期列表:", cachedData.map(d => ({ company: d.company, date: d.visit_date })));
+  
   let list = cachedData.filter(item => item.visit_date === selectedDate);
+  
+  console.log("符合條件筆數:", list.length);
+  
   if (list.length === 0) {
     alert(`沒有 ${selectedDate} 的車輛紀錄`);
     return;
