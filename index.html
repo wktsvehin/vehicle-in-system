@@ -137,7 +137,7 @@
     
     <div class="section-title icon-text">✅ 今日已確認名單 <span class="eng-text">Today's Confirmed List</span></div>
     <div class="table-responsive">
-      </table>
+      </td>
         <thead>
           <tr>
             <th>#</th>
@@ -180,7 +180,6 @@ function getCurrentHour() {
   return new Date().getHours();
 }
 
-// 將日期減 1 日
 function subtractOneDay(dateStr) {
   if (!dateStr) return '';
   let parts = dateStr.split('-');
@@ -196,7 +195,6 @@ function subtractOneDay(dateStr) {
   return `${y}-${m}-${d}`;
 }
 
-// 提取日期
 function extractDateOnly(dateStr) {
   if (!dateStr) return '';
   let str = String(dateStr).trim();
@@ -208,7 +206,6 @@ function extractDateOnly(dateStr) {
   return str;
 }
 
-// 時間處理：減 23 分鐘，向下取整到 15 分鐘
 function formatTimeOnly(timeStr) {
   if (!timeStr) return '---';
   let str = String(timeStr);
@@ -239,7 +236,6 @@ function formatTimeOnly(timeStr) {
   return `${newHour.toString().padStart(2, '0')}:${roundedMinute.toString().padStart(2, '0')}`;
 }
 
-// ==================== 初始化 ====================
 function initDatePicker() {
   let p = document.getElementById('visitDatePicker');
   if (!p) return;
@@ -305,21 +301,18 @@ function loadData() {
     .then(r => r.json())
     .then(data => {
       if (!Array.isArray(data)) { 
-        confirmTable.innerHTML = '<tr><td colspan="10" style="color:red">❌ 資料格式錯誤<\/td><\/tr>';
+        confirmTable.innerHTML = '<td><td colspan="10" style="color:red">❌ 資料格式錯誤<\/td><\/tr>';
         return; 
       }
-      
       if (data.length === 0) {
         confirmTable.innerHTML = '<tr><td colspan="10">📭 暫無任何登記記錄<\/td><\/tr>';
         return;
       }
-      
       cachedData = data.map(item => {
         let rawDate = item.visit_date || item.到訪日期 || item.date || '';
         let rawTime = item.time_in || item.入站時間 || '';
         let extractedDate = extractDateOnly(rawDate);
         let formattedTime = formatTimeOnly(rawTime);
-        
         return {
           ref_no: item.ref_no || item.參考編號 || '',
           company: item.company || item.公司 || '',
@@ -332,7 +325,6 @@ function loadData() {
           visit_date: extractedDate
         };
       });
-      
       renderTables();
     })
     .catch(error => { 
@@ -344,10 +336,8 @@ function loadData() {
 function renderTables() {
   let todayStr = getTodayString();
   let confirmed = cachedData.filter(item => item.visit_date === todayStr);
-  
   const confirmBody = document.getElementById('confirmedTable');
   if (!confirmBody) return;
-  
   if (confirmed.length === 0) {
     confirmBody.innerHTML = '<tr><td colspan="10">📭 今日暫無已確認車輛<\/td><\/tr>';
   } else {
@@ -494,14 +484,12 @@ function resetForm() {
   initDatePicker();
 }
 
-// ==================== PDF 匯出 (完整顯示所有欄位) ====================
+// ==================== PDF 匯出 (字體適中，完整顯示) ====================
 async function exportPDF() {
   let selectedDate = document.getElementById('exportDate').value;
   if (!selectedDate) { alert('請先選擇要匯出的日期'); return; }
   
-  // 將選擇嘅日期減 1 日
   let queryDate = subtractOneDay(selectedDate);
-  
   let list = cachedData.filter(item => item.visit_date === queryDate);
   
   if (list.length === 0) {
@@ -519,7 +507,7 @@ async function exportPDF() {
   
   try {
     const { jsPDF } = window.jspdf;
-    const ROWS_PER_PAGE = 14;
+    const ROWS_PER_PAGE = 10;
     const totalPages = Math.ceil(list.length / ROWS_PER_PAGE);
     const pdf = new jsPDF('l', 'mm', 'a4');
     
@@ -531,65 +519,65 @@ async function exportPDF() {
       let tableRows = '';
       pageData.forEach((item, idx) => {
         const globalIndex = start + idx + 1;
-        tableRows += `<tr style="background:#ffffff; font-size:6px;">
-          <td style="border:1px solid #000000;padding:4px 2px;vertical-align:top;">${globalIndex}<\/td>
-          <td style="border:1px solid #000000;padding:4px 2px;vertical-align:top;">${escapeHtml(item.ref_no)}<\/td>
-          <td style="border:1px solid #000000;padding:4px 2px;vertical-align:top;">${escapeHtml(item.company)}<\/td>
-          <td style="border:1px solid #000000;padding:4px 2px;vertical-align:top;">${escapeHtml(item.vehicle_no)}<\/td>
-          <td style="border:1px solid #000000;padding:4px 2px;vertical-align:top;">${escapeHtml(item.vehicle_type)}<\/td>
-          <td style="border:1px solid #000000;padding:4px 2px;vertical-align:top;">${escapeHtml(item.contact_person)}<\/td>
-          <td style="border:1px solid #000000;padding:4px 2px;vertical-align:top;">${escapeHtml(item.tel_no)}<\/td>
-          <td style="border:1px solid #000000;padding:4px 2px;vertical-align:top;">${item.visit_time}<\/td>
-          <td style="border:1px solid #000000;padding:4px 2px;vertical-align:top;">${escapeHtml(item.purpose)}<\/td>
+        tableRows += `<tr style="background:#ffffff;">
+          <td style="border:1px solid #000000;padding:6px 4px;vertical-align:top;font-size:9px;">${globalIndex}<\/td>
+          <td style="border:1px solid #000000;padding:6px 4px;vertical-align:top;font-size:9px;">${escapeHtml(item.ref_no)}<\/td>
+          <td style="border:1px solid #000000;padding:6px 4px;vertical-align:top;font-size:9px;">${escapeHtml(item.company)}<\/td>
+          <td style="border:1px solid #000000;padding:6px 4px;vertical-align:top;font-size:9px;">${escapeHtml(item.vehicle_no)}<\/td>
+          <td style="border:1px solid #000000;padding:6px 4px;vertical-align:top;font-size:9px;">${escapeHtml(item.vehicle_type)}<\/td>
+          <td style="border:1px solid #000000;padding:6px 4px;vertical-align:top;font-size:9px;">${escapeHtml(item.contact_person)}<\/td>
+          <td style="border:1px solid #000000;padding:6px 4px;vertical-align:top;font-size:9px;">${escapeHtml(item.tel_no)}<\/td>
+          <td style="border:1px solid #000000;padding:6px 4px;vertical-align:top;font-size:9px;">${item.visit_time}<\/td>
+          <td style="border:1px solid #000000;padding:6px 4px;vertical-align:top;font-size:9px;">${escapeHtml(item.purpose)}<\/td>
         <\/tr>`;
       });
       
       const pdfContainer = document.createElement('div');
-      pdfContainer.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:1050px;background:white;padding:10px';
+      pdfContainer.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:1050px;background:white;padding:15px';
       
-      let pageInfo = totalPages > 1 ? `<div style="text-align:right;font-size:7px;color:#666;margin-bottom:3px;">第 ${page+1} 頁 / 共 ${totalPages} 頁</div>` : '';
+      let pageInfo = totalPages > 1 ? `<div style="text-align:right;font-size:8px;color:#666;margin-bottom:5px;">第 ${page+1} 頁 / 共 ${totalPages} 頁</div>` : '';
       
       pdfContainer.innerHTML = `
-        <div style="display:flex;justify-content:space-between;margin-bottom:6px;border-bottom:1px solid #ccc;padding-bottom:4px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:10px;border-bottom:1px solid #ccc;padding-bottom:6px;">
           <div>
-            <div style="font-size:9px;font-weight:bold;">中國港灣工程有限責任公司</div>
-            <div style="font-size:7px;">China Harbour Engineering Company Limited</div>
-            <div style="font-size:6px;">西九龍廢物轉運站 | West Kowloon Transfer Station</div>
+            <div style="font-size:12px;font-weight:bold;">中國港灣工程有限責任公司</div>
+            <div style="font-size:9px;">China Harbour Engineering Company Limited</div>
+            <div style="font-size:8px;">西九龍廢物轉運站 | West Kowloon Transfer Station</div>
           </div>
           <div>
-            <div style="font-size:7px;font-weight:bold;">環境保護署查閱 / Checked By EPD: _________________</div>
+            <div style="font-size:9px;font-weight:bold;">環境保護署查閱 / Checked By EPD: _________________</div>
           </div>
         </div>
-        <div style="text-align:center;margin:4px 0;">
-          <div style="font-size:12px;font-weight:bold;color:#1a5c5c;background:#e6f7f7;display:inline-block;padding:2px 10px;border-radius:15px;">📅 到訪日期 / Visit Date：${selectedDate}</div>
+        <div style="text-align:center;margin:8px 0;">
+          <div style="font-size:16px;font-weight:bold;color:#1a5c5c;background:#e6f7f7;display:inline-block;padding:4px 15px;border-radius:25px;">📅 到訪日期 / Visit Date：${selectedDate}</div>
         </div>
-        <div style="font-size:9px;font-weight:bold;text-align:center;margin-bottom:4px;">車輛進入預先登記記錄<br>Registered Vehicle Log</div>
+        <div style="font-size:12px;font-weight:bold;text-align:center;margin-bottom:8px;">車輛進入預先登記記錄<br>Registered Vehicle Log</div>
         ${pageInfo}
-        <table style="width:100%;border-collapse:collapse;font-size:6px;table-layout:fixed;">
+        <table style="width:100%;border-collapse:collapse;font-size:9px;table-layout:fixed;">
           <colgroup>
-            <col style="width:4%"><col style="width:9%"><col style="width:11%"><col style="width:9%"><col style="width:11%"><col style="width:9%"><col style="width:9%"><col style="width:7%"><col style="width:31%">
+            <col style="width:5%"><col style="width:10%"><col style="width:12%"><col style="width:10%"><col style="width:12%"><col style="width:10%"><col style="width:10%"><col style="width:8%"><col style="width:23%">
           </colgroup>
           <thead>
-            <tr style="background:#fff;">
-              <th style="border:1px solid #000;padding:3px 1px;">項目</th>
-              <th style="border:1px solid #000;padding:3px 1px;">參考編號</th>
-              <th style="border:1px solid #000;padding:3px 1px;">公司名稱</th>
-              <th style="border:1px solid #000;padding:3px 1px;">車牌號碼</th>
-              <th style="border:1px solid #000;padding:3px 1px;">車輛種類</th>
-              <th style="border:1px solid #000;padding:3px 1px;">聯絡人</th>
-              <th style="border:1px solid #000;padding:3px 1px;">電話</th>
-              <th style="border:1px solid #000;padding:3px 1px;">進入時間</th>
-              <th style="border:1px solid #000;padding:3px 1px;">目的</th>
+            <tr style="background:#f0f0f0;">
+              <th style="border:1px solid #000;padding:8px 4px;font-weight:bold;font-size:10px;">項目</th>
+              <th style="border:1px solid #000;padding:8px 4px;font-weight:bold;font-size:10px;">參考編號</th>
+              <th style="border:1px solid #000;padding:8px 4px;font-weight:bold;font-size:10px;">公司名稱</th>
+              <th style="border:1px solid #000;padding:8px 4px;font-weight:bold;font-size:10px;">車牌號碼</th>
+              <th style="border:1px solid #000;padding:8px 4px;font-weight:bold;font-size:10px;">車輛種類</th>
+              <th style="border:1px solid #000;padding:8px 4px;font-weight:bold;font-size:10px;">聯絡人</th>
+              <th style="border:1px solid #000;padding:8px 4px;font-weight:bold;font-size:10px;">電話</th>
+              <th style="border:1px solid #000;padding:8px 4px;font-weight:bold;font-size:10px;">進入時間</th>
+              <th style="border:1px solid #000;padding:8px 4px;font-weight:bold;font-size:10px;">目的</th>
             </tr>
           </thead>
           <tbody>${tableRows}</tbody>
         </table>
-        <div style="margin-top:5px;font-size:5px;text-align:center;">系統產生之記錄，請核對無誤後簽署</div>
+        <div style="margin-top:10px;font-size:7px;text-align:center;">系統產生之記錄，請核對無誤後簽署</div>
       `;
       
       document.body.appendChild(pdfContainer);
       await new Promise(r => setTimeout(r, 200));
-      const canvas = await html2canvas(pdfContainer, { scale: 2.2, backgroundColor: '#ffffff' });
+      const canvas = await html2canvas(pdfContainer, { scale: 2.5, backgroundColor: '#ffffff' });
       document.body.removeChild(pdfContainer);
       
       const imgData = canvas.toDataURL('image/png');
