@@ -168,46 +168,65 @@ let isSubmitting = false;
 const API = "https://script.google.com/macros/s/AKfycbxzWm4hBTMZVKjZUv_0pLjKrp_VrDxCfmi6aLUVa4nB-x0N0MyEdDlSefU69MmbGb1D/exec";
 let pendingSubmissionData = null;
 
-// ==================== 除錯函數 ====================
-function debugLog(...args) {
-  console.log("[系統]", ...args);
-}
+// ==================== 香港時區核心函數 (100% 香港時間) ====================
 
-// ==================== 核心函數 ====================
-
-function getHKTodayString() {
+// 獲取當前香港時間的 Date 物件
+function getHKDate() {
   let now = new Date();
   let hkTime = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+  return hkTime;
+}
+
+// 獲取香港時區嘅今日日期 YYYY-MM-DD
+function getHKTodayString() {
+  let hkTime = getHKDate();
   let year = hkTime.getUTCFullYear();
   let month = (hkTime.getUTCMonth() + 1).toString().padStart(2, '0');
   let day = hkTime.getUTCDate().toString().padStart(2, '0');
   return `${year}-${month}-${day}`;
 }
 
+// 獲取香港時區嘅當前小時
 function getHKCurrentHour() {
-  let now = new Date();
-  let hkTime = new Date(now.getTime() + 8 * 60 * 60 * 1000);
-  return hkTime.getUTCHours();
+  return getHKDate().getUTCHours();
 }
 
-// 直接從 UTC 字串提取日期部分 (唔加 8 小時)
-function convertUTCtoHKDate(utcDateStr) {
+// 將任何日期轉換為香港日期 YYYY-MM-DD
+// 處理 Google Sheets 回傳的 UTC 格式 (例如 2026-06-15T16:00:00.000Z)
+// 直接提取 YYYY-MM-DD，因為 UTC 16:00 對應香港 00:00 (+1日)
+// 但使用者輸入的是 2026-06-15，所以直接用日期部分
+function toHKDate(utcDateStr) {
   if (!utcDateStr) return '';
   let str = String(utcDateStr).trim();
+  
+  // 如果已經是 YYYY-MM-DD 格式，直接返回
   if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+  
+  // 從 ISO 格式提取 YYYY-MM-DD
   let isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})T/);
   if (isoMatch) {
     return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
   }
+  
+  // 嘗試用 Date 解析
+  let d = new Date(str);
+  if (!isNaN(d.getTime())) {
+    let year = d.getFullYear();
+    let month = (d.getMonth() + 1).toString().padStart(2, '0');
+    let day = d.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+  
   return str;
 }
 
-// 時間格式化：UTC → 香港 (+8) → 減23分鐘 → 向下取整到15分鐘
-function formatTimeOnly(timeStr) {
+// 將 UTC 時間轉換為香港時間，然後應用規則：減 23 分鐘後向下取整到 15 分鐘
+function toHKTime(timeStr) {
   if (!timeStr) return '---';
   let str = String(timeStr);
   if (str === '---') return '---';
   
+  // 從 ISO 格式提取 UTC 小時和分鐘
   let isoMatch = str.match(/T(\d{2}):(\d{2}):(\d{2})/);
   let hour = 0, minute = 0;
   if (isoMatch) {
@@ -223,32 +242,33 @@ function formatTimeOnly(timeStr) {
     }
   }
   
-  // UTC+8 轉香港時間
+  // UTC 轉換為香港時間 (UTC+8)
   let hkHour = hour + 8;
   if (hkHour >= 24) hkHour = hkHour - 24;
   
-  // 減23分鐘
+  // 減 23 分鐘
   let totalMinutes = hkHour * 60 + minute - 23;
   if (totalMinutes < 0) totalMinutes += 24 * 60;
   
   let newHour = Math.floor(totalMinutes / 60);
   let newMinute = totalMinutes % 60;
   
-  // 向下取整到15分鐘
+  // 向下取整到 15 分鐘
   let roundedMinute = Math.floor(newMinute / 15) * 15;
   
   return `${newHour.toString().padStart(2, '0')}:${roundedMinute.toString().padStart(2, '0')}`;
 }
 
+// ==================== 初始化 ====================
 function initDatePicker() {
   let p = document.getElementById('visitDatePicker');
   if (!p) return;
-  let now = new Date();
+  let now = getHKDate();
   let offset = getHKCurrentHour() >= 15 ? 2 : 1;
   let minDate = new Date();
   let maxDate = new Date();
-  minDate.setDate(now.getDate() + offset);
-  maxDate.setDate(now.getDate() + 7);
+  minDate.setDate(now.getUTCDate() + offset);
+  maxDate.setDate(now.getUTCDate() + 7);
   let minStr = minDate.toISOString().split('T')[0];
   let maxStr = maxDate.toISOString().split('T')[0];
   p.min = minStr;
@@ -299,14 +319,14 @@ function logout() { isLoggedIn = false; showLogin(); }
 
 function loadData() {
   const confirmTable = document.getElementById('confirmedTable');
-  if (confirmTable) confirmTable.innerHTML = '<tr><td colspan="10">⏳ 載入中...<\/td><\/tr>';
+  if (confirmTable) confirmTable.innerHTML = '</tr><td colspan="10">⏳ 載入中...<\/td><\/tr>';
   
-  debugLog("===== 開始載入資料 =====");
+  console.log("===== 開始載入資料 =====");
   
   fetch(API)
     .then(r => r.json())
     .then(data => {
-      debugLog("API 回傳成功，筆數:", data ? data.length : 0);
+      console.log("API 回傳成功，筆數:", data ? data.length : 0);
       
       if (!Array.isArray(data)) { 
         confirmTable.innerHTML = '<tr><td colspan="10" style="color:red">❌ 資料格式錯誤<\/td><\/tr>';
@@ -321,8 +341,9 @@ function loadData() {
       cachedData = data.map(item => {
         let rawDate = item.visit_date || item.到訪日期 || item.date || '';
         let rawTime = item.time_in || item.入站時間 || '';
-        let convertedDate = convertUTCtoHKDate(rawDate);
-        debugLog(`原始日期: ${rawDate} -> 轉換後: ${convertedDate}`);
+        let hkDate = toHKDate(rawDate);
+        let hkTime = toHKTime(rawTime);
+        console.log(`原始: ${rawDate} -> 香港日期: ${hkDate}, 時間: ${hkTime}`);
         return {
           ref_no: item.ref_no || item.參考編號 || '',
           company: item.company || item.公司 || '',
@@ -330,15 +351,14 @@ function loadData() {
           vehicle_type: item.vehicle_type || item.車型 || '',
           contact_person: item.contact_person || item.聯絡人 || '',
           tel_no: item.tel_no || item.電話 || '',
-          visit_time: formatTimeOnly(rawTime),
+          visit_time: hkTime,
           purpose: item.purpose || item.目的 || '',
-          visit_date: convertedDate,
-          raw_date: rawDate
+          visit_date: hkDate
         };
       });
       
-      debugLog("轉換完成，共", cachedData.length, "筆");
-      debugLog("日期列表:", cachedData.map(d => `${d.company}:${d.visit_date}`));
+      console.log("轉換完成，共", cachedData.length, "筆");
+      console.log("日期列表:", cachedData.map(d => `${d.company}:${d.visit_date}`));
       renderTables();
     })
     .catch(error => { 
@@ -349,10 +369,10 @@ function loadData() {
 
 function renderTables() {
   let todayStr = getHKTodayString();
-  debugLog("今日日期:", todayStr);
+  console.log("今日日期 (香港):", todayStr);
   
   let confirmed = cachedData.filter(item => item.visit_date === todayStr);
-  debugLog("今日記錄筆數:", confirmed.length);
+  console.log("今日記錄筆數:", confirmed.length);
   
   const confirmBody = document.getElementById('confirmedTable');
   if (!confirmBody) return;
@@ -430,10 +450,10 @@ function submitToGoogleSheet(formData, refNo) {
 }
 
 function generateRefNo() {
-  let d = new Date();
-  let year = d.getFullYear();
-  let month = (d.getMonth() + 1).toString().padStart(2, '0');
-  let day = d.getDate().toString().padStart(2, '0');
+  let d = getHKDate();
+  let year = d.getUTCFullYear();
+  let month = (d.getUTCMonth() + 1).toString().padStart(2, '0');
+  let day = d.getUTCDate().toString().padStart(2, '0');
   let chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   let randomStr = '';
   for (let i = 0; i < 4; i++) randomStr += chars[Math.floor(Math.random() * chars.length)];
@@ -508,30 +528,13 @@ async function exportPDF() {
   let selectedDate = document.getElementById('exportDate').value;
   if (!selectedDate) { alert('請先選擇要匯出的日期'); return; }
   
-  debugLog("===== PDF 匯出 =====");
-  debugLog("選擇匯出日期:", selectedDate);
+  console.log("===== PDF 匯出 =====");
+  console.log("選擇匯出日期:", selectedDate);
+  console.log("cachedData 日期列表:", cachedData.map(d => `${d.company}:${d.visit_date}`));
   
-  // 顯示所有 cachedData 嘅日期俾你睇
-  debugLog("cachedData 所有日期:", cachedData.map(d => ({ company: d.company, date: d.visit_date })));
-  
-  // 方法1: 直接比對
+  // 直接比對
   let list = cachedData.filter(item => item.visit_date === selectedDate);
-  
-  // 方法2: 如果直接比對冇結果，嘗試比對 selectedDate 減一日（因為有時區問題）
-  if (list.length === 0) {
-    let prevDate = new Date(selectedDate);
-    prevDate.setDate(prevDate.getDate() - 1);
-    let prevDateStr = prevDate.toISOString().split('T')[0];
-    debugLog("直接比對無結果，嘗試前一日期:", prevDateStr);
-    list = cachedData.filter(item => item.visit_date === prevDateStr);
-    if (list.length > 0) {
-      debugLog("使用前一日期找到", list.length, "筆記錄");
-      // 提示用戶日期可能偏移
-      alert(`注意：系統自動修正日期從 ${selectedDate} 到 ${prevDateStr}\n找到 ${list.length} 筆記錄`);
-    }
-  }
-  
-  debugLog("符合條件筆數:", list.length);
+  console.log("符合條件筆數:", list.length);
   
   if (list.length === 0) {
     alert(`沒有 ${selectedDate} 的車輛紀錄`);
@@ -629,7 +632,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   
-  debugLog("系統初始化完成");
+  console.log("系統初始化完成 (香港時區)");
 });
 </script>
 </body>
