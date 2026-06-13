@@ -22,7 +22,7 @@
     .form-label { display: block; font-weight: 600; font-size: 0.9rem; color: #2d3748; }
     .form-sub { font-size: 0.7rem; color: #718096; display: block; }
     .form-control, .form-select { width: 100%; padding: 12px 14px; font-size: 1rem; border: 1px solid #cbd5e0; border-radius: 12px; background: #fff; }
-    input[type="tel"] { width: 100%; padding: 12px 14px; font-size: 1rem; border: 1px solid #cbd5e0; border-radius: 12px; background: #fff; }
+    input[type="tel"], input[type="date"] { width: 100%; padding: 12px 14px; font-size: 1rem; border: 1px solid #cbd5e0; border-radius: 12px; background: #fff; font-family: inherit; }
     .btn-gold { width: 100%; background: linear-gradient(135deg,#ffb020,#f59e0b); border: none; color: #1e293b; font-weight: 800; font-size: 1.2rem; padding: 14px; border-radius: 16px; cursor: pointer; }
     .btn-success { background: #38a169; border: none; color: #fff; padding: 12px 20px; border-radius: 40px; font-weight: 600; cursor: pointer; }
     .btn-outline { background: transparent; border: 2px solid #cbd5e0; padding: 12px 20px; border-radius: 40px; font-weight: 600; cursor: pointer; }
@@ -51,8 +51,6 @@
     .loading-spinner { background: white; padding: 20px 30px; border-radius: 16px; text-align: center; }
     .loading-spinner .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: #2c7a7b; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 12px; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    /* 確保 flatpickr 日曆正常顯示 */
-    .flatpickr-calendar { z-index: 99999 !important; display: block !important; }
     @media (max-width:480px) { body { padding: 12px; } .card { padding: 16px; } .preview-row { flex-direction: column; } .preview-label, .preview-value { width: 100%; } }
   </style>
 </head>
@@ -81,7 +79,9 @@
       <div class="form-group"><label class="form-label">電話號碼 <span class="form-sub">Tel. No.</span></label><input type="tel" class="form-control" id="telNo" placeholder="91234567" inputmode="numeric" pattern="[0-9]*" required></div>
       <div class="form-group"><label class="form-label">進入目的/工作内容 <span class="form-sub">Purpose/Work Description</span></label><input type="text" class="form-control" id="purpose" placeholder="廢物運輸 / Waste Transportation" required></div>
       <div class="form-group"><label class="form-label">車輛種類 <span class="form-sub">Vehicle Type</span></label><select class="form-select" id="vehicleType" required><option value="">請選擇/Select</option><option>私家車/Private Car</option><option>客貨車/Van</option><option>中型貨車/Medium Truck</option><option>重型貨車/Heavy Truck</option><option>工程車/Engineering Vehicle</option><option>其他/Other</option></select></div>
-      <div class="form-group"><label class="form-label">預計到訪日期 <span class="form-sub">Visit Date (7天内)</span></label><input type="text" id="visitDatePicker" class="form-control" placeholder="點擊選擇日期" readonly required></div>
+      <div class="form-group"><label class="form-label">預計到訪日期 <span class="form-sub">Visit Date (7天内)</span></label>
+        <input type="date" id="visitDatePicker" class="form-control" required>
+      </div>
       <div class="form-group"><label class="form-label">預計到訪時間 <span class="form-sub">ETA (24h)</span></label><div class="flex"><select id="hour" class="form-select" style="flex:1"></select><span style="font-size:1.5rem;">:</span><select id="minute" class="form-select" style="flex:1"></select></div></div>
       <button type="submit" class="btn-gold mt-2"><span class="chi-text">提交申請</span><span class="eng-text" style="font-size:0.7rem;">Application Submission</span></button>
     </form>
@@ -116,7 +116,7 @@
     <div class="section-title">📋 申請處理中 <span class="eng-text">(未過15:00)</span></div>
     <div class="table-responsive"> <table> <thead> <tr> <th>#</th> <th>參考編號</th> <th>公司</th> <th>車牌</th> <th>聯絡人</th> <th>電話</th> <th>時間</th> <th>目的</th> <th>車型</th> </tr> </thead> <tbody id="progressTable"></tbody> </table> </div>
     <div class="section-title">✅ 已確認名單 <span class="eng-text">(今天或之後)</span></div>
-    <div class="table-responsive"> <table> <thead> <tr> <th>#</th> <th>參考編號</th> <th>公司</th> <th>車牌</th> <th>聯絡人</th> <th>電話</th> <th>到訪日期</th> <th>入站時間</th> <th>目的</th> <th>車型</th> </tr> </thead> <tbody id="confirmedTable"></tbody> </table> </div>
+    <div class="table-responsive"> </table> <thead> <tr> <th>#</th> <th>參考編號</th> <th>公司</th> <th>車牌</th> <th>聯絡人</th> <th>電話</th> <th>到訪日期</th> <th>入站時間</th> <th>目的</th> <th>車型</th> </tr> </thead> <tbody id="confirmedTable"></tbody> </table> </div>
   </div>
 </div>
 
@@ -171,27 +171,27 @@ function normTime(t) {
   return s;
 }
 
-// 修正日期選擇器 - 強制桌面模式
+// 設定日期輸入框嘅限制 (7天內，同埋下午3點後截數)
 function initDatePicker() {
   let p = document.getElementById('visitDatePicker');
   if (!p) return;
+  
   let now = new Date();
   let offset = now.getHours() >= 15 ? 2 : 1;
-  let min = new Date();
-  let max = new Date();
-  min.setDate(now.getDate() + offset);
-  max.setDate(now.getDate() + 7);
+  let minDate = new Date();
+  let maxDate = new Date();
+  minDate.setDate(now.getDate() + offset);
+  maxDate.setDate(now.getDate() + 7);
   
-  // 強制使用 flatpickr 桌面樣式
-  flatpickr(p, { 
-    locale: "zh", 
-    dateFormat: "Y-m-d", 
-    minDate: min, 
-    maxDate: max,
-    disableMobile: true,      // 強制停用手機原生選擇器，使用 flatpickr 彈窗
-    static: false,            // 唔用靜態模式，用彈出模式
-    position: "auto"
-  });
+  // 格式化為 YYYY-MM-DD
+  let minStr = minDate.toISOString().split('T')[0];
+  let maxStr = maxDate.toISOString().split('T')[0];
+  
+  p.min = minStr;
+  p.max = maxStr;
+  
+  // 設定預設值為最小可選日期
+  p.value = minStr;
 }
 
 function initTimeSelects() {
@@ -448,6 +448,8 @@ function resetForm() {
   document.getElementById('successSection').classList.add('hidden');
   document.getElementById('formSection').classList.remove('hidden');
   pendingSubmissionData = null;
+  // 重置日期選擇器嘅預設值
+  initDatePicker();
 }
 
 async function exportPDF() {
