@@ -6,7 +6,7 @@
   <title>西九龍廢物轉運站車輛登記系統</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh.js"></script>
+ <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
@@ -167,7 +167,9 @@ let isSubmitting = false;
 const API = "https://script.google.com/macros/s/AKfycbxzWm4hBTMZVKjZUv_0pLjKrp_VrDxCfmi6aLUVa4nB-x0N0MyEdDlSefU69MmbGb1D/exec";
 let pendingSubmissionData = null;
 
-// ==================== 香港時區核心函數 ====================
+// ==================== 香港時區核心函數 (全部統一使用 UTC+8) ====================
+
+// 獲取香港時區嘅當前日期 YYYY-MM-DD
 function getHKTodayString() {
   let now = new Date();
   let hkTime = new Date(now.getTime() + 8 * 60 * 60 * 1000);
@@ -177,12 +179,14 @@ function getHKTodayString() {
   return `${year}-${month}-${day}`;
 }
 
+// 獲取香港時區嘅當前小時
 function getHKCurrentHour() {
   let now = new Date();
   let hkTime = new Date(now.getTime() + 8 * 60 * 60 * 1000);
   return hkTime.getUTCHours();
 }
 
+// 將 UTC 日期字串轉換為香港日期 YYYY-MM-DD
 function convertUTCtoHKDate(utcDateStr) {
   if (!utcDateStr) return '';
   let str = safeString(utcDateStr).trim();
@@ -201,6 +205,62 @@ function convertUTCtoHKDate(utcDateStr) {
   return str;
 }
 
+// 將 UTC 時間轉換為香港時間，然後減 23 分鐘，再向下取整到 15 分鐘
+function formatTimeOnly(timeStr) {
+  if (!timeStr) return '---';
+  let str = safeString(timeStr);
+  if (str === '---') return '---';
+  
+  let hour = 0;
+  let minute = 0;
+  let success = false;
+  
+  // 從 ISO 格式提取 UTC 時間
+  let isoMatch = str.match(/T(\d{2}):(\d{2}):(\d{2})/);
+  if (isoMatch) {
+    hour = parseInt(isoMatch[1]);
+    minute = parseInt(isoMatch[2]);
+    success = true;
+  } else {
+    // 匹配 HH:MM:SS 或 HH:MM
+    let timeMatch = str.match(/(\d{2}):(\d{2})/);
+    if (timeMatch) {
+      hour = parseInt(timeMatch[1]);
+      minute = parseInt(timeMatch[2]);
+      success = true;
+    } else {
+      let testDate = new Date(str);
+      if (!isNaN(testDate.getTime())) {
+        hour = testDate.getUTCHours();
+        minute = testDate.getUTCMinutes();
+        success = true;
+      }
+    }
+  }
+  
+  if (!success) return '---';
+  
+  // 步驟1: UTC 轉換為香港時間 (UTC+8)
+  hour = hour + 8;
+  if (hour >= 24) {
+    hour = hour - 24;
+  }
+  
+  // 步驟2: 減 23 分鐘
+  let totalMinutes = hour * 60 + minute - 23;
+  if (totalMinutes < 0) {
+    totalMinutes += 24 * 60;
+  }
+  
+  let newHour = Math.floor(totalMinutes / 60);
+  let newMinute = totalMinutes % 60;
+  
+  // 步驟3: 向下取整到最近嘅 15 分鐘
+  let roundedMinute = Math.floor(newMinute / 15) * 15;
+  
+  return `${newHour.toString().padStart(2, '0')}:${roundedMinute.toString().padStart(2, '0')}`;
+}
+
 function safeString(str) {
   if (str === undefined || str === null) return '';
   return String(str);
@@ -214,50 +274,6 @@ function escapeHtml(str) {
     if (m === '>') return '&gt;';
     return m;
   });
-}
-
-function formatTimeOnly(timeStr) {
-  if (!timeStr) return '---';
-  let str = safeString(timeStr);
-  if (str === '---') return '---';
-  
-  let hour = 0;
-  let minute = 0;
-  let success = false;
-  
-  let isoMatch = str.match(/T(\d{2}):(\d{2})/);
-  if (isoMatch) {
-    hour = parseInt(isoMatch[1]);
-    minute = parseInt(isoMatch[2]);
-    success = true;
-    hour = hour + 8;
-    if (hour >= 24) hour = hour - 24;
-  } else {
-    let timeMatch = str.match(/(\d{2}):(\d{2})/);
-    if (timeMatch) {
-      hour = parseInt(timeMatch[1]);
-      minute = parseInt(timeMatch[2]);
-      success = true;
-    } else {
-      let testDate = new Date(str);
-      if (!isNaN(testDate.getTime())) {
-        hour = testDate.getUTCHours() + 8;
-        if (hour >= 24) hour = hour - 24;
-        minute = testDate.getUTCMinutes();
-        success = true;
-      }
-    }
-  }
-  
-  if (!success) return '---';
-  
-  let totalMinutes = hour * 60 + minute - 23;
-  if (totalMinutes < 0) totalMinutes += 24 * 60;
-  let newHour = Math.floor(totalMinutes / 60);
-  let newMinute = totalMinutes % 60;
-  let roundedMinute = Math.floor(newMinute / 15) * 15;
-  
-  return `${newHour.toString().padStart(2, '0')}:${roundedMinute.toString().padStart(2, '0')}`;
 }
 
 function initDatePicker() {
@@ -345,7 +361,7 @@ function loadData() {
       });
       renderTables();
     })
-    .catch(error => { console.error(error); if (confirmTable) confirmTable.innerHTML = '<tr><td colspan="10" style="color:red">連線失敗<\/td><\/tr>'; });
+    .catch(error => { console.error(error); if (confirmTable) confirmTable.innerHTML = '<td><td colspan="10" style="color:red">連線失敗<\/td><\/tr>'; });
 }
 
 function getTodayConfirmed() {
@@ -501,7 +517,7 @@ function resetForm() {
   initDatePicker();
 }
 
-// ==================== PDF 匯出（支援自動分頁，完整顯示） ====================
+// ==================== PDF 匯出 ====================
 async function exportPDF() {
   let selectedDate = document.getElementById('exportDate').value;
   if (!selectedDate) { alert('請先選擇要匯出的日期'); return; }
@@ -520,8 +536,6 @@ async function exportPDF() {
   
   try {
     const { jsPDF } = window.jspdf;
-    
-    // 每頁最多顯示 12 行資料（確保表格完整顯示）
     const ROWS_PER_PAGE = 12;
     const totalPages = Math.ceil(list.length / ROWS_PER_PAGE);
     const pdf = new jsPDF('l', 'mm', 'a4');
@@ -534,6 +548,7 @@ async function exportPDF() {
       let tableRows = '';
       pageData.forEach((item, idx) => {
         const globalIndex = start + idx + 1;
+        const displayTime = item.visit_time && item.visit_time !== '---' ? item.visit_time : '---';
         tableRows += `<tr style="background:#ffffff;">
           <td style="border:1px solid #000000;padding:5px 3px;vertical-align:top;color:#000000;font-size:7px;">${globalIndex}<\/td>
           <td style="border:1px solid #000000;padding:5px 3px;vertical-align:top;color:#000000;font-size:7px;">${escapeHtml(item.ref_no)}<\/td>
@@ -542,7 +557,7 @@ async function exportPDF() {
           <td style="border:1px solid #000000;padding:5px 3px;vertical-align:top;color:#000000;font-size:7px;">${escapeHtml(item.vehicle_type)}<\/td>
           <td style="border:1px solid #000000;padding:5px 3px;vertical-align:top;color:#000000;font-size:7px;">${escapeHtml(item.contact_person)}<\/td>
           <td style="border:1px solid #000000;padding:5px 3px;vertical-align:top;color:#000000;font-size:7px;">${escapeHtml(item.tel_no)}<\/td>
-          <td style="border:1px solid #000000;padding:5px 3px;vertical-align:top;color:#000000;font-size:7px;">${item.visit_time}<\/td>
+          <td style="border:1px solid #000000;padding:5px 3px;vertical-align:top;color:#000000;font-size:7px;">${displayTime}<\/td>
           <td style="border:1px solid #000000;padding:5px 3px;vertical-align:top;color:#000000;font-size:7px;">${escapeHtml(item.purpose)}<\/td>
         <\/tr>`;
       });
