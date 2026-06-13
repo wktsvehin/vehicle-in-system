@@ -48,8 +48,8 @@
     .mt-2 { margin-top: 16px; }
     .w-100 { width: 100%; }
     .table-responsive { overflow-x: auto; background: #fff; border-radius: 16px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.75rem; min-width: 800px; }
-    th, td { padding: 10px 8px; text-align: center; border-bottom: 1px solid #e2e8f0; white-space: nowrap; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.7rem; min-width: 950px; }
+    th, td { padding: 8px 6px; text-align: center; border-bottom: 1px solid #e2e8f0; white-space: nowrap; }
     th { background: #f1f5f9; font-weight: 600; }
     .section-title { color: #2c7a7b; font-weight: bold; margin: 16px 0 12px; padding-left: 8px; border-left: 4px solid #319795; font-size: 1rem; }
     .section-title .eng-text { font-size: 0.7rem; font-weight: normal; }
@@ -62,7 +62,7 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     .plate-input-search { padding-left: 12px !important; }
     .icon-text { display: inline-flex; align-items: center; gap: 6px; }
-    @media (max-width:480px) { body { padding: 12px; max-width: 100%; } .card { padding: 16px; } .preview-row { flex-direction: column; } .preview-label, .preview-value { width: 100%; } th, td { padding: 6px 3px; font-size: 0.65rem; white-space: normal; } table { min-width: 650px; } }
+    @media (max-width:480px) { body { padding: 12px; max-width: 100%; } .card { padding: 16px; } .preview-row { flex-direction: column; } .preview-label, .preview-value { width: 100%; } th, td { padding: 4px 2px; font-size: 0.6rem; white-space: normal; } table { min-width: 750px; } }
   </style>
 </head>
 <body>
@@ -144,16 +144,16 @@
             <th>📄 參考編號<br>Ref No.</th>
             <th>🏢 公司<br>Company</th>
             <th>🚗 車牌<br>Vehicle No.</th>
+            <th>🚙 車型<br>Vehicle Type</th>
             <th>👤 聯絡人<br>Contact</th>
             <th>📞 電話<br>Tel</th>
             <th>📅 到訪日期<br>Visit Date</th>
             <th>⏱️ 入站時間<br>Time In</th>
             <th>📦 目的<br>Purpose</th>
-            <th>🚙 車型<br>Vehicle Type</th>
           </tr>
         </thead>
         <tbody id="confirmedTable">
-          <tr><td colspan="10">登入後自動載入資料...</td></tr>
+          <tr><td colspan="10">登入後自動載入資料...<\/td><\/tr>
         </tbody>
       </table>
     </div>
@@ -201,6 +201,7 @@ function convertUTCtoHKDate(utcDateStr) {
   return str;
 }
 
+// 時間格式化：UTC → 香港 (+8) → 減23分鐘 → 向下取整到15分鐘
 function formatTimeOnly(timeStr) {
   if (!timeStr) return '---';
   let str = String(timeStr);
@@ -221,7 +222,7 @@ function formatTimeOnly(timeStr) {
     }
   }
   
-  // UTC+8
+  // UTC+8 轉香港時間
   let hkHour = hour + 8;
   if (hkHour >= 24) hkHour = hkHour - 24;
   
@@ -231,6 +232,8 @@ function formatTimeOnly(timeStr) {
   
   let newHour = Math.floor(totalMinutes / 60);
   let newMinute = totalMinutes % 60;
+  
+  // 向下取整到15分鐘
   let roundedMinute = Math.floor(newMinute / 15) * 15;
   
   return `${newHour.toString().padStart(2, '0')}:${roundedMinute.toString().padStart(2, '0')}`;
@@ -295,7 +298,7 @@ function logout() { isLoggedIn = false; showLogin(); }
 
 function loadData() {
   const confirmTable = document.getElementById('confirmedTable');
-  if (confirmTable) confirmTable.innerHTML = '<tr><td colspan="10">⏳ 載入中...</td></tr>';
+  if (confirmTable) confirmTable.innerHTML = '<tr><td colspan="10">⏳ 載入中...<\/td><\/tr>';
   
   debugLog("===== 開始載入資料 =====");
   
@@ -305,12 +308,12 @@ function loadData() {
       debugLog("API 回傳成功，筆數:", data ? data.length : 0);
       
       if (!Array.isArray(data)) { 
-        confirmTable.innerHTML = '<tr><td colspan="10" style="color:red">❌ 資料格式錯誤</td></tr>';
+        confirmTable.innerHTML = '<tr><td colspan="10" style="color:red">❌ 資料格式錯誤<\/td><\/tr>';
         return; 
       }
       
       if (data.length === 0) {
-        confirmTable.innerHTML = '<tr><td colspan="10">📭 暫無任何登記記錄</td></tr>';
+        confirmTable.innerHTML = '<tr><td colspan="10">📭 暫無任何登記記錄<\/td><\/tr>';
         return;
       }
       
@@ -321,11 +324,11 @@ function loadData() {
           ref_no: item.ref_no || item.參考編號 || '',
           company: item.company || item.公司 || '',
           vehicle_no: item.vehicle_no || item.車牌 || '',
+          vehicle_type: item.vehicle_type || item.車型 || '',
           contact_person: item.contact_person || item.聯絡人 || '',
           tel_no: item.tel_no || item.電話 || '',
           visit_time: formatTimeOnly(rawTime),
           purpose: item.purpose || item.目的 || '',
-          vehicle_type: item.vehicle_type || item.車型 || '',
           visit_date: convertUTCtoHKDate(rawDate)
         };
       });
@@ -335,7 +338,7 @@ function loadData() {
     })
     .catch(error => { 
       console.error("載入錯誤:", error); 
-      confirmTable.innerHTML = '<tr><td colspan="10" style="color:red">❌ 連線失敗</td></tr>';
+      confirmTable.innerHTML = '<tr><td colspan="10" style="color:red">❌ 連線失敗<\/td><\/tr>';
     });
 }
 
@@ -350,21 +353,21 @@ function renderTables() {
   if (!confirmBody) return;
   
   if (confirmed.length === 0) {
-    confirmBody.innerHTML = '<tr><td colspan="10">📭 今日暫無已確認車輛</td></tr>';
+    confirmBody.innerHTML = '<table><td colspan="10">📭 今日暫無已確認車輛<\/td><\/tr>';
   } else {
     confirmBody.innerHTML = confirmed.map((i, idx) => `
       <tr>
         <td>${idx+1}</td>
-        <td>${escapeHtml(i.ref_no)}</td>
-        <td>${escapeHtml(i.company)}</td>
-        <td style="color:#2c7a7b;font-weight:bold;">${escapeHtml(i.vehicle_no)}</td>
-        <td>${escapeHtml(i.contact_person)}</td>
-        <td>${escapeHtml(i.tel_no)}</td>
-        <td>${escapeHtml(i.visit_date)}</td>
-        <td>${escapeHtml(i.visit_time)}</td>
-        <td>${escapeHtml(i.purpose)}</td>
-        <td>${escapeHtml(i.vehicle_type)}</td>
-      </tr>
+        <td>${escapeHtml(i.ref_no)}<\/td>
+        <td>${escapeHtml(i.company)}<\/td>
+        <td style="color:#2c7a7b;font-weight:bold;">${escapeHtml(i.vehicle_no)}<\/td>
+        <td>${escapeHtml(i.vehicle_type)}<\/td>
+        <td>${escapeHtml(i.contact_person)}<\/td>
+        <td>${escapeHtml(i.tel_no)}<\/td>
+        <td>${escapeHtml(i.visit_date)}<\/td>
+        <td>${escapeHtml(i.visit_time)}<\/td>
+        <td>${escapeHtml(i.purpose)}<\/td>
+      <\/tr>
     `).join('');
   }
 }
@@ -528,39 +531,39 @@ async function exportPDF() {
       pageData.forEach((item, idx) => {
         const globalIndex = start + idx + 1;
         tableRows += `<tr style="background:#ffffff;">
-          <td style="border:1px solid #000000;padding:6px 4px;vertical-align:top;font-size:8px;">${globalIndex}<\/td>
-          <td style="border:1px solid #000000;padding:6px 4px;vertical-align:top;font-size:8px;">${escapeHtml(item.ref_no)}<\/td>
-          <td style="border:1px solid #000000;padding:6px 4px;vertical-align:top;font-size:8px;">${escapeHtml(item.company)}<\/td>
-          <td style="border:1px solid #000000;padding:6px 4px;vertical-align:top;font-size:8px;">${escapeHtml(item.vehicle_no)}<\/td>
-          <td style="border:1px solid #000000;padding:6px 4px;vertical-align:top;font-size:8px;">${escapeHtml(item.vehicle_type)}<\/td>
-          <td style="border:1px solid #000000;padding:6px 4px;vertical-align:top;font-size:8px;">${escapeHtml(item.contact_person)}<\/td>
-          <td style="border:1px solid #000000;padding:6px 4px;vertical-align:top;font-size:8px;">${escapeHtml(item.tel_no)}<\/td>
-          <td style="border:1px solid #000000;padding:6px 4px;vertical-align:top;font-size:8px;">${item.visit_time}<\/td>
-          <td style="border:1px solid #000000;padding:6px 4px;vertical-align:top;font-size:8px;">${escapeHtml(item.purpose)}<\/td>
+          <td style="border:1px solid #000000;padding:5px 3px;vertical-align:top;font-size:7px;">${globalIndex}<\/td>
+          <td style="border:1px solid #000000;padding:5px 3px;vertical-align:top;font-size:7px;">${escapeHtml(item.ref_no)}<\/td>
+          <td style="border:1px solid #000000;padding:5px 3px;vertical-align:top;font-size:7px;">${escapeHtml(item.company)}<\/td>
+          <td style="border:1px solid #000000;padding:5px 3px;vertical-align:top;font-size:7px;">${escapeHtml(item.vehicle_no)}<\/td>
+          <td style="border:1px solid #000000;padding:5px 3px;vertical-align:top;font-size:7px;">${escapeHtml(item.vehicle_type)}<\/td>
+          <td style="border:1px solid #000000;padding:5px 3px;vertical-align:top;font-size:7px;">${escapeHtml(item.contact_person)}<\/td>
+          <td style="border:1px solid #000000;padding:5px 3px;vertical-align:top;font-size:7px;">${escapeHtml(item.tel_no)}<\/td>
+          <td style="border:1px solid #000000;padding:5px 3px;vertical-align:top;font-size:7px;">${item.visit_time}<\/td>
+          <td style="border:1px solid #000000;padding:5px 3px;vertical-align:top;font-size:7px;">${escapeHtml(item.purpose)}<\/td>
         <\/tr>`;
       });
       
       const pdfContainer = document.createElement('div');
-      pdfContainer.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:950px;background:white;padding:15px';
+      pdfContainer.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:950px;background:white;padding:12px';
       
-      let pageInfo = totalPages > 1 ? `<div style="text-align:right;font-size:9px;color:#666;">第 ${page+1} / ${totalPages} 頁</div>` : '';
+      let pageInfo = totalPages > 1 ? `<div style="text-align:right;font-size:8px;color:#666;">第 ${page+1} / ${totalPages} 頁</div>` : '';
       
       pdfContainer.innerHTML = `
-        <div style="display:flex;justify-content:space-between;margin-bottom:10px;border-bottom:1px solid #ccc;padding-bottom:5px;">
-          <div><div style="font-size:12px;font-weight:bold;">中國港灣工程有限責任公司</div><div style="font-size:9px;">China Harbour Engineering Company Limited</div><div style="font-size:8px;">西九龍廢物轉運站 | West Kowloon Transfer Station</div></div>
-          <div><div style="font-size:9px;font-weight:bold;">環境保護署查閱 / Checked By EPD: _________________</div></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px;border-bottom:1px solid #ccc;padding-bottom:5px;">
+          <div><div style="font-size:11px;font-weight:bold;">中國港灣工程有限責任公司</div><div style="font-size:8px;">China Harbour Engineering Company Limited</div><div style="font-size:7px;">西九龍廢物轉運站 | West Kowloon Transfer Station</div></div>
+          <div><div style="font-size:8px;font-weight:bold;">環境保護署查閱 / Checked By EPD: _________________</div></div>
         </div>
-        <div style="text-align:center;margin:8px 0;"><div style="font-size:16px;font-weight:bold;color:#1a5c5c;background:#e6f7f7;display:inline-block;padding:4px 15px;border-radius:20px;">📅 到訪日期 / Visit Date：${selectedDate}</div></div>
-        <div style="font-size:12px;font-weight:bold;text-align:center;margin-bottom:8px;">車輛進入預先登記記錄<br>Registered Vehicle Log</div>
+        <div style="text-align:center;margin:6px 0;"><div style="font-size:14px;font-weight:bold;color:#1a5c5c;background:#e6f7f7;display:inline-block;padding:3px 12px;border-radius:20px;">📅 到訪日期 / Visit Date：${selectedDate}</div></div>
+        <div style="font-size:11px;font-weight:bold;text-align:center;margin-bottom:5px;">車輛進入預先登記記錄<br>Registered Vehicle Log</div>
         ${pageInfo}
-        <table style="width:100%;border-collapse:collapse;font-size:8px;table-layout:fixed;">
+        <table style="width:100%;border-collapse:collapse;font-size:7px;table-layout:fixed;">
           <colgroup><col style="width:5%"><col style="width:10%"><col style="width:12%"><col style="width:10%"><col style="width:12%"><col style="width:10%"><col style="width:10%"><col style="width:8%"><col style="width:23%"></colgroup>
           <thead><tr style="background:#fff;">
-            <th style="border:1px solid #000;padding:5px 3px;">項目</th><th style="border:1px solid #000;padding:5px 3px;">參考編號</th><th style="border:1px solid #000;padding:5px 3px;">公司名稱</th><th style="border:1px solid #000;padding:5px 3px;">車牌號碼</th><th style="border:1px solid #000;padding:5px 3px;">車輛種類</th><th style="border:1px solid #000;padding:5px 3px;">聯絡人</th><th style="border:1px solid #000;padding:5px 3px;">電話</th><th style="border:1px solid #000;padding:5px 3px;">進入時間</th><th style="border:1px solid #000;padding:5px 3px;">目的</th>
-          <tr></thead>
+            <th style="border:1px solid #000;padding:4px 2px;">項目</th><th style="border:1px solid #000;padding:4px 2px;">參考編號</th><th style="border:1px solid #000;padding:4px 2px;">公司名稱</th><th style="border:1px solid #000;padding:4px 2px;">車牌號碼</th><th style="border:1px solid #000;padding:4px 2px;">車輛種類</th><th style="border:1px solid #000;padding:4px 2px;">聯絡人</th><th style="border:1px solid #000;padding:4px 2px;">電話</th><th style="border:1px solid #000;padding:4px 2px;">進入時間</th><th style="border:1px solid #000;padding:4px 2px;">目的</th>
+          </tr></thead>
           <tbody>${tableRows}</tbody>
         </table>
-        <div style="margin-top:8px;font-size:7px;text-align:center;">系統產生之記錄，請核對無誤後簽署</div>
+        <div style="margin-top:6px;font-size:6px;text-align:center;">系統產生之記錄，請核對無誤後簽署</div>
       `;
       
       document.body.appendChild(pdfContainer);
