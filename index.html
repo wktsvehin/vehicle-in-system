@@ -180,19 +180,35 @@ function getCurrentHour() {
   return new Date().getHours();
 }
 
-// ✅ 提取日期 (YYYY-MM-DD)
+// ✅ 提取日期並減 1 日（解決 UTC 時區問題）
 function extractDateOnly(dateStr) {
   if (!dateStr) return '';
   let str = String(dateStr).trim();
+  
+  // 如果已經是 YYYY-MM-DD 格式，直接返回
   if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+  
+  // 從 ISO 格式提取 YYYY-MM-DD
   let match = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
   if (match) {
-    return `${match[1]}-${match[2]}-${match[3]}`;
+    let year = parseInt(match[1]);
+    let month = parseInt(match[2]);
+    let day = parseInt(match[3]);
+    
+    // 🔧 減 1 日
+    let date = new Date(Date.UTC(year, month - 1, day));
+    date.setUTCDate(date.getUTCDate() - 1);
+    
+    let y = date.getUTCFullYear();
+    let m = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+    let d = date.getUTCDate().toString().padStart(2, '0');
+    console.log(`日期轉換: ${str} -> ${y}-${m}-${d} (減1日)`);
+    return `${y}-${m}-${d}`;
   }
   return str;
 }
 
-// ✅ 時間處理：減 23 分鐘，向下取整到 15 分鐘
+// 時間處理：減 23 分鐘，向下取整到 15 分鐘
 function formatTimeOnly(timeStr) {
   if (!timeStr) return '---';
   let str = String(timeStr);
@@ -308,11 +324,6 @@ function loadData() {
         let extractedDate = extractDateOnly(rawDate);
         let formattedTime = formatTimeOnly(rawTime);
         
-        // 🔍 除錯：顯示原始日期同提取日期
-        if (rawDate && extractedDate !== rawDate.substring(0,10)) {
-          console.log(`⚠️ 日期轉換: ${rawDate} -> ${extractedDate}`);
-        }
-        
         return {
           ref_no: item.ref_no || item.參考編號 || '',
           company: item.company || item.公司 || '',
@@ -322,8 +333,7 @@ function loadData() {
           tel_no: item.tel_no || item.電話 || '',
           visit_time: formattedTime,
           purpose: item.purpose || item.目的 || '',
-          visit_date: extractedDate,
-          raw_date: rawDate  // 保留原始日期用於除錯
+          visit_date: extractedDate
         };
       });
       
@@ -333,7 +343,7 @@ function loadData() {
     })
     .catch(error => { 
       console.error("載入錯誤:", error); 
-      confirmTable.innerHTML = `<tr><td colspan="10" style="color:red">❌ 連線失敗: ${error.message}<\/td><\/tr>`;
+      confirmTable.innerHTML = `</td><td colspan="10" style="color:red">❌ 連線失敗: ${error.message}<\/td><\/tr>`;
     });
 }
 
@@ -493,36 +503,20 @@ function resetForm() {
   initDatePicker();
 }
 
-// ==================== PDF 匯出 (修復日期偏移) ====================
+// ==================== PDF 匯出 ====================
 async function exportPDF() {
   let selectedDate = document.getElementById('exportDate').value;
   if (!selectedDate) { alert('請先選擇要匯出的日期'); return; }
   
   console.log("===== PDF 匯出 =====");
   console.log("選擇匯出日期:", selectedDate);
+  console.log("cachedData 日期列表:", cachedData.map(d => `${d.company}: ${d.visit_date}`));
   
-  // 🔍 除錯：顯示所有資料的日期
-  console.log("所有資料日期:", cachedData.map(d => ({
-    company: d.company,
-    visit_date: d.visit_date,
-    raw_date: d.raw_date
-  })));
-  
-  // ✅ 修復：同時比對多種日期格式
-  let list = cachedData.filter(item => {
-    // 比對提取後的日期
-    if (item.visit_date === selectedDate) return true;
-    // 比對原始日期（可能係 2026-06-15T16:00:00.000Z）
-    if (item.raw_date && item.raw_date.startsWith(selectedDate)) return true;
-    // 比對原始日期的一部分
-    if (item.raw_date && item.raw_date.includes(selectedDate)) return true;
-    return false;
-  });
-  
+  // 直接比對 visit_date（已經減咗 1 日）
+  let list = cachedData.filter(item => item.visit_date === selectedDate);
   console.log("符合條件筆數:", list.length);
   
   if (list.length === 0) {
-    // 顯示所有可用日期俾用戶參考
     let availableDates = [...new Set(cachedData.map(d => d.visit_date).filter(d => d))];
     alert(`沒有 ${selectedDate} 的車輛紀錄\n\n系統中現有日期：${availableDates.join(', ')}`);
     return;
@@ -643,7 +637,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   
-  console.log("系統初始化完成");
+  console.log("系統初始化完成 (日期已減1日)");
 });
 </script>
 </body>
