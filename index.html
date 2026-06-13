@@ -168,16 +168,15 @@ let isSubmitting = false;
 const API = "https://script.google.com/macros/s/AKfycbxzWm4hBTMZVKjZUv_0pLjKrp_VrDxCfmi6aLUVa4nB-x0N0MyEdDlSefU69MmbGb1D/exec";
 let pendingSubmissionData = null;
 
-// ==================== 香港時區核心函數 (100% 香港時間) ====================
+// ==================== 香港時區核心函數 ====================
 
-// 獲取當前香港時間的 Date 物件
+// 獲取香港時間的 Date 物件
 function getHKDate() {
   let now = new Date();
-  let hkTime = new Date(now.getTime() + 8 * 60 * 60 * 1000);
-  return hkTime;
+  return new Date(now.getTime() + 8 * 60 * 60 * 1000);
 }
 
-// 獲取香港時區嘅今日日期 YYYY-MM-DD
+// 獲取今日香港日期 YYYY-MM-DD
 function getHKTodayString() {
   let hkTime = getHKDate();
   let year = hkTime.getUTCFullYear();
@@ -186,47 +185,29 @@ function getHKTodayString() {
   return `${year}-${month}-${day}`;
 }
 
-// 獲取香港時區嘅當前小時
+// 獲取當前香港小時
 function getHKCurrentHour() {
   return getHKDate().getUTCHours();
 }
 
-// 將任何日期轉換為香港日期 YYYY-MM-DD
-// 處理 Google Sheets 回傳的 UTC 格式 (例如 2026-06-15T16:00:00.000Z)
-// 直接提取 YYYY-MM-DD，因為 UTC 16:00 對應香港 00:00 (+1日)
-// 但使用者輸入的是 2026-06-15，所以直接用日期部分
+// 將 UTC 日期轉換為香港日期 (直接提取 YYYY-MM-DD)
 function toHKDate(utcDateStr) {
   if (!utcDateStr) return '';
   let str = String(utcDateStr).trim();
-  
-  // 如果已經是 YYYY-MM-DD 格式，直接返回
   if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
-  
-  // 從 ISO 格式提取 YYYY-MM-DD
   let isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})T/);
   if (isoMatch) {
     return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
   }
-  
-  // 嘗試用 Date 解析
-  let d = new Date(str);
-  if (!isNaN(d.getTime())) {
-    let year = d.getFullYear();
-    let month = (d.getMonth() + 1).toString().padStart(2, '0');
-    let day = d.getDate().toString().padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }
-  
   return str;
 }
 
-// 將 UTC 時間轉換為香港時間，然後應用規則：減 23 分鐘後向下取整到 15 分鐘
+// 將 UTC 時間轉換為香港時間，然後減 23 分鐘，再向下取整到 15 分鐘
 function toHKTime(timeStr) {
   if (!timeStr) return '---';
   let str = String(timeStr);
   if (str === '---') return '---';
   
-  // 從 ISO 格式提取 UTC 小時和分鐘
   let isoMatch = str.match(/T(\d{2}):(\d{2}):(\d{2})/);
   let hour = 0, minute = 0;
   if (isoMatch) {
@@ -242,7 +223,7 @@ function toHKTime(timeStr) {
     }
   }
   
-  // UTC 轉換為香港時間 (UTC+8)
+  // UTC+8 轉香港
   let hkHour = hour + 8;
   if (hkHour >= 24) hkHour = hkHour - 24;
   
@@ -319,7 +300,7 @@ function logout() { isLoggedIn = false; showLogin(); }
 
 function loadData() {
   const confirmTable = document.getElementById('confirmedTable');
-  if (confirmTable) confirmTable.innerHTML = '</tr><td colspan="10">⏳ 載入中...<\/td><\/tr>';
+  if (confirmTable) confirmTable.innerHTML = '<tr><td colspan="10">⏳ 載入中...<\/td><\/tr>';
   
   console.log("===== 開始載入資料 =====");
   
@@ -343,7 +324,7 @@ function loadData() {
         let rawTime = item.time_in || item.入站時間 || '';
         let hkDate = toHKDate(rawDate);
         let hkTime = toHKTime(rawTime);
-        console.log(`原始: ${rawDate} -> 香港日期: ${hkDate}, 時間: ${hkTime}`);
+        console.log(`原始: ${rawDate} -> 香港: ${hkDate}, 時間: ${hkTime}`);
         return {
           ref_no: item.ref_no || item.參考編號 || '',
           company: item.company || item.公司 || '',
@@ -523,117 +504,15 @@ function resetForm() {
   initDatePicker();
 }
 
-// ==================== PDF 匯出 ====================
+// ==================== PDF 匯出 (自動分頁) ====================
 async function exportPDF() {
   let selectedDate = document.getElementById('exportDate').value;
   if (!selectedDate) { alert('請先選擇要匯出的日期'); return; }
   
   console.log("===== PDF 匯出 =====");
   console.log("選擇匯出日期:", selectedDate);
-  console.log("cachedData 日期列表:", cachedData.map(d => `${d.company}:${d.visit_date}`));
   
-  // 直接比對
   let list = cachedData.filter(item => item.visit_date === selectedDate);
   console.log("符合條件筆數:", list.length);
   
-  if (list.length === 0) {
-    alert(`沒有 ${selectedDate} 的車輛紀錄`);
-    return;
-  }
-  if (!confirm(`確認匯出 ${selectedDate} 的 ${list.length} 筆紀錄？`)) return;
-  
-  let loadingDiv = document.createElement('div');
-  loadingDiv.innerText = '正在產生 PDF，請稍候...';
-  loadingDiv.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.85);color:#fff;padding:15px 30px;border-radius:10px;z-index:9999';
-  document.body.appendChild(loadingDiv);
-  await new Promise(r => setTimeout(r, 100));
-  
-  try {
-    const { jsPDF } = window.jspdf;
-    const ROWS_PER_PAGE = 15;
-    const totalPages = Math.ceil(list.length / ROWS_PER_PAGE);
-    const pdf = new jsPDF('l', 'mm', 'a4');
-    
-    for (let page = 0; page < totalPages; page++) {
-      const start = page * ROWS_PER_PAGE;
-      const end = Math.min(start + ROWS_PER_PAGE, list.length);
-      const pageData = list.slice(start, end);
-      
-      let tableRows = '';
-      pageData.forEach((item, idx) => {
-        const globalIndex = start + idx + 1;
-        tableRows += `<tr style="background:#ffffff;">
-          <td style="border:1px solid #000000;padding:5px 3px;vertical-align:top;font-size:7px;">${globalIndex}<\/td>
-          <td style="border:1px solid #000000;padding:5px 3px;vertical-align:top;font-size:7px;">${escapeHtml(item.ref_no)}<\/td>
-          <td style="border:1px solid #000000;padding:5px 3px;vertical-align:top;font-size:7px;">${escapeHtml(item.company)}<\/td>
-          <td style="border:1px solid #000000;padding:5px 3px;vertical-align:top;font-size:7px;">${escapeHtml(item.vehicle_no)}<\/td>
-          <td style="border:1px solid #000000;padding:5px 3px;vertical-align:top;font-size:7px;">${escapeHtml(item.vehicle_type)}<\/td>
-          <td style="border:1px solid #000000;padding:5px 3px;vertical-align:top;font-size:7px;">${escapeHtml(item.contact_person)}<\/td>
-          <td style="border:1px solid #000000;padding:5px 3px;vertical-align:top;font-size:7px;">${escapeHtml(item.tel_no)}<\/td>
-          <td style="border:1px solid #000000;padding:5px 3px;vertical-align:top;font-size:7px;">${item.visit_time}<\/td>
-          <td style="border:1px solid #000000;padding:5px 3px;vertical-align:top;font-size:7px;">${escapeHtml(item.purpose)}<\/td>
-        <\/tr>`;
-      });
-      
-      const pdfContainer = document.createElement('div');
-      pdfContainer.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:950px;background:white;padding:12px';
-      
-      let pageInfo = totalPages > 1 ? `<div style="text-align:right;font-size:8px;color:#666;">第 ${page+1} / ${totalPages} 頁</div>` : '';
-      
-      pdfContainer.innerHTML = `
-        <div style="display:flex;justify-content:space-between;margin-bottom:8px;border-bottom:1px solid #ccc;padding-bottom:5px;">
-          <div><div style="font-size:11px;font-weight:bold;">中國港灣工程有限責任公司</div><div style="font-size:8px;">China Harbour Engineering Company Limited</div><div style="font-size:7px;">西九龍廢物轉運站 | West Kowloon Transfer Station</div></div>
-          <div><div style="font-size:8px;font-weight:bold;">環境保護署查閱 / Checked By EPD: _________________</div></div>
-        </div>
-        <div style="text-align:center;margin:6px 0;"><div style="font-size:14px;font-weight:bold;color:#1a5c5c;background:#e6f7f7;display:inline-block;padding:3px 12px;border-radius:20px;">📅 到訪日期 / Visit Date：${selectedDate}</div></div>
-        <div style="font-size:11px;font-weight:bold;text-align:center;margin-bottom:5px;">車輛進入預先登記記錄<br>Registered Vehicle Log</div>
-        ${pageInfo}
-        <table style="width:100%;border-collapse:collapse;font-size:7px;table-layout:fixed;">
-          <colgroup><col style="width:5%"><col style="width:10%"><col style="width:12%"><col style="width:10%"><col style="width:12%"><col style="width:10%"><col style="width:10%"><col style="width:8%"><col style="width:23%"></colgroup>
-          <thead><tr style="background:#fff;">
-            <th style="border:1px solid #000;padding:4px 2px;">項目</th><th style="border:1px solid #000;padding:4px 2px;">參考編號</th><th style="border:1px solid #000;padding:4px 2px;">公司名稱</th><th style="border:1px solid #000;padding:4px 2px;">車牌號碼</th><th style="border:1px solid #000;padding:4px 2px;">車輛種類</th><th style="border:1px solid #000;padding:4px 2px;">聯絡人</th><th style="border:1px solid #000;padding:4px 2px;">電話</th><th style="border:1px solid #000;padding:4px 2px;">進入時間</th><th style="border:1px solid #000;padding:4px 2px;">目的</th>
-          </tr></thead>
-          <tbody>${tableRows}</tbody>
-        </table>
-        <div style="margin-top:6px;font-size:6px;text-align:center;">系統產生之記錄，請核對無誤後簽署</div>
-      `;
-      
-      document.body.appendChild(pdfContainer);
-      await new Promise(r => setTimeout(r, 200));
-      const canvas = await html2canvas(pdfContainer, { scale: 2.5, backgroundColor: '#ffffff' });
-      document.body.removeChild(pdfContainer);
-      
-      const imgData = canvas.toDataURL('image/png');
-      const imgWidth = 280;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
-      if (page === 0) pdf.addImage(imgData, 'PNG', 10, 8, imgWidth, imgHeight);
-      else { pdf.addPage(); pdf.addImage(imgData, 'PNG', 10, 8, imgWidth, imgHeight); }
-    }
-    
-    pdf.save(`WKTS_VehicleLog_${selectedDate}.pdf`);
-    document.body.removeChild(loadingDiv);
-    alert(`✅ PDF 已下載！`);
-  } catch (err) {
-    console.error(err);
-    if (loadingDiv) loadingDiv.remove();
-    alert('❌ PDF 生成失敗');
-  }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  initTimeSelects();
-  initDatePicker();
-  
-  const telInput = document.getElementById('telNo');
-  if (telInput) {
-    telInput.addEventListener('input', function(e) {
-      this.value = this.value.replace(/[^0-9]/g, '').slice(0, 8);
-    });
-  }
-  
-  console.log("系統初始化完成 (香港時區)");
-});
-</script>
-</body>
-</html>
+  if
