@@ -24,9 +24,11 @@
     .form-group { margin-bottom: 20px; }
     .form-label { display: block; font-weight: 600; font-size: 0.9rem; color: #2d3748; }
     .form-sub { font-size: 0.7rem; color: #718096; display: block; }
-    .form-control, .form-select { width: 100%; padding: 12px 14px; font-size: 1rem; border: 1px solid #cbd5e0; border-radius: 12px; background: #f7fafc; }
-    input[type="tel"], input[type="date"] { width: 100%; padding: 12px 14px; font-size: 1rem; border: 1px solid #cbd5e0; border-radius: 12px; background: #f7fafc; font-family: inherit; }
-    input[type="tel"]:focus, input[type="date"]:focus, .form-control:focus, .form-select:focus { background: #ffffff; outline: none; border-color: #2c7a7b; }
+    /* 輸入框背景白色，文字淺灰色 */
+    .form-control, .form-select { width: 100%; padding: 12px 14px; font-size: 1rem; border: 1px solid #cbd5e0; border-radius: 12px; background: #ffffff; color: #a0aec0; }
+    .form-control:focus, .form-select:focus { outline: none; border-color: #2c7a7b; color: #2d3748; }
+    input[type="tel"], input[type="date"] { width: 100%; padding: 12px 14px; font-size: 1rem; border: 1px solid #cbd5e0; border-radius: 12px; background: #ffffff; color: #a0aec0; font-family: inherit; }
+    input[type="tel"]:focus, input[type="date"]:focus { outline: none; border-color: #2c7a7b; color: #2d3748; }
     .btn-gold { width: 100%; background: linear-gradient(135deg,#ffb020,#f59e0b); border: none; color: #1e293b; font-weight: 800; font-size: 1.2rem; padding: 14px; border-radius: 16px; cursor: pointer; }
     .btn-success { background: #38a169; border: none; color: #fff; padding: 12px 20px; border-radius: 40px; font-weight: 600; cursor: pointer; }
     .btn-outline { background: transparent; border: 2px solid #cbd5e0; padding: 12px 20px; border-radius: 40px; font-weight: 600; cursor: pointer; }
@@ -78,46 +80,46 @@
 <!-- 訪客面板 -->
 <div id="visitorPanel">
   <div id="formSection" class="card">
-    <div class="alert-cutoff"><div style="font-weight:bold;">預約截數提示：每天下午3:00截數</div><div class="eng-text">Cut-off: 3:00 PM daily | Before Next day | After Day after next</div></div>
-    <div class="alert-reminder"><div style="font-weight:bold;">📋 注意事項：</div><div class="eng-text">請提供準確資料，資料只作入站核對之用 / Please provide accurate information for entry verification only.</div></div>
+    <div class="alert-cutoff"><div style="font-weight:bold;">⏰ 預約截數提示：每天下午3:00截數</div><div class="eng-text">Cut-off: 3:00 PM daily | Before Next day | After Day after next</div></div>
+    <div class="alert-reminder"><div style="font-weight:bold;">📋 注意事項：</div><div>請提供準確資料，資料只作入站核對之用</div><div class="eng-text">Please provide accurate information for entry verification only.</div></div>
     <form id="regForm" onsubmit="showPreview(event)">
-      <div class="form-group"><label class="form-label">公司名 <span class="form-sub">Company Name</span></label><input type="text" class="form-control" id="company" placeholder="e.g. China Harbour Engineering" required></div>
-      <div class="form-group"><label class="form-label">車牌號碼 <span class="form-sub">Vehicle No.</span></label><input type="text" class="form-control plate-input" id="vehicleNo" placeholder="AB1234" required></div>
-      <div class="form-group"><label class="form-label">聯絡人 <span class="form-sub">Contact Person</span></label><input type="text" class="form-control" id="contactPerson" placeholder="Chan Tai Man" required></div>
-      <div class="form-group"><label class="form-label">電話號碼 <span class="form-sub">Tel. No.</span></label><input type="tel" class="form-control" id="telNo" placeholder="9xxxxxxx" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" required></div>
-      <div class="form-group"><label class="form-label">進入目的/工作内容 <span class="form-sub">Purpose/Work Description</span></label><input type="text" class="form-control" id="purpose" placeholder="送貨 / Goods Delivery" required></div>
-      <div class="form-group"><label class="form-label">車輛種類 <span class="form-sub">Vehicle Type</span></label><select class="form-select" id="vehicleType" required><option value="">請選擇/Select</option><option>私家車/Private Car</option><option>客貨車/Van</option><option>中型貨車/Medium Truck</option><option>重型貨車/Heavy Truck</option><option>工程車/Engineering Vehicle</option><option>其他/Other</option></select></div>
-      <div class="form-group"><label class="form-label">預計到訪日期 <span class="form-sub">Visit Date (7天内)</span></label>
+      <div class="form-group"><label class="form-label">🏢 公司名 <span class="form-sub">Company Name</span></label><input type="text" class="form-control" id="company" placeholder="e.g. China Harbour Engineering" required></div>
+      <div class="form-group"><label class="form-label">🚗 車牌號碼 <span class="form-sub">Vehicle No.</span></label><input type="text" class="form-control plate-input" id="vehicleNo" placeholder="AB1234" required></div>
+      <div class="form-group"><label class="form-label">👤 聯絡人 <span class="form-sub">Contact Person</span></label><input type="text" class="form-control" id="contactPerson" placeholder="Chan Tai Man" required></div>
+      <div class="form-group"><label class="form-label">📞 電話號碼 <span class="form-sub">Tel. No.</span></label><input type="tel" class="form-control" id="telNo" placeholder="9xxxxxxx" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" required></div>
+      <div class="form-group"><label class="form-label">📦 進入目的/工作内容 <span class="form-sub">Purpose/Work Description</span></label><input type="text" class="form-control" id="purpose" placeholder="送貨 / Goods Delivery" required></div>
+      <div class="form-group"><label class="form-label">🚙 車輛種類 <span class="form-sub">Vehicle Type</span></label><select class="form-select" id="vehicleType" required><option value="">請選擇/Select</option><option>私家車/Private Car</option><option>客貨車/Van</option><option>中型貨車/Medium Truck</option><option>重型貨車/Heavy Truck</option><option>工程車/Engineering Vehicle</option><option>其他/Other</option></select></div>
+      <div class="form-group"><label class="form-label">📅 預計到訪日期 <span class="form-sub">Visit Date (7天内)</span></label>
         <input type="date" id="visitDatePicker" class="form-control" required>
       </div>
-      <div class="form-group"><label class="form-label">預計到訪時間 <span class="form-sub">ETA (24h)</span></label><div class="flex"><select id="hour" class="form-select" style="flex:1"></select><span style="font-size:1.5rem;">:</span><select id="minute" class="form-select" style="flex:1"></select></div></div>
-      <button type="submit" class="btn-gold mt-2"><span class="chi-text">提交申請</span><span class="eng-text" style="font-size:0.7rem;">Application Submission</span></button>
+      <div class="form-group"><label class="form-label">⏱️ 預計到訪時間 <span class="form-sub">ETA (24h)</span></label><div class="flex"><select id="hour" class="form-select" style="flex:1"></select><span style="font-size:1.5rem;">:</span><select id="minute" class="form-select" style="flex:1"></select></div></div>
+      <button type="submit" class="btn-gold mt-2"><span class="chi-text">📮 提交申請</span><span class="eng-text" style="font-size:0.7rem;">Application Submission</span></button>
     </form>
   </div>
   <div id="previewSection" class="card hidden">
-    <h3 class="text-center mb-2">請核對資料 / Verify Information</h3>
-    <div class="alert-reminder" style="background:#ffff3d;border-left-color:#f0ad4e"><div style="font-weight:bold;">📋 重要提醒：</div><div class="eng-text">請核對所有資料無誤後提交 / Please verify all information before submission.</div></div>
+    <h3 class="text-center mb-2">✅ 請核對資料 / Verify Information</h3>
+    <div class="alert-reminder" style="background:#ffff3d;border-left-color:#f0ad4e"><div style="font-weight:bold;">⚠️ 重要提醒：</div><div>請核對所有資料無誤後提交</div><div class="eng-text">Please verify all information before submission.</div></div>
     <div class="preview-box">
-      <div class="preview-row"><span class="preview-label">公司/Company :</span><span id="pCompany" class="preview-value"></span></div>
-      <div class="preview-row"><span class="preview-label">車牌/Vehicle No. :</span><span id="pVehicle" class="preview-value" style="color:#e53e3e;font-weight:bold"></span></div>
-      <div class="preview-row"><span class="preview-label">聯絡人/Contact :</span><span id="pContact" class="preview-value"></span></div>
-      <div class="preview-row"><span class="preview-label">電話/Tel :</span><span id="pTel" class="preview-value"></span></div>
-      <div class="preview-row"><span class="preview-label">目的/Purpose :</span><span id="pPurpose" class="preview-value"></span></div>
-      <div class="preview-row"><span class="preview-label">車型/Type :</span><span id="pType" class="preview-value"></span></div>
-      <div class="preview-row"><span class="preview-label">日期/Date :</span><span id="pDate" class="preview-value"></span></div>
-      <div class="preview-row"><span class="preview-label">時間/Time :</span><span id="pTime" class="preview-value"></span></div>
+      <div class="preview-row"><span class="preview-label">🏢 公司/Company :</span><span id="pCompany" class="preview-value"></span></div>
+      <div class="preview-row"><span class="preview-label">🚗 車牌/Vehicle No. :</span><span id="pVehicle" class="preview-value" style="color:#e53e3e;font-weight:bold"></span></div>
+      <div class="preview-row"><span class="preview-label">👤 聯絡人/Contact :</span><span id="pContact" class="preview-value"></span></div>
+      <div class="preview-row"><span class="preview-label">📞 電話/Tel :</span><span id="pTel" class="preview-value"></span></div>
+      <div class="preview-row"><span class="preview-label">📦 目的/Purpose :</span><span id="pPurpose" class="preview-value"></span></div>
+      <div class="preview-row"><span class="preview-label">🚙 車型/Type :</span><span id="pType" class="preview-value"></span></div>
+      <div class="preview-row"><span class="preview-label">📅 日期/Date :</span><span id="pDate" class="preview-value"></span></div>
+      <div class="preview-row"><span class="preview-label">⏱️ 時間/Time :</span><span id="pTime" class="preview-value"></span></div>
     </div>
     <div class="flex"><button class="btn-secondary w-100" onclick="backToForm()">← 返回修改/Back</button><button class="btn-success w-100" onclick="submitFinal()">✓ 確認提交/Confirm</button></div>
   </div>
   <div id="successSection" class="card hidden">
-    <div class="ref-box"><h3 style="color:#38a169;">🎉 登記申請已送出</h3><div style="background:#fff;border-radius:12px;padding:16px;margin:16px 0"><span style="color:#718096;">參考編號</span><h2 id="refNumber" style="color:#2c7a7b;">----</h2></div><p>請截圖保存此畫面</p></div>
+    <div class="ref-box"><h3 style="color:#38a169;">🎉 登記申請已送出</h3><div style="background:#fff;border-radius:12px;padding:16px;margin:16px 0"><span style="color:#718096;">📄 參考編號</span><h2 id="refNumber" style="color:#2c7a7b;">----</h2></div><p>📸 請截圖保存此畫面</p></div>
     <button class="btn-outline w-100 mt-2" onclick="resetForm()">➕ 填寫新申請</button>
   </div>
 </div>
 
 <!-- 職員面板 -->
 <div id="staffPanel" style="display:none;">
-  <div id="loginBox" class="card text-center"><h3>🔒 職員驗證 <span class="eng-text">Staff Verification</span></h3><input type="password" id="staffPwd" class="form-control mb-2" placeholder="密碼 / Password"><button class="btn-success w-100" onclick="verifyLogin()">登入/Login</button><div id="loginError" class="hidden" style="color:#e53e3e;margin-top:12px;">密碼錯誤 / Wrong Password</div></div>
+  <div id="loginBox" class="card text-center"><h3>🔒 職員驗證 <span class="eng-text">Staff Verification</span></h3><input type="password" id="staffPwd" class="form-control mb-2" placeholder="🔑 密碼 / Password"><button class="btn-success w-100" onclick="verifyLogin()">🔓 登入/Login</button><div id="loginError" class="hidden" style="color:#e53e3e;margin-top:12px;">❌ 密碼錯誤 / Wrong Password</div></div>
   <div id="adminPanel" class="card hidden">
     <div class="flex" style="justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;">
       <h4 class="icon-text">🚗 閘口核對系統 <span class="eng-text">Gate Check System</span></h4>
@@ -136,7 +138,7 @@
     <div class="table-responsive">
       <table>
         <thead>
-          <tr><th>#</th><th>參考編號<br>Ref No.</th><th>公司<br>Company</th><th>車牌<br>Vehicle No.</th><th>聯絡人<br>Contact</th><th>電話<br>Tel</th><th>到訪日期<br>Visit Date</th><th>入站時間<br>Time In</th><th>目的<br>Purpose</th><th>車型<br>Vehicle Type</th></tr>
+          <tr><th>#</th><th>📄 參考編號<br>Ref No.</th><th>🏢 公司<br>Company</th><th>🚗 車牌<br>Vehicle No.</th><th>👤 聯絡人<br>Contact</th><th>📞 電話<br>Tel</th><th>📅 到訪日期<br>Visit Date</th><th>⏱️ 入站時間<br>Time In</th><th>📦 目的<br>Purpose</th><th>🚙 車型<br>Vehicle Type</th></tr>
         </thead>
         <tbody id="confirmedTable"></tbody>
       </table>
@@ -314,7 +316,7 @@ function logout() { isLoggedIn = false; showLogin(); }
 
 function loadData() {
   const confirmTable = document.getElementById('confirmedTable');
-  if (confirmTable) confirmTable.innerHTML = '<tr><td colspan="10">載入中...</td></tr>';
+  if (confirmTable) confirmTable.innerHTML = '<tr><td colspan="10">載入中...<\/td><\/tr>';
   
   fetch(API)
     .then(r => r.json())
@@ -340,7 +342,7 @@ function loadData() {
       });
       renderTables();
     })
-    .catch(error => { console.error(error); if (confirmTable) confirmTable.innerHTML = '<tr><td colspan="10" style="color:red">連線失敗</td></tr>'; });
+    .catch(error => { console.error(error); if (confirmTable) confirmTable.innerHTML = '<tr><td colspan="10" style="color:red">連線失敗<\/td><\/tr>'; });
 }
 
 function getTodayConfirmed() {
@@ -354,21 +356,21 @@ function renderTables() {
   if (!confirmBody) return;
   
   if (confirmed.length === 0) {
-    confirmBody.innerHTML = '<tr><td colspan="10">今日暫無已確認車輛</td></tr>';
+    confirmBody.innerHTML = '<tr><td colspan="10">今日暫無已確認車輛<\/td><\/tr>';
   } else {
     confirmBody.innerHTML = confirmed.map((i, idx) => `
       <tr>
         <td>${idx+1}</td>
-        <td>${escapeHtml(i.ref_no)}</td>
-        <td>${escapeHtml(i.company)}</td>
-        <td style="color:#2c7a7b;font-weight:bold;">${escapeHtml(i.vehicle_no)}</td>
-        <td>${escapeHtml(i.contact_person)}</td>
-        <td>${escapeHtml(i.tel_no)}</td>
-        <td>${escapeHtml(i.visit_date)}</td>
-        <td>${escapeHtml(i.visit_time)}</td>
-        <td>${escapeHtml(i.purpose)}</td>
-        <td>${escapeHtml(i.vehicle_type)}</td>
-      </tr>
+        <td>${escapeHtml(i.ref_no)}<\/td>
+        <td>${escapeHtml(i.company)}<\/td>
+        <td style="color:#2c7a7b;font-weight:bold;">${escapeHtml(i.vehicle_no)}<\/td>
+        <td>${escapeHtml(i.contact_person)}<\/td>
+        <td>${escapeHtml(i.tel_no)}<\/td>
+        <td>${escapeHtml(i.visit_date)}<\/td>
+        <td>${escapeHtml(i.visit_time)}<\/td>
+        <td>${escapeHtml(i.purpose)}<\/td>
+        <td>${escapeHtml(i.vehicle_type)}<\/td>
+      <\/tr>
     `).join('');
   }
 }
@@ -415,18 +417,15 @@ function submitToGoogleSheet(formData, refNo) {
   });
 }
 
+// ✅ 參考編號格式：YYYYMMDD-XXXX（4位隨機數字）
 function generateRefNo() {
   let d = new Date();
   let year = d.getFullYear();
   let month = (d.getMonth() + 1).toString().padStart(2, '0');
   let day = d.getDate().toString().padStart(2, '0');
-  let hours = d.getHours().toString().padStart(2, '0');
-  let minutes = d.getMinutes().toString().padStart(2, '0');
-  let seconds = d.getSeconds().toString().padStart(2, '0');
-  let chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  let rand = '';
-  for (let i = 0; i < 4; i++) rand += chars[Math.floor(Math.random() * chars.length)];
-  return `${year}${month}${day}-${hours}${minutes}${seconds}-${rand}`;
+  let dateStr = `${year}${month}${day}`;
+  let randomNum = Math.floor(Math.random() * 9000 + 1000).toString();
+  return `${dateStr}-${randomNum}`;
 }
 
 function showPreview(e) {
