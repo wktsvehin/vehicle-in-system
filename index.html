@@ -12,8 +12,8 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #eef2f5; padding: 20px 12px; font-family: 'Helvetica Neue', 'Noto Sans TC', 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif; max-width: 700px; margin: 0 auto; }
-    .logo-container { background: #fff; text-align: center; padding: 24px 20px; border-radius: 20px; margin-bottom: 16px; border: 1px solid #e2e8f0; }
-    .epd-logo-img { max-height: 80px; width: auto; }
+    .logo-container { background: transparent; text-align: center; padding: 10px 20px; margin-bottom: 8px; }
+    .epd-logo-img { max-height: 70px; width: auto; display: inline-block; }
     .card { background: #fff; border-radius: 24px; padding: 20px 18px; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
     .btn-tab { flex: 1; border-radius: 16px; border: 2px solid #cbd5e0; background: #fff; padding: 16px 8px; text-align: center; font-weight: 700; cursor: pointer; }
     .btn-tab.active { background: #2c7a7b; border-color: #236162; color: #fff; }
@@ -62,7 +62,6 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     .plate-input-search { padding-left: 12px !important; }
     .icon-text { display: inline-flex; align-items: center; gap: 6px; }
-    /* 預覽頁面車牌黑色 */
     #pVehicle { color: #1a202c !important; font-weight: bold; }
     @media (max-width:480px) { body { padding: 12px; max-width: 100%; } .card { padding: 16px; } .preview-row { flex-direction: column; } .preview-label, .preview-value { width: 100%; } th, td { padding: 8px 5px; font-size: 0.7rem; white-space: normal; } table { min-width: 600px; } }
   </style>
@@ -70,8 +69,7 @@
 <body>
 
 <div class="logo-container">
-  <img src="epd.png" alt="EPD" class="epd-logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-  <div class="epd-logo-text" style="display: none; font-size: 2rem; font-weight: bold; color: #2c7a7b; background: #e6f7f7; display: inline-block; padding: 8px 24px; border-radius: 50px; letter-spacing: 4px;">EPD</div>
+  <img src="epd.png" alt="EPD" class="epd-logo-img" onerror="this.style.display='none';">
 </div>
 <h2 class="text-center" style="color:#2c7a7b;">西九龍廢物轉運站<br>車輛登記</h2>
 <p class="text-center" style="color:#718096;font-size:0.75rem;margin-bottom:20px;">West Kowloon Transfer Station Vehicle Registration</p>
@@ -421,7 +419,7 @@ function submitToGoogleSheet(formData, refNo) {
   });
 }
 
-// ✅ 參考編號格式：YYYYMMDD-XXXX（4位隨機數字 + 大階字母）
+// 參考編號格式：YYYYMMDD-XXXX（4位隨機數字 + 大階字母）
 function generateRefNo() {
   let d = new Date();
   let year = d.getFullYear();
