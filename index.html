@@ -168,7 +168,7 @@ let isSubmitting = false;
 const API = "https://script.google.com/macros/s/AKfycbxzWm4hBTMZVKjZUv_0pLjKrp_VrDxCfmi6aLUVa4nB-x0N0MyEdDlSefU69MmbGb1D/exec";
 let pendingSubmissionData = null;
 
-// ==================== 最簡單嘅香港日期函數 ====================
+// ==================== 最簡單嘅提取函數 ====================
 
 // 獲取今日香港日期 YYYY-MM-DD
 function getHKTodayString() {
@@ -184,13 +184,11 @@ function getHKCurrentHour() {
   return new Date().getHours();
 }
 
-// ✅ 最簡單：直接提取日期部分，完全忽略時區
+// ✅ 直接提取日期，完全忽略時區
 function extractDateOnly(utcDateStr) {
   if (!utcDateStr) return '';
   let str = String(utcDateStr).trim();
-  // 如果已經是 YYYY-MM-DD，直接返回
   if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
-  // 從 ISO 格式提取 YYYY-MM-DD
   let match = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
   if (match) {
     return `${match[1]}-${match[2]}-${match[3]}`;
@@ -198,13 +196,13 @@ function extractDateOnly(utcDateStr) {
   return str;
 }
 
-// ✅ 時間處理：從 UTC 提取時間，轉香港 (+8)，減23分鐘，向下取整15分鐘
+// ✅ 直接提取時間，唔加 8 小時（因為 Google Sheets 入面已經係香港時間）
 function formatTimeOnly(timeStr) {
   if (!timeStr) return '---';
   let str = String(timeStr);
   if (str === '---') return '---';
   
-  // 提取 UTC 小時分鐘
+  // 提取時間
   let match = str.match(/T(\d{2}):(\d{2})/);
   let hour = 0, minute = 0;
   if (match) {
@@ -220,18 +218,17 @@ function formatTimeOnly(timeStr) {
     }
   }
   
-  // UTC+8 轉香港
-  let hkHour = hour + 8;
-  if (hkHour >= 24) hkHour = hkHour - 24;
+  // ❌ 唔再加 8 小時，直接使用原始時間
+  let hkHour = hour;
   
-  // 減23分鐘
+  // 減 23 分鐘
   let totalMinutes = hkHour * 60 + minute - 23;
   if (totalMinutes < 0) totalMinutes += 24 * 60;
   
   let newHour = Math.floor(totalMinutes / 60);
   let newMinute = totalMinutes % 60;
   
-  // 向下取整到15分鐘
+  // 向下取整到 15 分鐘
   let roundedMinute = Math.floor(newMinute / 15) * 15;
   
   return `${newHour.toString().padStart(2, '0')}:${roundedMinute.toString().padStart(2, '0')}`;
@@ -319,10 +316,9 @@ function loadData() {
       cachedData = data.map(item => {
         let rawDate = item.visit_date || item.到訪日期 || item.date || '';
         let rawTime = item.time_in || item.入站時間 || '';
-        // ✅ 直接提取日期，唔做任何時區轉換
         let extractedDate = extractDateOnly(rawDate);
         let formattedTime = formatTimeOnly(rawTime);
-        console.log(`原始日期: ${rawDate} -> 提取日期: ${extractedDate}`);
+        console.log(`原始: ${rawDate} -> 提取日期: ${extractedDate}, 時間: ${formattedTime}`);
         return {
           ref_no: item.ref_no || item.參考編號 || '',
           company: item.company || item.公司 || '',
@@ -634,7 +630,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   
-  console.log("系統初始化完成 (直接提取日期，無時區轉換)");
+  console.log("系統初始化完成 (直接提取日期，唔做時區轉換)");
 });
 </script>
 </body>
