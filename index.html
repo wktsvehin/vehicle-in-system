@@ -13,7 +13,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #eef2f5; padding: 20px 12px; font-family: 'Helvetica Neue', 'Noto Sans TC', 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif; max-width: 700px; margin: 0 auto; }
     .logo-container { background: #fff; text-align: center; padding: 24px 20px; border-radius: 20px; margin-bottom: 16px; border: 1px solid #e2e8f0; }
-    .epd-logo-text { font-size: 2rem; font-weight: bold; color: #2c7a7b; background: #e6f7f7; display: inline-block; padding: 8px 24px; border-radius: 50px; letter-spacing: 4px; }
+    .epd-logo-img { max-height: 80px; width: auto; }
     .card { background: #fff; border-radius: 24px; padding: 20px 18px; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
     .btn-tab { flex: 1; border-radius: 16px; border: 2px solid #cbd5e0; background: #fff; padding: 16px 8px; text-align: center; font-weight: 700; cursor: pointer; }
     .btn-tab.active { background: #2c7a7b; border-color: #236162; color: #fff; }
@@ -24,7 +24,6 @@
     .form-group { margin-bottom: 20px; }
     .form-label { display: block; font-weight: 600; font-size: 0.9rem; color: #2d3748; }
     .form-sub { font-size: 0.7rem; color: #718096; display: block; }
-    /* 輸入框背景白色，placeholder 淺灰色，輸入文字黑色 */
     .form-control, .form-select { width: 100%; padding: 12px 14px; font-size: 1rem; border: 1px solid #cbd5e0; border-radius: 12px; background: #ffffff; color: #1a202c; }
     .form-control::placeholder, .form-select::placeholder { color: #a0aec0; }
     input[type="tel"]::placeholder, input[type="date"]::placeholder { color: #a0aec0; }
@@ -63,13 +62,16 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     .plate-input-search { padding-left: 12px !important; }
     .icon-text { display: inline-flex; align-items: center; gap: 6px; }
+    /* 預覽頁面車牌黑色 */
+    #pVehicle { color: #1a202c !important; font-weight: bold; }
     @media (max-width:480px) { body { padding: 12px; max-width: 100%; } .card { padding: 16px; } .preview-row { flex-direction: column; } .preview-label, .preview-value { width: 100%; } th, td { padding: 8px 5px; font-size: 0.7rem; white-space: normal; } table { min-width: 600px; } }
   </style>
 </head>
 <body>
 
 <div class="logo-container">
-  <div class="epd-logo-text">EPD</div>
+  <img src="epd.png" alt="EPD" class="epd-logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+  <div class="epd-logo-text" style="display: none; font-size: 2rem; font-weight: bold; color: #2c7a7b; background: #e6f7f7; display: inline-block; padding: 8px 24px; border-radius: 50px; letter-spacing: 4px;">EPD</div>
 </div>
 <h2 class="text-center" style="color:#2c7a7b;">西九龍廢物轉運站<br>車輛登記</h2>
 <p class="text-center" style="color:#718096;font-size:0.75rem;margin-bottom:20px;">West Kowloon Transfer Station Vehicle Registration</p>
@@ -103,7 +105,7 @@
     <div class="alert-reminder" style="background:#ffff3d;border-left-color:#f0ad4e"><div style="font-weight:bold;">⚠️ 重要提醒：</div><div>請核對所有資料無誤後提交</div><div class="eng-text">Please verify all information before submission.</div></div>
     <div class="preview-box">
       <div class="preview-row"><span class="preview-label">🏢 公司/Company :</span><span id="pCompany" class="preview-value"></span></div>
-      <div class="preview-row"><span class="preview-label">🚗 車牌/Vehicle No. :</span><span id="pVehicle" class="preview-value" style="color:#e53e3e;font-weight:bold"></span></div>
+      <div class="preview-row"><span class="preview-label">🚗 車牌/Vehicle No. :</span><span id="pVehicle" class="preview-value"></span></div>
       <div class="preview-row"><span class="preview-label">👤 聯絡人/Contact :</span><span id="pContact" class="preview-value"></span></div>
       <div class="preview-row"><span class="preview-label">📞 電話/Tel :</span><span id="pTel" class="preview-value"></span></div>
       <div class="preview-row"><span class="preview-label">📦 目的/Purpose :</span><span id="pPurpose" class="preview-value"></span></div>
@@ -419,15 +421,19 @@ function submitToGoogleSheet(formData, refNo) {
   });
 }
 
-// ✅ 參考編號格式：YYYYMMDD-XXXX（4位隨機數字）
+// ✅ 參考編號格式：YYYYMMDD-XXXX（4位隨機數字 + 大階字母）
 function generateRefNo() {
   let d = new Date();
   let year = d.getFullYear();
   let month = (d.getMonth() + 1).toString().padStart(2, '0');
   let day = d.getDate().toString().padStart(2, '0');
   let dateStr = `${year}${month}${day}`;
-  let randomNum = Math.floor(Math.random() * 9000 + 1000).toString();
-  return `${dateStr}-${randomNum}`;
+  let chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  let randomStr = '';
+  for (let i = 0; i < 4; i++) {
+    randomStr += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return `${dateStr}-${randomStr}`;
 }
 
 function showPreview(e) {
