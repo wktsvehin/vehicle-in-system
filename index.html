@@ -143,22 +143,26 @@ let isSubmitting = false;
 const API = "https://script.google.com/macros/s/AKfycbxzWm4hBTMZVKjZUv_0pLjKrp_VrDxCfmi6aLUVa4nB-x0N0MyEdDlSefU69MmbGb1D/exec";
 let pendingSubmissionData = null;
 
-// ==================== 輔助函數 ====================
-function safeString(str) {
-  if (str === undefined || str === null) return '';
-  return String(str);
+// ==================== 香港時區輔助函數 ====================
+// 獲取香港時區嘅今日日期 YYYY-MM-DD
+function getHKTodayString() {
+  let now = new Date();
+  // 轉換為香港時間 (UTC+8)
+  let hkTime = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+  let year = hkTime.getUTCFullYear();
+  let month = (hkTime.getUTCMonth() + 1).toString().padStart(2, '0');
+  let day = hkTime.getUTCDate().toString().padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
-function escapeHtml(str) {
-  if (!str) return '';
-  return safeString(str).replace(/[&<>]/g, function(m) {
-    if (m === '&') return '&amp;';
-    if (m === '<') return '&lt;';
-    if (m === '>') return '&gt;';
-    return m;
-  });
+// 獲取香港時區嘅當前小時
+function getHKCurrentHour() {
+  let now = new Date();
+  let hkTime = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+  return hkTime.getUTCHours();
 }
 
+// 將 UTC 日期轉換為香港日期 (YYYY-MM-DD)
 function convertUTCtoHKDate(utcDateStr) {
   if (!utcDateStr) return '';
   let str = safeString(utcDateStr).trim();
@@ -175,6 +179,21 @@ function convertUTCtoHKDate(utcDateStr) {
     return `${year}-${month}-${day}`;
   }
   return str;
+}
+
+function safeString(str) {
+  if (str === undefined || str === null) return '';
+  return String(str);
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return safeString(str).replace(/[&<>]/g, function(m) {
+    if (m === '&') return '&amp;';
+    if (m === '<') return '&lt;';
+    if (m === '>') return '&gt;';
+    return m;
+  });
 }
 
 // ✅ 時間修正：先將 UTC 轉換為香港時間 (UTC+8)，再減 23 分鐘，然後向下取整到 15 分鐘
@@ -244,7 +263,7 @@ function initDatePicker() {
   let p = document.getElementById('visitDatePicker');
   if (!p) return;
   let now = new Date();
-  let offset = now.getHours() >= 15 ? 2 : 1;
+  let offset = getHKCurrentHour() >= 15 ? 2 : 1;
   let minDate = new Date();
   let maxDate = new Date();
   minDate.setDate(now.getDate() + offset);
@@ -301,7 +320,7 @@ function logout() { isLoggedIn = false; showLogin(); }
 // ==================== 資料載入與顯示 ====================
 function loadData() {
   const confirmTable = document.getElementById('confirmedTable');
-  if (confirmTable) confirmTable.innerHTML = '<tr><td colspan="10">載入中...<\/td><\/tr>';
+  if (confirmTable) confirmTable.innerHTML = '</tr><td colspan="10">載入中...<\/td><\/tr>';
   
   fetch(API)
     .then(r => r.json())
@@ -334,9 +353,10 @@ function loadData() {
     });
 }
 
+// ✅ 修復：使用香港時區獲取今日日期
 function getTodayConfirmed() {
-  let today = new Date();
-  let todayStr = today.toISOString().split('T')[0];
+  let todayStr = getHKTodayString();
+  console.log("今日日期 (香港):", todayStr);
   return cachedData.filter(item => item.visit_date === todayStr);
 }
 
@@ -541,7 +561,7 @@ async function exportPDF() {
         <tbody style="background-color:#ffffff;color:#000000;">
           ${tableRows}
         </tbody>
-      追赶
+      </table>
       <div style="margin-top:18px;font-size:8px;text-align:center;color:#000000;">系統產生之記錄，請核對無誤後簽署</div>
     `;
     document.body.appendChild(pdfContainer);
