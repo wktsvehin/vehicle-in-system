@@ -63,6 +63,7 @@
     .plate-input-search { padding-left: 12px !important; }
     .icon-text { display: inline-flex; align-items: center; gap: 6px; }
     #pVehicle { color: #1a202c !important; font-weight: bold; }
+    .debug-console { background: #1a1a2e; color: #0f0; padding: 8px; font-family: monospace; font-size: 10px; border-radius: 8px; margin-top: 10px; max-height: 150px; overflow-y: auto; display: none; }
     @media (max-width:480px) { body { padding: 12px; max-width: 100%; } .card { padding: 16px; } .preview-row { flex-direction: column; } .preview-label, .preview-value { width: 100%; } th, td { padding: 6px 3px; font-size: 0.65rem; white-space: normal; } table { min-width: 700px; } }
   </style>
 </head>
@@ -138,7 +139,7 @@
     
     <div class="section-title icon-text">✅ 今日已確認名單 <span class="eng-text">Today's Confirmed List</span></div>
     <div class="table-responsive">
-      </table>
+      <table>
         <thead>
           <tr>
             <th>#</th>
@@ -167,63 +168,55 @@ let isSubmitting = false;
 const API = "https://script.google.com/macros/s/AKfycbxzWm4hBTMZVKjZUv_0pLjKrp_VrDxCfmi6aLUVa4nB-x0N0MyEdDlSefU69MmbGb1D/exec";
 let pendingSubmissionData = null;
 
-// ==================== 除錯開關 ====================
-const DEBUG = true;
+// ==================== 除錯函數 ====================
 function debugLog(...args) {
-  if (DEBUG) console.log("[DEBUG]", ...args);
+  console.log("[系統]", ...args);
 }
 
-// ==================== 核心函數 (徹底修復) ====================
+// ==================== 香港時區核心函數 ====================
 
-// 獲取香港時區嘅當前日期 YYYY-MM-DD
 function getHKTodayString() {
   let now = new Date();
   let hkTime = new Date(now.getTime() + 8 * 60 * 60 * 1000);
   let year = hkTime.getUTCFullYear();
   let month = (hkTime.getUTCMonth() + 1).toString().padStart(2, '0');
   let day = hkTime.getUTCDate().toString().padStart(2, '0');
-  debugLog("今日香港日期:", `${year}-${month}-${day}`);
-  return `${year}-${month}-${day}`;
+  let result = `${year}-${month}-${day}`;
+  debugLog("今日香港日期:", result);
+  return result;
 }
 
-// ✅ 徹底修復：將 UTC 日期字串轉換為正確嘅香港日期
-// 重要：Google Sheets 儲存 UTC 時間 (例如 2026-06-15T16:00:00Z)
-// 呢個時間對應香港 2026-06-16 00:00，但使用者輸入嘅係 2026-06-15
-// 所以我哋直接提取 YYYY-MM-DD，唔做任何時區轉換
+function getHKCurrentHour() {
+  let now = new Date();
+  let hkTime = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+  return hkTime.getUTCHours();
+}
+
+// 直接從 UTC 字串提取日期部分 (唔加 8 小時)
 function convertUTCtoHKDate(utcDateStr) {
   if (!utcDateStr) return '';
   let str = safeString(utcDateStr).trim();
   
-  // 如果已經係 YYYY-MM-DD 格式，直接返回
   if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
-    debugLog("日期已是正確格式:", str);
     return str;
   }
   
-  // 從 ISO 格式直接提取 YYYY-MM-DD
   let isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})T/);
   if (isoMatch) {
-    let result = `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
-    debugLog(`UTC日期轉換: ${str} -> ${result}`);
-    return result;
+    return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
   }
   
-  // 最後嘗試用 new Date 解析 (備用)
   let d = new Date(str);
   if (!isNaN(d.getTime())) {
     let year = d.getFullYear();
     let month = (d.getMonth() + 1).toString().padStart(2, '0');
     let day = d.getDate().toString().padStart(2, '0');
-    let result = `${year}-${month}-${day}`;
-    debugLog(`備用解析: ${str} -> ${result}`);
-    return result;
+    return `${year}-${month}-${day}`;
   }
   
-  debugLog("無法解析日期:", str);
   return str;
 }
 
-// ✅ 徹底修復：將 UTC 時間轉換為香港時間，然後減 23 分鐘，再向下取整到 15 分鐘
 function formatTimeOnly(timeStr) {
   if (!timeStr) return '---';
   let str = safeString(timeStr);
@@ -232,54 +225,41 @@ function formatTimeOnly(timeStr) {
   let hour = 0;
   let minute = 0;
   
-  // 從 ISO 格式提取 UTC 時間
   let isoMatch = str.match(/T(\d{2}):(\d{2}):(\d{2})/);
   if (isoMatch) {
     hour = parseInt(isoMatch[1]);
     minute = parseInt(isoMatch[2]);
-    debugLog(`ISO時間提取: UTC ${hour}:${minute}`);
   } else {
-    // 匹配 HH:MM:SS 或 HH:MM
     let timeMatch = str.match(/(\d{2}):(\d{2})/);
     if (timeMatch) {
       hour = parseInt(timeMatch[1]);
       minute = parseInt(timeMatch[2]);
-      debugLog(`直接時間提取: ${hour}:${minute}`);
     } else {
       let testDate = new Date(str);
       if (!isNaN(testDate.getTime())) {
         hour = testDate.getUTCHours();
         minute = testDate.getUTCMinutes();
-        debugLog(`Date解析: UTC ${hour}:${minute}`);
       } else {
         return '---';
       }
     }
   }
   
-  // 步驟1: UTC 轉換為香港時間 (UTC+8)
+  // UTC+8
   let hkHour = hour + 8;
-  if (hkHour >= 24) {
-    hkHour = hkHour - 24;
-  }
-  debugLog(`香港時間: ${hkHour}:${minute}`);
+  if (hkHour >= 24) hkHour = hkHour - 24;
   
-  // 步驟2: 減 23 分鐘
+  // 減23分鐘
   let totalMinutes = hkHour * 60 + minute - 23;
-  if (totalMinutes < 0) {
-    totalMinutes += 24 * 60;
-  }
+  if (totalMinutes < 0) totalMinutes += 24 * 60;
   
   let newHour = Math.floor(totalMinutes / 60);
   let newMinute = totalMinutes % 60;
-  debugLog(`減23分鐘後: ${newHour}:${newMinute}`);
   
-  // 步驟3: 向下取整到最近嘅 15 分鐘
+  // 向下取整到15分鐘
   let roundedMinute = Math.floor(newMinute / 15) * 15;
-  let result = `${newHour.toString().padStart(2, '0')}:${roundedMinute.toString().padStart(2, '0')}`;
-  debugLog(`最終時間: ${result}`);
   
-  return result;
+  return `${newHour.toString().padStart(2, '0')}:${roundedMinute.toString().padStart(2, '0')}`;
 }
 
 function safeString(str) {
@@ -301,8 +281,7 @@ function initDatePicker() {
   let p = document.getElementById('visitDatePicker');
   if (!p) return;
   let now = new Date();
-  let hkHour = getHKCurrentHour();
-  let offset = hkHour >= 15 ? 2 : 1;
+  let offset = getHKCurrentHour() >= 15 ? 2 : 1;
   let minDate = new Date();
   let maxDate = new Date();
   minDate.setDate(now.getDate() + offset);
@@ -312,13 +291,6 @@ function initDatePicker() {
   p.min = minStr;
   p.max = maxStr;
   p.value = minStr;
-  debugLog(`日期選擇器範圍: ${minStr} 至 ${maxStr}`);
-}
-
-function getHKCurrentHour() {
-  let now = new Date();
-  let hkTime = new Date(now.getTime() + 8 * 60 * 60 * 1000);
-  return hkTime.getUTCHours();
 }
 
 function initTimeSelects() {
@@ -364,44 +336,75 @@ function logout() { isLoggedIn = false; showLogin(); }
 
 function loadData() {
   const confirmTable = document.getElementById('confirmedTable');
-  if (confirmTable) confirmTable.innerHTML = '<tr><td colspan="10">載入中...<\/td><\/tr>';
+  if (confirmTable) confirmTable.innerHTML = '<tr><td colspan="10">⏳ 載入中...<\/td><\/tr>';
   
-  debugLog("開始載入資料...");
+  debugLog("===== 開始載入資料 =====");
+  debugLog("API 網址:", API);
+  
   fetch(API)
     .then(r => r.json())
     .then(data => {
-      debugLog("API原始資料:", data);
-      if (!Array.isArray(data)) { console.error("資料不是陣列"); return; }
-      cachedData = data.map(item => {
-        let rawVisitDate = item.visit_date || '';
-        let rawTimeIn = item.time_in || '';
+      debugLog("✅ API 回傳成功");
+      debugLog("📊 資料類型:", typeof data);
+      debugLog("📊 是否陣列:", Array.isArray(data));
+      debugLog("📊 資料筆數:", data ? data.length : 0);
+      
+      if (!Array.isArray(data)) { 
+        console.error("❌ 資料不是陣列");
+        confirmTable.innerHTML = '<tr><td colspan="10" style="color:red">❌ 資料格式錯誤，請檢查 Google Apps Script<\/td><\/tr>';
+        return; 
+      }
+      
+      if (data.length === 0) {
+        debugLog("⚠️ 沒有資料");
+        confirmTable.innerHTML = '<tr><td colspan="10">📭 暫無任何登記記錄<\/td><\/tr>';
+        return;
+      }
+      
+      debugLog("📋 第一筆資料範例:", JSON.stringify(data[0]));
+      
+      // 唔再依賴 item 欄位，用 index 重新編號
+      cachedData = data.map((item, idx) => {
+        // 嘗試多種可能的欄位名稱
+        let rawVisitDate = item.visit_date || item.到訪日期 || item.date || item.Date || '';
+        let rawTimeIn = item.time_in || item.入站時間 || item.time_in || '';
         let formattedTime = formatTimeOnly(rawTimeIn);
         let convertedDate = convertUTCtoHKDate(rawVisitDate);
-        debugLog(`處理記錄: 原始日期=${rawVisitDate} -> 香港日期=${convertedDate}, 時間=${formattedTime}`);
+        
+        debugLog(`[${idx+1}] 公司:${item.company || item.Company || '-'}, 原始日期:${rawVisitDate} -> 轉換後:${convertedDate}`);
+        
         return {
-          ref_no: safeString(item.ref_no || ''),
-          company: safeString(item.company || ''),
-          vehicle_no: safeString(item.vehicle_no || ''),
-          contact_person: safeString(item.contact_person || ''),
-          tel_no: safeString(item.tel_no || ''),
+          ref_no: safeString(item.ref_no || item.參考編號 || item.RefNo || ''),
+          company: safeString(item.company || item.公司 || item.Company || ''),
+          vehicle_no: safeString(item.vehicle_no || item.車牌 || item.VehicleNo || ''),
+          contact_person: safeString(item.contact_person || item.聯絡人 || item.ContactPerson || ''),
+          tel_no: safeString(item.tel_no || item.電話 || item.TelNo || ''),
           visit_time: formattedTime,
-          purpose: safeString(item.purpose || ''),
-          vehicle_type: safeString(item.vehicle_type || ''),
+          purpose: safeString(item.purpose || item.目的 || item.Purpose || ''),
+          vehicle_type: safeString(item.vehicle_type || item.車型 || item.VehicleType || ''),
           visit_date: convertedDate,
           status: 'in_progress'
         };
       });
-      debugLog("cachedData 最終日期列表:", cachedData.map(d => ({ company: d.company, date: d.visit_date })));
+      
+      debugLog("✅ 已轉換", cachedData.length, "筆資料");
+      debugLog("📅 所有日期列表:", cachedData.map(d => `${d.company}:${d.visit_date}`));
       renderTables();
     })
-    .catch(error => { console.error(error); if (confirmTable) confirmTable.innerHTML = '<tr><td colspan="10" style="color:red">連線失敗<\/td><\/tr>'; });
+    .catch(error => { 
+      console.error("❌ 載入錯誤:", error); 
+      confirmTable.innerHTML = `<td><td colspan="10" style="color:red">❌ 連線失敗: ${error.message}<\/td><\/tr>`;
+    });
 }
 
 function getTodayConfirmed() {
   let todayStr = getHKTodayString();
-  debugLog("篩選今日日期:", todayStr);
+  debugLog("🔍 篩選今日日期:", todayStr);
   let filtered = cachedData.filter(item => item.visit_date === todayStr);
-  debugLog("今日已確認車輛數量:", filtered.length);
+  debugLog(`📊 找到 ${filtered.length} 筆今日記錄`);
+  if (filtered.length > 0) {
+    filtered.forEach(f => debugLog(`   - ${f.company} (${f.vehicle_no}) 日期:${f.visit_date}`));
+  }
   return filtered;
 }
 
@@ -411,7 +414,7 @@ function renderTables() {
   if (!confirmBody) return;
   
   if (confirmed.length === 0) {
-    confirmBody.innerHTML = '<tr><td colspan="10">今日暫無已確認車輛<\/td><\/tr>';
+    confirmBody.innerHTML = '</table><td colspan="10">📭 今日暫無已確認車輛<\/td><\/tr>';
   } else {
     confirmBody.innerHTML = confirmed.map((i, idx) => `
       <tr>
@@ -466,10 +469,9 @@ function submitToGoogleSheet(formData, refNo) {
     params.append('vehicle_type', formData.vehicleType);
     params.append('visit_date', formData.visitDate);
     const url = `${API}?${params.toString()}`;
-    debugLog("提交 URL:", url);
     fetch(url, { method: 'GET', mode: 'no-cors' })
-      .then(() => { debugLog("提交成功"); resolve({ success: true }); })
-      .catch((e) => { debugLog("提交失敗:", e); resolve({ success: true }); });
+      .then(() => { resolve({ success: true }); })
+      .catch((e) => { resolve({ success: true }); });
   });
 }
 
@@ -559,9 +561,9 @@ async function exportPDF() {
   let selectedDate = document.getElementById('exportDate').value;
   if (!selectedDate) { alert('請先選擇要匯出的日期'); return; }
   
-  debugLog("===== PDF 匯出開始 =====");
-  debugLog("選擇匯出日期:", selectedDate);
-  debugLog("cachedData 日期列表:", cachedData.map(d => ({ company: d.company, date: d.visit_date })));
+  debugLog("===== PDF 匯出 =====");
+  debugLog("選擇日期:", selectedDate);
+  debugLog("cachedData 日期列表:", cachedData.map(d => `${d.company}:${d.visit_date}`));
   
   let list = cachedData.filter(item => item.visit_date === selectedDate);
   debugLog("符合條件筆數:", list.length);
@@ -645,7 +647,7 @@ async function exportPDF() {
               <th style="border:1px solid #000000;padding:4px 2px;font-weight:bold;color:#000000;font-size:7px;">電話<br>Tel</th>
               <th style="border:1px solid #000000;padding:4px 2px;font-weight:bold;color:#000000;font-size:7px;">進入時間<br>Time In</th>
               <th style="border:1px solid #000000;padding:4px 2px;font-weight:bold;color:#000000;font-size:7px;">目的<br>Purpose</th>
-            </td>
+            </tr>
           </thead>
           <tbody style="background-color:#ffffff;color:#000000;">
             ${tableRows}
@@ -675,7 +677,6 @@ async function exportPDF() {
     pdf.save(`WKTS_VehicleLog_${selectedDate}.pdf`);
     document.body.removeChild(loadingDiv);
     alert(`✅ PDF 已下載！`);
-    debugLog("===== PDF 匯出完成 =====");
   } catch (err) {
     console.error("PDF 生成錯誤:", err);
     if (loadingDiv) loadingDiv.remove();
@@ -686,7 +687,6 @@ async function exportPDF() {
 document.addEventListener('DOMContentLoaded', () => {
   initTimeSelects();
   initDatePicker();
-  debugLog("系統初始化完成");
   
   const telInput = document.getElementById('telNo');
   if (telInput) {
@@ -694,6 +694,8 @@ document.addEventListener('DOMContentLoaded', () => {
       this.value = this.value.replace(/[^0-9]/g, '').slice(0, 8);
     });
   }
+  
+  debugLog("===== 系統初始化完成 =====");
 });
 </script>
 </body>
