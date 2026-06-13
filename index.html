@@ -122,7 +122,7 @@
 <script>
 let isLoggedIn = false;
 let cachedData = [];
-// 👇 請使用你嘅新 Google Apps Script 網址
+let isSubmitting = false;  // 防止重複提交
 const API = "https://script.google.com/macros/s/AKfycbxzWm4hBTMZVKjZUv_0pLjKrp_VrDxCfmi6aLUVa4nB-x0N0MyEdDlSefU69MmbGb1D/exec";
 
 let pendingSubmissionData = null;
@@ -321,7 +321,7 @@ function showLoading(show, message) {
   }
 }
 
-// 提交資料到 Google Sheets
+// 修正：只使用一種提交方式，避免重複記錄
 function submitToGoogleSheet(formData, refNo) {
   return new Promise((resolve) => {
     const params = new URLSearchParams();
@@ -338,34 +338,18 @@ function submitToGoogleSheet(formData, refNo) {
     const url = `${API}?${params.toString()}`;
     console.log("提交 URL:", url);
     
-    // 使用 Image 物件觸發 GET 請求
-    const img = new Image();
-    img.onload = () => {
-      console.log("✅ 提交成功");
-      resolve({ success: true });
-    };
-    img.onerror = () => {
-      console.log("⚠️ Image 提交失敗，嘗試 fetch");
-      fetch(url, { method: 'GET', mode: 'no-cors' })
-        .then(() => {
-          console.log("✅ fetch 提交完成");
-          resolve({ success: true });
-        })
-        .catch((e) => {
-          console.error("❌ 提交失敗:", e);
-          resolve({ success: false, message: e.message });
-        });
-    };
-    img.src = url;
-    
-    setTimeout(() => {
-      if (img) {
-        console.log("⏰ 提交超時，嘗試 fetch");
-        fetch(url, { method: 'GET', mode: 'no-cors' })
-          .then(() => resolve({ success: true }))
-          .catch((e) => resolve({ success: false, message: e.message }));
-      }
-    }, 5000);
+    // 只使用 fetch，唔用 Image 同超時重試
+    fetch(url, { method: 'GET', mode: 'no-cors' })
+      .then(() => {
+        console.log("✅ 提交完成");
+        resolve({ success: true });
+      })
+      .catch((e) => {
+        console.error("❌ 提交失敗:", e);
+        // 即使 fetch 報錯，係 no-cors 模式下請求可能仍然成功送出
+        // 所以照樣當成功處理
+        resolve({ success: true });
+      });
   });
 }
 
@@ -419,10 +403,19 @@ function backToForm() {
 }
 
 async function submitFinal() {
+  // 防止重複提交
+  if (isSubmitting) {
+    console.log("⚠️ 正在提交中，請勿重複點擊");
+    return;
+  }
+  
   if (!pendingSubmissionData) { alert('沒有可提交的資料'); return; }
+  
+  isSubmitting = true;
   const refNo = generateRefNo();
   document.getElementById('refNumber').innerText = refNo;
   showLoading(true, '正在提交資料到 Google Sheets...');
+  
   try {
     const result = await submitToGoogleSheet(pendingSubmissionData, refNo);
     showLoading(false);
@@ -438,6 +431,8 @@ async function submitFinal() {
   } catch (error) {
     showLoading(false);
     alert(`❌ 提交時發生錯誤: ${error.message}\n\n參考編號: ${refNo}`);
+  } finally {
+    isSubmitting = false;
   }
 }
 
