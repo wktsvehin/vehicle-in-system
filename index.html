@@ -299,7 +299,7 @@ function logout() { isLoggedIn = false; showLogin(); }
 
 function loadData() {
   const confirmTable = document.getElementById('confirmedTable');
-  if (confirmTable) confirmTable.innerHTML = '</tr><td colspan="10">⏳ 載入中...<\/td><\/tr>';
+  if (confirmTable) confirmTable.innerHTML = '<tr><td colspan="10">⏳ 載入中...<\/td><\/tr>';
   
   debugLog("===== 開始載入資料 =====");
   
@@ -333,7 +333,7 @@ function loadData() {
           visit_time: formatTimeOnly(rawTime),
           purpose: item.purpose || item.目的 || '',
           visit_date: convertedDate,
-          raw_date: rawDate  // 保留原始日期用於除錯
+          raw_date: rawDate
         };
       });
       
@@ -510,10 +510,27 @@ async function exportPDF() {
   
   debugLog("===== PDF 匯出 =====");
   debugLog("選擇匯出日期:", selectedDate);
-  debugLog("cachedData 日期列表:", cachedData.map(d => `${d.company}:${d.visit_date}`));
   
-  // 直接比對字串
+  // 顯示所有 cachedData 嘅日期俾你睇
+  debugLog("cachedData 所有日期:", cachedData.map(d => ({ company: d.company, date: d.visit_date })));
+  
+  // 方法1: 直接比對
   let list = cachedData.filter(item => item.visit_date === selectedDate);
+  
+  // 方法2: 如果直接比對冇結果，嘗試比對 selectedDate 減一日（因為有時區問題）
+  if (list.length === 0) {
+    let prevDate = new Date(selectedDate);
+    prevDate.setDate(prevDate.getDate() - 1);
+    let prevDateStr = prevDate.toISOString().split('T')[0];
+    debugLog("直接比對無結果，嘗試前一日期:", prevDateStr);
+    list = cachedData.filter(item => item.visit_date === prevDateStr);
+    if (list.length > 0) {
+      debugLog("使用前一日期找到", list.length, "筆記錄");
+      // 提示用戶日期可能偏移
+      alert(`注意：系統自動修正日期從 ${selectedDate} 到 ${prevDateStr}\n找到 ${list.length} 筆記錄`);
+    }
+  }
+  
   debugLog("符合條件筆數:", list.length);
   
   if (list.length === 0) {
