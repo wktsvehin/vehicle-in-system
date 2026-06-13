@@ -116,7 +116,7 @@
     <div class="section-title">📋 申請處理中 <span class="eng-text">(未過15:00)</span></div>
     <div class="table-responsive"> <table> <thead> <tr> <th>#</th> <th>參考編號</th> <th>公司</th> <th>車牌</th> <th>聯絡人</th> <th>電話</th> <th>時間</th> <th>目的</th> <th>車型</th> </tr> </thead> <tbody id="progressTable"></tbody> </table> </div>
     <div class="section-title">✅ 已確認名單 <span class="eng-text">(今天或之後)</span></div>
-    <div class="table-responsive"> <table> <thead> <tr> <th>#</th> <th>參考編號</th> <th>公司</th> <th>車牌</th> <th>聯絡人</th> <th>電話</th> <th>到訪日期</th> <th>入站時間</th> <th>目的</th> <th>車型</th> </tr> </thead> <tbody id="confirmedTable"></tbody> </table> </div>
+    <div class="table-responsive"> </table> <thead> <tr> <th>#</th> <th>參考編號</th> <th>公司</th> <th>車牌</th> <th>聯絡人</th> <th>電話</th> <th>到訪日期</th> <th>入站時間</th> <th>目的</th> <th>車型</th> </tr> </thead> <tbody id="confirmedTable"></tbody> </table> </div>
   </div>
 </div>
 
@@ -148,11 +148,8 @@ function convertUTCtoHKDate(utcDateStr) {
   if (!utcDateStr) return '';
   let str = safeString(utcDateStr).trim();
   
-  // 如果已經係 YYYY-MM-DD 格式，直接返回
   if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
   
-  // 處理 ISO 格式: 2026-06-14T16:00:00.000Z (UTC)
-  // 加上 8 小時轉為香港日期
   let isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/);
   if (isoMatch) {
     let year = parseInt(isoMatch[1]);
@@ -160,9 +157,7 @@ function convertUTCtoHKDate(utcDateStr) {
     let day = parseInt(isoMatch[3]);
     let hour = parseInt(isoMatch[4]);
     
-    // 建立 UTC Date 物件
     let utcDate = new Date(Date.UTC(year, month, day, hour, 0, 0));
-    // 轉為香港時間 (UTC+8)
     let hkDate = new Date(utcDate.getTime() + 8 * 60 * 60 * 1000);
     
     let y = hkDate.getFullYear();
@@ -171,7 +166,6 @@ function convertUTCtoHKDate(utcDateStr) {
     return `${y}-${m}-${d}`;
   }
   
-  // 嘗試用 new Date 解析
   let d = new Date(str);
   if (!isNaN(d.getTime())) {
     let year = d.getFullYear();
@@ -195,7 +189,6 @@ function normTime(t) {
   return s;
 }
 
-// 設定日期輸入框嘅限制 (7天內，同埋下午3點後截數)
 function initDatePicker() {
   let p = document.getElementById('visitDatePicker');
   if (!p) return;
@@ -275,7 +268,6 @@ function loadData() {
         visit_date: convertUTCtoHKDate(item.visit_date || ''),
         status: 'in_progress'
       }));
-      console.log("轉換後日期:", cachedData.map(i => i.visit_date));
       renderTables();
     })
     .catch(error => { console.error(error); document.getElementById('progressTable').innerHTML = '<tr><td colspan="9" style="color:red">連線失敗<\/td><\/tr>'; });
@@ -477,17 +469,12 @@ async function exportPDF() {
   let selectedDate = document.getElementById('exportDate').value;
   if (!selectedDate) { alert('請先選擇要匯出的日期'); return; }
   
-  console.log("選擇匯出日期:", selectedDate);
-  console.log("cachedData 日期:", cachedData.map(i => ({ company: i.company, visit_date: i.visit_date })));
-  
   // 直接比對 YYYY-MM-DD 字串
   let list = cachedData.filter(item => item.visit_date === selectedDate);
   
-  console.log("符合筆數:", list.length);
-  
   if (list.length === 0) {
-    let uniqueDates = [...new Set(cachedData.map(i => i.visit_date).filter(d => d))];
-    alert(`沒有 ${selectedDate} 的車輛紀錄\n\n系統中現有嘅日期：${uniqueDates.join(', ') || '無'}`);
+    // 簡化提示，唔再顯示現有日期列表
+    alert(`沒有 ${selectedDate} 的車輛紀錄`);
     return;
   }
   
@@ -513,7 +500,7 @@ async function exportPDF() {
       </div>
       <div style="text-align:center;margin:15px 0;"><div style="font-size:22px;font-weight:bold;color:#1a5c5c;background:#e6f7f7;display:inline-block;padding:8px 25px;border-radius:40px;">📅 到訪日期 / Visit Date：${selectedDate}</div></div>
       <div style="font-size:16px;font-weight:bold;text-align:center;margin-bottom:12px;">車輛進入預先登記記錄<br>Registered Vehicle Log</div>
-      <table style="width:100%;border-collapse:collapse;font-size:10px;"><thead><tr style="background:#fff;"><th style="border:1px solid #000;padding:10px 6px;">項目</th><th style="border:1px solid #000;padding:10px 6px;">公司名稱</th><th style="border:1px solid #000;padding:10px 6px;">車牌號碼</th><th style="border:1px solid #000;padding:10px 6px;">聯絡人</th><th style="border:1px solid #000;padding:10px 6px;">電話號碼</th><th style="border:1px solid #000;padding:10px 6px;">進入時間</th><th style="border:1px solid #000;padding:10px 6px;">離開時間</th><th style="border:1px solid #000;padding:10px 6px;">進入目的/工作內容</th></tr></thead><tbody>${tableRows}</tbody></table>
+      <table style="width:100%;border-collapse:collapse;font-size:10px;"><thead><tr style="background:#fff;"><th style="border:1px solid #000;padding:10px 6px;">項目</th><th style="border:1px solid #000;padding:10px 6px;">公司名稱</th><th style="border:1px solid #000;padding:10px 6px;">車牌號碼</th><th style="border:1px solid #000;padding:10px 6px;">聯絡人</th><th style="border:1px solid #000;padding:10px 6px;">電話號碼</th><th style="border:1px solid #000;padding:10px 6px;">進入時間</th><th style="border:1px solid #000;padding:10px 6px;">離開時間</th><th style="border:1px solid #000;padding:10px 6px;">進入目的/工作內容</th></td></thead><tbody>${tableRows}</tbody></table>
       <div style="margin-top:18px;font-size:8px;text-align:center;">系統產生之記錄，請核對無誤後簽署</div>
     `;
     document.body.appendChild(pdfContainer);
