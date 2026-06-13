@@ -13,7 +13,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #eef2f5; padding: 20px 12px; font-family: 'Helvetica Neue', 'Noto Sans TC', 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif; max-width: 700px; margin: 0 auto; }
     .logo-container { background: transparent; text-align: center; padding: 10px 20px; margin-bottom: 8px; }
-    .epd-logo-img { max-height: 140px; width: auto; display: inline-block; }
+    .epd-logo-img { max-height: 100px; width: auto; display: inline-block; }
     .card { background: #fff; border-radius: 24px; padding: 20px 18px; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
     .btn-tab { flex: 1; border-radius: 16px; border: 2px solid #cbd5e0; background: #fff; padding: 16px 8px; text-align: center; font-weight: 700; cursor: pointer; }
     .btn-tab.active { background: #2c7a7b; border-color: #236162; color: #fff; }
@@ -52,10 +52,10 @@
     th, td { padding: 12px 10px; text-align: center; border-bottom: 1px solid #e2e8f0; white-space: nowrap; }
     th { background: #f1f5f9; font-weight: 600; }
     .section-title { color: #2c7a7b; font-weight: bold; margin: 16px 0 12px; padding-left: 8px; border-left: 4px solid #319795; font-size: 1rem; }
-    .section-title .eng-text { font-size: 0.7rem; font-weight: normal; }
+    .section-title .eng-text { font-size: 1.0rem; font-weight: normal; }
     .plate-input { text-transform: uppercase; font-weight: bold; }
     .chi-text { display: block; }
-    .eng-text { display: block; font-size: 0.7rem; color: #718096; }
+    .eng-text { display: block; font-size: 1.0rem; color: #718096; }
     .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 10000; }
     .loading-spinner { background: white; padding: 20px 30px; border-radius: 16px; text-align: center; }
     .loading-spinner .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: #2c7a7b; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 12px; }
@@ -72,7 +72,7 @@
   <img src="epd.png" alt="EPD" class="epd-logo-img" onerror="this.style.display='none';">
 </div>
 <h2 class="text-center" style="color:#2c7a7b;">西九龍廢物轉運站<br>車輛登記</h2>
-<p class="text-center" style="color:#718096;font-size:0.75rem;margin-bottom:20px;">West Kowloon Transfer Station Vehicle Registration</p>
+<p class="text-center" style="color:#718096;font-size:1.00rem;margin-bottom:20px;">West Kowloon Transfer Station Vehicle Registration</p>
 
 <div class="flex" style="margin-bottom:20px;">
   <div id="btnVisitor" class="btn-tab active" onclick="switchTab('visitor')"><span class="chi-text">訪客登記</span><span class="eng-text">Visitor Registration</span></div>
