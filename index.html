@@ -116,7 +116,7 @@
     <div class="section-title">📋 申請處理中 <span class="eng-text">(未過15:00)</span></div>
     <div class="table-responsive"> <table> <thead> <tr> <th>#</th> <th>參考編號</th> <th>公司</th> <th>車牌</th> <th>聯絡人</th> <th>電話</th> <th>時間</th> <th>目的</th> <th>車型</th> </tr> </thead> <tbody id="progressTable"></tbody> </table> </div>
     <div class="section-title">✅ 已確認名單 <span class="eng-text">(今天或之後)</span></div>
-    <div class="table-responsive"> </table> <thead> <tr> <th>#</th> <th>參考編號</th> <th>公司</th> <th>車牌</th> <th>聯絡人</th> <th>電話</th> <th>到訪日期</th> <th>入站時間</th> <th>目的</th> <th>車型</th> </tr> </thead> <tbody id="confirmedTable"></tbody> </table> </div>
+    <div class="table-responsive"> <table> <thead> <tr> <th>#</th> <th>參考編號</th> <th>公司</th> <th>車牌</th> <th>聯絡人</th> <th>電話</th> <th>到訪日期</th> <th>入站時間</th> <th>目的</th> <th>車型</th> </tr> </thead> <tbody id="confirmedTable"></tbody> </table> </div>
   </div>
 </div>
 
@@ -143,12 +143,35 @@ function escapeHtml(str) {
   });
 }
 
-function normalizeDateForCompare(dateStr) {
-  if (!dateStr) return '';
-  let str = safeString(dateStr).trim();
+// 將 UTC 日期轉換為香港日期 (UTC+8)
+function convertUTCtoHKDate(utcDateStr) {
+  if (!utcDateStr) return '';
+  let str = safeString(utcDateStr).trim();
+  
+  // 如果已經係 YYYY-MM-DD 格式，直接返回
   if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
-  let isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})T/);
-  if (isoMatch) return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
+  
+  // 處理 ISO 格式: 2026-06-14T16:00:00.000Z (UTC)
+  // 加上 8 小時轉為香港日期
+  let isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/);
+  if (isoMatch) {
+    let year = parseInt(isoMatch[1]);
+    let month = parseInt(isoMatch[2]) - 1;
+    let day = parseInt(isoMatch[3]);
+    let hour = parseInt(isoMatch[4]);
+    
+    // 建立 UTC Date 物件
+    let utcDate = new Date(Date.UTC(year, month, day, hour, 0, 0));
+    // 轉為香港時間 (UTC+8)
+    let hkDate = new Date(utcDate.getTime() + 8 * 60 * 60 * 1000);
+    
+    let y = hkDate.getFullYear();
+    let m = (hkDate.getMonth() + 1).toString().padStart(2, '0');
+    let d = hkDate.getDate().toString().padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+  
+  // 嘗試用 new Date 解析
   let d = new Date(str);
   if (!isNaN(d.getTime())) {
     let year = d.getFullYear();
@@ -156,6 +179,7 @@ function normalizeDateForCompare(dateStr) {
     let day = d.getDate().toString().padStart(2, '0');
     return `${year}-${month}-${day}`;
   }
+  
   return str;
 }
 
@@ -183,14 +207,11 @@ function initDatePicker() {
   minDate.setDate(now.getDate() + offset);
   maxDate.setDate(now.getDate() + 7);
   
-  // 格式化為 YYYY-MM-DD
   let minStr = minDate.toISOString().split('T')[0];
   let maxStr = maxDate.toISOString().split('T')[0];
   
   p.min = minStr;
   p.max = maxStr;
-  
-  // 設定預設值為最小可選日期
   p.value = minStr;
 }
 
@@ -236,7 +257,7 @@ function verifyLogin() {
 function logout() { isLoggedIn = false; showLogin(); }
 
 function loadData() {
-  document.getElementById('progressTable').innerHTML = '<tr><td colspan="9">載入中...</td></tr>';
+  document.getElementById('progressTable').innerHTML = '<tr><td colspan="9">載入中...<\/td><\/tr>';
   fetch(API)
     .then(r => r.json())
     .then(data => {
@@ -251,12 +272,13 @@ function loadData() {
         visit_time: normTime(item.time_in || ''),
         purpose: safeString(item.purpose || ''),
         vehicle_type: safeString(item.vehicle_type || ''),
-        visit_date: normalizeDateForCompare(item.visit_date || ''),
+        visit_date: convertUTCtoHKDate(item.visit_date || ''),
         status: 'in_progress'
       }));
+      console.log("轉換後日期:", cachedData.map(i => i.visit_date));
       renderTables();
     })
-    .catch(error => { console.error(error); document.getElementById('progressTable').innerHTML = '<tr><td colspan="9" style="color:red">連線失敗</td></tr>'; });
+    .catch(error => { console.error(error); document.getElementById('progressTable').innerHTML = '<tr><td colspan="9" style="color:red">連線失敗<\/td><\/tr>'; });
 }
 
 function isPending(i) {
@@ -277,36 +299,36 @@ function renderTables() {
   let pending = cachedData.filter(isPending);
   let confirmed = getValidConfirmed();
   const progressBody = document.getElementById('progressTable');
-  if (pending.length === 0) progressBody.innerHTML = '<tr><td colspan="9">暫無處理中申請</td></tr>';
+  if (pending.length === 0) progressBody.innerHTML = '<tr><td colspan="9">暫無處理中申請<\/td><\/tr>';
   else {
     progressBody.innerHTML = pending.map((i, idx) => `
       <tr>
         <td>${idx+1}</td>
-        <td>${escapeHtml(i.ref_no)}</td>
-        <td>${escapeHtml(i.company)}</td>
-        <td style="color:#d69e2e">${escapeHtml(i.vehicle_no)}</td>
-        <td>${escapeHtml(i.contact_person)}</td>
-        <td>${escapeHtml(i.tel_no)}</td>
-        <td>${escapeHtml(i.visit_time)}</td>
-        <td>${escapeHtml(i.purpose)}</td>
-        <td>${escapeHtml(i.vehicle_type)}</td>
+        <td>${escapeHtml(i.ref_no)}<\/td>
+        <td>${escapeHtml(i.company)}<\/td>
+        <td style="color:#d69e2e">${escapeHtml(i.vehicle_no)}<\/td>
+        <td>${escapeHtml(i.contact_person)}<\/td>
+        <td>${escapeHtml(i.tel_no)}<\/td>
+        <td>${escapeHtml(i.visit_time)}<\/td>
+        <td>${escapeHtml(i.purpose)}<\/td>
+        <td>${escapeHtml(i.vehicle_type)}<\/td>
       </tr>`).join('');
   }
   const confirmBody = document.getElementById('confirmedTable');
-  if (confirmed.length === 0) confirmBody.innerHTML = '<tr><td colspan="10">暫無有效已確認名單</td></tr>';
+  if (confirmed.length === 0) confirmBody.innerHTML = '<tr><td colspan="10">暫無有效已確認名單<\/td><\/tr>';
   else {
     confirmBody.innerHTML = confirmed.map((i, idx) => `
       <tr>
-        <td>${idx+1}</td>
-        <td>${escapeHtml(i.ref_no)}</td>
-        <td>${escapeHtml(i.company)}</td>
-        <td>${escapeHtml(i.vehicle_no)}</td>
-        <td>${escapeHtml(i.contact_person)}</td>
-        <td>${escapeHtml(i.tel_no)}</td>
-        <td>${escapeHtml(i.visit_date)}</td>
-        <td>${escapeHtml(i.visit_time)}</td>
-        <td>${escapeHtml(i.purpose)}</td>
-        <td>${escapeHtml(i.vehicle_type)}</td>
+        <td>${idx+1}<\/td>
+        <td>${escapeHtml(i.ref_no)}<\/td>
+        <td>${escapeHtml(i.company)}<\/td>
+        <td>${escapeHtml(i.vehicle_no)}<\/td>
+        <td>${escapeHtml(i.contact_person)}<\/td>
+        <td>${escapeHtml(i.tel_no)}<\/td>
+        <td>${escapeHtml(i.visit_date)}<\/td>
+        <td>${escapeHtml(i.visit_time)}<\/td>
+        <td>${escapeHtml(i.purpose)}<\/td>
+        <td>${escapeHtml(i.vehicle_type)}<\/td>
       </tr>`).join('');
   }
 }
@@ -448,20 +470,27 @@ function resetForm() {
   document.getElementById('successSection').classList.add('hidden');
   document.getElementById('formSection').classList.remove('hidden');
   pendingSubmissionData = null;
-  // 重置日期選擇器嘅預設值
   initDatePicker();
 }
 
 async function exportPDF() {
   let selectedDate = document.getElementById('exportDate').value;
   if (!selectedDate) { alert('請先選擇要匯出的日期'); return; }
-  let normalizedSelected = normalizeDateForCompare(selectedDate);
-  let list = cachedData.filter(item => item.visit_date === normalizedSelected);
+  
+  console.log("選擇匯出日期:", selectedDate);
+  console.log("cachedData 日期:", cachedData.map(i => ({ company: i.company, visit_date: i.visit_date })));
+  
+  // 直接比對 YYYY-MM-DD 字串
+  let list = cachedData.filter(item => item.visit_date === selectedDate);
+  
+  console.log("符合筆數:", list.length);
+  
   if (list.length === 0) {
     let uniqueDates = [...new Set(cachedData.map(i => i.visit_date).filter(d => d))];
     alert(`沒有 ${selectedDate} 的車輛紀錄\n\n系統中現有嘅日期：${uniqueDates.join(', ') || '無'}`);
     return;
   }
+  
   if (!confirm(`確認匯出 ${selectedDate} 的 ${list.length} 筆紀錄？\n\n匯出後請手動從 Google Sheet 刪除這些資料。`)) return;
   
   let loadingDiv = document.createElement('div');
@@ -473,7 +502,7 @@ async function exportPDF() {
   try {
     let tableRows = '';
     list.forEach((item, idx) => {
-      tableRows += `<tr style="background:#fff;"><td style="border:1px solid #000;padding:8px;vertical-align:top;">${idx+1}</td><td style="border:1px solid #000;padding:8px;vertical-align:top;">${escapeHtml(item.company)}</td><td style="border:1px solid #000;padding:8px;vertical-align:top;">${escapeHtml(item.vehicle_no)}</td><td style="border:1px solid #000;padding:8px;vertical-align:top;">${escapeHtml(item.contact_person)}</td><td style="border:1px solid #000;padding:8px;vertical-align:top;">${escapeHtml(item.tel_no)}</td><td style="border:1px solid #000;padding:8px;vertical-align:top;">${item.visit_time}</td><td style="border:1px solid #000;padding:8px;vertical-align:top;">---</td><td style="border:1px solid #000;padding:8px;vertical-align:top;">${escapeHtml(item.purpose)}</td></tr>`;
+      tableRows += `<tr style="background:#fff;"><td style="border:1px solid #000;padding:8px;vertical-align:top;">${idx+1}<\/td><td style="border:1px solid #000;padding:8px;vertical-align:top;">${escapeHtml(item.company)}<\/td><td style="border:1px solid #000;padding:8px;vertical-align:top;">${escapeHtml(item.vehicle_no)}<\/td><td style="border:1px solid #000;padding:8px;vertical-align:top;">${escapeHtml(item.contact_person)}<\/td><td style="border:1px solid #000;padding:8px;vertical-align:top;">${escapeHtml(item.tel_no)}<\/td><td style="border:1px solid #000;padding:8px;vertical-align:top;">${item.visit_time}<\/td><td style="border:1px solid #000;padding:8px;vertical-align:top;">---<\/td><td style="border:1px solid #000;padding:8px;vertical-align:top;">${escapeHtml(item.purpose)}<\/td><\/tr>`;
     });
     const pdfContainer = document.createElement('div');
     pdfContainer.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:900px;background:white;padding:20px';
