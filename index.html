@@ -55,9 +55,8 @@
     .loading-spinner { background: white; padding: 20px 30px; border-radius: 16px; text-align: center; }
     .loading-spinner .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: #2c7a7b; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 12px; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .search-wrapper { position: relative; }
-    .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #a0aec0; font-size: 1rem; pointer-events: none; }
-    .plate-input-search { padding-left: 35px !important; }
+    /* 搜尋框 - 無圖示版本 */
+    .plate-input-search { padding-left: 12px !important; }
     @media (max-width:480px) { body { padding: 12px; max-width: 100%; } .card { padding: 16px; } .preview-row { flex-direction: column; } .preview-label, .preview-value { width: 100%; } th, td { padding: 8px 5px; font-size: 0.7rem; white-space: normal; } table { min-width: 600px; } }
   </style>
 </head>
@@ -123,10 +122,8 @@
       <div class="flex"><input type="date" id="exportDate" class="form-control" style="width:140px"><button class="btn-success" onclick="exportPDF()">📄 匯出PDF / Export PDF</button><button class="btn-outline" onclick="logout()">🚪 登出 / Logout</button></div>
     </div>
     
-    <div class="search-wrapper">
-      <span class="search-icon">🔍</span>
-      <input type="text" id="searchInput" class="form-control plate-input-search mb-3" placeholder="搜尋車牌 / Search Vehicle No." oninput="filterTable()">
-    </div>
+    <!-- 問題1 修復：移除搜尋圖示 -->
+    <input type="text" id="searchInput" class="form-control plate-input-search mb-3" placeholder="搜尋車牌 / Search Vehicle No." oninput="filterTable()">
     
     <div class="section-title">✅ 今日已確認名單 <span class="eng-text">Today's Confirmed List</span></div>
     <div class="table-responsive">
@@ -164,7 +161,7 @@ function escapeHtml(str) {
   });
 }
 
-// ✅ 問題1+10 修復：將 UTC 日期轉換為香港日期 (YYYY-MM-DD)
+// 將 UTC 日期轉換為香港日期 (YYYY-MM-DD)
 function convertUTCtoHKDate(utcDateStr) {
   if (!utcDateStr) return '';
   let str = safeString(utcDateStr).trim();
@@ -183,22 +180,37 @@ function convertUTCtoHKDate(utcDateStr) {
   return str;
 }
 
-// ✅ 問題3+10 修復：時間格式化 - 只提取 HH:MM
+// 問題3 徹底修復：時間格式化 - 只提取 HH:MM，完全移除多餘分鐘
 function formatTimeOnly(timeStr) {
   if (!timeStr) return '---';
   let str = safeString(timeStr);
   if (str === '---') return '---';
   
-  // 方法1: 從 ISO 格式提取 T 之後嘅 HH:MM
+  // 方法1: 從 ISO 格式提取 T 之後嘅 HH:MM (例如 2026-06-14T15:00:00.000Z -> 15:00)
   let isoMatch = str.match(/T(\d{2}):(\d{2})/);
   if (isoMatch) {
-    return `${isoMatch[1]}:${isoMatch[2]}`;
+    let hour = isoMatch[1];
+    let minute = isoMatch[2];
+    return `${hour}:${minute}`;
   }
   
-  // 方法2: 匹配 HH:MM:SS 或 HH:MM
+  // 方法2: 匹配 HH:MM:SS 或 HH:MM (例如 15:00:00 -> 15:00)
   let timeMatch = str.match(/(\d{2}):(\d{2})/);
   if (timeMatch) {
-    return `${timeMatch[1]}:${timeMatch[2]}`;
+    let hour = timeMatch[1];
+    let minute = timeMatch[2];
+    // 確保分鐘係 00, 15, 30, 45 其中之一，如果唔係就四捨五入到最近嘅15分鐘
+    let minuteNum = parseInt(minute);
+    if (minuteNum !== 0 && minuteNum !== 15 && minuteNum !== 30 && minuteNum !== 45) {
+      // 如果分鐘唔係標準值，四捨五入到最近嘅15分鐘
+      let roundedMinute = Math.round(minuteNum / 15) * 15;
+      if (roundedMinute === 60) {
+        let newHour = (parseInt(hour) + 1).toString().padStart(2, '0');
+        return `${newHour}:00`;
+      }
+      minute = roundedMinute.toString().padStart(2, '0');
+    }
+    return `${hour}:${minute}`;
   }
   
   // 方法3: 嘗試用 new Date 解析
@@ -206,6 +218,16 @@ function formatTimeOnly(timeStr) {
   if (!isNaN(testDate.getTime())) {
     let hours = testDate.getHours().toString().padStart(2, '0');
     let minutes = testDate.getMinutes().toString().padStart(2, '0');
+    // 同樣處理分鐘
+    let minuteNum = parseInt(minutes);
+    if (minuteNum !== 0 && minuteNum !== 15 && minuteNum !== 30 && minuteNum !== 45) {
+      let roundedMinute = Math.round(minuteNum / 15) * 15;
+      if (roundedMinute === 60) {
+        let newHour = (parseInt(hours) + 1).toString().padStart(2, '0');
+        return `${newHour}:00`;
+      }
+      minutes = roundedMinute.toString().padStart(2, '0');
+    }
     return `${hours}:${minutes}`;
   }
   
@@ -285,7 +307,6 @@ function loadData() {
         let rawVisitDate = item.visit_date || '';
         let rawTimeIn = item.time_in || '';
         let formattedTime = formatTimeOnly(rawTimeIn);
-        // ✅ 問題5 修復：修正 console.log 語法
         console.log("原始時間:", rawTimeIn, "-> 格式化後:", formattedTime);
         return {
           ref_no: safeString(item.ref_no || ''),
@@ -296,7 +317,6 @@ function loadData() {
           visit_time: formattedTime,
           purpose: safeString(item.purpose || ''),
           vehicle_type: safeString(item.vehicle_type || ''),
-          // ✅ 問題1 修復：函數名稱統一為 convertUTCtoHKDate
           visit_date: convertUTCtoHKDate(rawVisitDate),
           status: 'in_progress'
         };
@@ -315,7 +335,6 @@ function getTodayConfirmed() {
   return cachedData.filter(item => item.visit_date === todayStr);
 }
 
-// ✅ 問題2+6 修復：正確取得 DOM 元素
 function renderTables() {
   let confirmed = getTodayConfirmed();
   const confirmBody = document.getElementById('confirmedTable');
@@ -436,7 +455,6 @@ function backToForm() {
   pendingSubmissionData = null;
 }
 
-// ✅ 問題9 修復：提交成功後重新加載數據
 async function submitFinal() {
   if (isSubmitting) { console.log("⚠️ 正在提交中，請勿重複點擊"); return; }
   if (!pendingSubmissionData) { alert('沒有可提交的資料'); return; }
@@ -451,7 +469,6 @@ async function submitFinal() {
       document.getElementById('previewSection').classList.add('hidden');
       document.getElementById('successSection').classList.remove('hidden');
       pendingSubmissionData = null;
-      // ✅ 問題9 修復：如果職員已登入，重新加載數據更新列表
       if (isLoggedIn) loadData();
     } else {
       alert(`❌ 提交失敗: ${result.message}\n\n參考編號: ${refNo}`);
@@ -519,7 +536,7 @@ async function exportPDF() {
         <tbody style="background-color:#ffffff;color:#000000;">
           ${tableRows}
         </tbody>
-      追赶
+      </table>
       <div style="margin-top:18px;font-size:8px;text-align:center;color:#000000;">系統產生之記錄，請核對無誤後簽署</div>
     `;
     document.body.appendChild(pdfContainer);
