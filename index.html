@@ -13,10 +13,10 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #eef2f5; padding: 20px 12px; font-family: 'Helvetica Neue', 'Noto Sans TC', 
-'Microsoft YaHei', 'PingFang SC', Arial, sans-serif; max-width: 700px; margin: 0 auto; }
-    .logo-container { background: transparent; text-align: center; padding: 10px 20px; margin-
-bottom: 8px; }
-    .epd-logo-img { max-height: 100px; width: auto; display: inline-block; }
+'Microsoft YaHei', 'PingFang SC', Arial, sans-serif; max-width: 600px; margin: 0 auto; }
+    .logo-container { background: #fff; text-align: center; padding: 24px 20px; border-radius: 
+20px; margin-bottom: 16px; border: 1px solid #e2e8f0; }
+    .epd-logo { max-height: 104px; width: auto; }
     .card { background: #fff; border-radius: 24px; padding: 20px 18px; margin-bottom: 16px; box-
 shadow: 0 4px 12px rgba(0,0,0,0.04); }
     .btn-tab { flex: 1; border-radius: 16px; border: 2px solid #cbd5e0; background: #fff; padding: 
@@ -24,21 +24,11 @@ shadow: 0 4px 12px rgba(0,0,0,0.04); }
     .btn-tab.active { background: #2c7a7b; border-color: #236162; color: #fff; }
     .btn-tab.staff { background: linear-gradient(135deg,#2c7a7b,#236162); border-color: #236162; 
 color: #fff; }
-    .btn-tab .chi-text, .btn-tab .eng-text { color: inherit; }
-    .btn-tab.active .chi-text, .btn-tab.active .eng-text,
-    .btn-tab.staff .chi-text, .btn-tab.staff .eng-text { color: #ffffff; }
     .form-group { margin-bottom: 20px; }
     .form-label { display: block; font-weight: 600; font-size: 0.9rem; color: #2d3748; }
     .form-sub { font-size: 0.7rem; color: #718096; display: block; }
     .form-control, .form-select { width: 100%; padding: 12px 14px; font-size: 1rem; border: 1px 
-solid #cbd5e0; border-radius: 12px; background: #ffffff; color: #1a202c; }
-    .form-control::placeholder, .form-select::placeholder { color: #a0aec0; }
-    input[type="tel"]::placeholder, input[type="date"]::placeholder { color: #a0aec0; }
-    .form-control:focus, .form-select:focus { outline: none; border-color: #2c7a7b; }
-    input[type="tel"], input[type="date"] { width: 100%; padding: 12px 14px; font-size: 1rem; 
-border: 1px solid #cbd5e0; border-radius: 12px; background: #ffffff; color: #1a202c; font-family: 
-inherit; }
-    input[type="tel"]:focus, input[type="date"]:focus { outline: none; border-color: #2c7a7b; }
+solid #cbd5e0; border-radius: 12px; background: #fff; }
     .btn-gold { width: 100%; background: linear-gradient(135deg,#ffb020,#f59e0b); border: none; 
 color: #1e293b; font-weight: 800; font-size: 1.2rem; padding: 14px; border-radius: 16px; cursor: 
 pointer; }
@@ -50,8 +40,6 @@ radius: 40px; font-weight: 600; cursor: pointer; }
 font-weight: 600; cursor: pointer; }
     .hidden { display: none !important; }
     .alert-cutoff { background: #fff5f5; border-left: 4px solid #e53e3e; padding: 12px; border-
-radius: 10px; margin-bottom: 20px; }
-    .alert-reminder { background: #fefce8; border-left: 4px solid #eab308; padding: 12px; border-
 radius: 10px; margin-bottom: 20px; }
     .preview-box { background: #f0f9ff; border-radius: 16px; padding: 16px; margin-bottom: 20px; }
     .preview-row { display: flex; padding: 10px 0; border-bottom: 1px solid #e2e8f0; }
@@ -65,112 +53,97 @@ radius: 10px; margin-bottom: 20px; }
     .mt-2 { margin-top: 16px; }
     .w-100 { width: 100%; }
     .table-responsive { overflow-x: auto; background: #fff; border-radius: 16px; border: 1px solid 
-#e2e8f0; margin-bottom: 20px; }
-
-
-    table { width: 100%; border-collapse: collapse; font-size: 0.8rem; min-width: 800px; }
-    th, td { padding: 12px 10px; text-align: center; border-bottom: 1px solid #e2e8f0; white-
-space: nowrap; }
+#e2e8f0; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    th, td { padding: 10px 8px; text-align: center; border-bottom: 1px solid #e2e8f0; }
     th { background: #f1f5f9; font-weight: 600; }
     .section-title { color: #2c7a7b; font-weight: bold; margin: 16px 0 12px; padding-left: 8px; 
-border-left: 4px solid #319795; font-size: 1rem; }
-    .section-title .eng-text { font-size: 1.0rem; font-weight: normal; }
+border-left: 4px solid #319795; }
     .plate-input { text-transform: uppercase; font-weight: bold; }
     .chi-text { display: block; }
-    .eng-text { display: block; font-size: 0.8rem; color: #718096; }
-    .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: 
-rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 10000; }
-    .loading-spinner { background: white; padding: 20px 30px; border-radius: 16px; text-align: 
-center; }
-    .loading-spinner .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-
-color: #2c7a7b; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 12px; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .plate-input-search { padding-left: 12px !important; }
-    .icon-text { display: inline-flex; align-items: center; gap: 6px; }
-    #pVehicle { color: #1a202c !important; font-weight: bold; }
-    @media (max-width:480px) { body { padding: 12px; max-width: 100%; } .card { padding: 16px; } 
-.preview-row { flex-direction: column; } .preview-label, .preview-value { width: 100%; } th, td { 
-padding: 8px 5px; font-size: 0.7rem; white-space: normal; } table { min-width: 600px; } }
+    .eng-text { display: block; font-size: 0.7rem; color: #718096; }
+    @media (max-width:480px) { body { padding: 12px; } .card { padding: 16px; } .preview-row { 
+flex-direction: column; } .preview-label, .preview-value { width: 100%; } }
   </style>
 </head>
+
+
 <body>
 <div class="logo-container">
-  <img src="epd.png" alt="EPD" class="epd-logo-img" onerror="this.style.display='none';">
+  <div class="epd-logo" style="font-size: 2rem; font-weight: bold; color:#2c7a7b;">EPD</div>
 </div>
 <h2 class="text-center" style="color:#2c7a7b;">⻄九龍廢物轉運站<br>⾞輛登記</h2>
-<p class="text-center" style="color:#718096;font-size:1.00rem;margin-bottom:20px;">West Kowloon 
+<p class="text-center" style="color:#718096;font-size:0.75rem;margin-bottom:20px;">West Kowloon 
 Transfer Station Vehicle Registration</p>
 <div class="flex" style="margin-bottom:20px;">
   <div id="btnVisitor" class="btn-tab active" onclick="switchTab('visitor')"><span class="chi-
-text">訪客登記</span><span class="eng-text">Visitor Registration</span></div>
+text">訪客登記</span><span class="eng-text">Visitor</span></div>
   <div id="btnStaff" class="btn-tab staff" onclick="switchTab('staff')"><span class="chi-text">職
 員專⽤</span><span class="eng-text">Staff Only</span></div>
 </div>
 <!-- 訪客⾯板 -->
 <div id="visitorPanel">
   <div id="formSection" class="card">
-    <div class="alert-cutoff"><div style="font-weight:bold;">⏰ 預約截數提⽰：每天下午3:00截數</div>
-<div class="eng-text">Cut-off: 3:00 PM daily | Before -> Reserved Next Day | After -> Reserved The 
-Day After Next |</div></div>
-    <div class="alert-reminder"><div style="font-weight:bold;">📋 注意事項：</div><div>請提供準確資
-料，資料只作入站核對之⽤</div><div class="eng-text">Please provide accurate information. It will be 
-used for entry verification only.</div></div>
+    <div class="alert-cutoff"><div style="font-weight:bold;">預約截數提⽰：每天下午3:00截數</div>
+<div class="eng-text">Cut-off: 3:00 PM daily | Before Next day | After Day after next</div></div>
+    <div class="alert-cutoff" style="margin-top:12px;"><div style="font-weight:bold;">資料核對提醒
+</div><div class="eng-text">Please verify before submission. This will be used for entry 
+verification.</div></div>
     <form id="regForm" onsubmit="showPreview(event)">
-      <div class="form-group"><label class="form-label">🏢 公司名 <span class="form-sub">Company 
+      <div class="form-group"><label class="form-label">公司名 <span class="form-sub">Company 
 Name</span></label><input type="text" class="form-control" id="company" placeholder="e.g. China 
 Harbour Engineering" required></div>
-      <div class="form-group"><label class="form-label">🚗 ⾞牌號碼 <span class="form-sub">Vehicle 
-No.</span></label><input type="text" class="form-control plate-input" id="vehicleNo" 
+      <div class="form-group"><label class="form-label">⾞牌號碼 <span class="form-sub">Vehicle No.
+</span></label><input type="text" class="form-control plate-input" id="vehicleNo" 
 placeholder="AB1234" required></div>
-      <div class="form-group"><label class="form-label">👤 聯絡⼈ <span class="form-sub">Contact 
+      <div class="form-group"><label class="form-label">聯絡⼈ <span class="form-sub">Contact 
 Person</span></label><input type="text" class="form-control" id="contactPerson" placeholder="Chan 
 Tai Man" required></div>
-      <div class="form-group"><label class="form-label">📞 電話號碼 <span class="form-sub">Tel. 
-No.</span></label><input type="tel" class="form-control" id="telNo" placeholder="9xxxxxxx" 
-inputmode="numeric" pattern="[0-9]{8}" maxlength="8" required></div>
-      <div class="form-group"><label class="form-label">📦 進入⽬的/⼯作内容 <span class="form-
+      <div class="form-group"><label class="form-label">電話號碼 <span class="form-sub">Tel. No.
+</span></label><input type="tel" class="form-control" id="telNo" placeholder="91234567" required>
+</div>
+      <div class="form-group"><label class="form-label">進入⽬的/⼯作内容 <span class="form-
 sub">Purpose/Work Description</span></label><input type="text" class="form-control" id="purpose" 
-placeholder="送貨 / Goods Delivery" required></div>
-      <div class="form-group"><label class="form-label">🚙 ⾞輛種類 <span class="form-sub">Vehicle 
-
-
+placeholder="廢物運輸 / Waste Transportation" required></div>
+      <div class="form-group"><label class="form-label">⾞輛種類 <span class="form-sub">Vehicle 
 Type</span></label><select class="form-select" id="vehicleType" required><option value="">請選
 擇/Select</option><option>私家⾞/Private Car</option><option>客貨⾞/Van</option><option>中型貨
 ⾞/Medium Truck</option><option>重型貨⾞/Heavy Truck</option><option>⼯程⾞/Engineering 
 Vehicle</option><option>其他/Other</option></select></div>
-      <div class="form-group"><label class="form-label">📅 預計到訪⽇期 <span class="form-
-sub">Visit Date (7天内)</span></label>
-        <input type="date" id="visitDatePicker" class="form-control" required>
-      </div>
-      <div class="form-group"><label class="form-label">⏱ 預計到訪時間 <span class="form-sub">ETA 
+      <div class="form-group"><label class="form-label">預計到訪⽇期 <span class="form-sub">Visit 
+Date (7天内)</span></label><input type="text" id="visitDatePicker" class="form-control" 
+placeholder="點擊選擇⽇期" readonly required></div>
+      <div class="form-group"><label class="form-label">預計到訪時間 <span class="form-sub">ETA 
 (24h)</span></label><div class="flex"><select id="hour" class="form-select" style="flex:1">
 </select><span style="font-size:1.5rem;">:</span><select id="minute" class="form-select" 
 style="flex:1"></select></div></div>
-      <button type="submit" class="btn-gold mt-2"><span class="chi-text">📮 提交申請</span><span 
+      <button type="submit" class="btn-gold mt-2"><span class="chi-text">提交申請</span><span 
 class="eng-text" style="font-size:0.7rem;">Application Submission</span></button>
     </form>
   </div>
   <div id="previewSection" class="card hidden">
-    <h3 class="text-center mb-2">✅ 請核對資料 / Verify Information</h3>
-    <div class="alert-reminder" style="background:#ffff3d;border-left-color:#f0ad4e"><div 
-style="font-weight:bold;">⚠ 重要提醒：</div><div>請核對所有資料無誤後提交</div><div class="eng-
-text">Please verify all information before submission.</div></div>
+    <h3 class="text-center mb-2">請核對資料 / Verify Information</h3>
+    <div class="alert-cutoff" style="background:#ffff3d;border-left-color:#f0ad4e"><div 
+style="font-weight:bold;">重要提醒：請核對資料</div><div class="eng-text">Important: Please verify 
+all information before submission.</div></div>
     <div class="preview-box">
-      <div class="preview-row"><span class="preview-label">🏢 公司/Company :</span><span 
+      <div class="preview-row"><span class="preview-label">公司/Company :</span><span 
 id="pCompany" class="preview-value"></span></div>
-      <div class="preview-row"><span class="preview-label">🚗 ⾞牌/Vehicle No. :</span><span 
-id="pVehicle" class="preview-value"></span></div>
-      <div class="preview-row"><span class="preview-label">👤 聯絡⼈/Contact :</span><span 
+      <div class="preview-row"><span class="preview-label">⾞牌/Vehicle No. :</span><span 
+id="pVehicle" class="preview-value" style="color:#e53e3e;font-weight:bold"></span></div>
+
+
+      <div class="preview-row"><span class="preview-label">聯絡⼈/Contact :</span><span 
 id="pContact" class="preview-value"></span></div>
-      <div class="preview-row"><span class="preview-label">📞 電話/Tel :</span><span id="pTel" 
+      <div class="preview-row"><span class="preview-label">電話/Tel :</span><span id="pTel" 
 class="preview-value"></span></div>
-      <div class="preview-row"><span class="preview-label">📦 ⽬的/Purpose :</span><span 
+      <div class="preview-row"><span class="preview-label">⽬的/Purpose :</span><span 
 id="pPurpose" class="preview-value"></span></div>
-      <div class="preview-row"><span class="preview-label">🚙 ⾞型/Type :</span><span id="pType" 
+      <div class="preview-row"><span class="preview-label">⾞型/Type :</span><span id="pType" 
 class="preview-value"></span></div>
-      <div class="preview-row"><span class="preview-label">📅 ⽇期/Date :</span><span id="pDate" 
+      <div class="preview-row"><span class="preview-label">⽇期/Date :</span><span id="pDate" 
 class="preview-value"></span></div>
-      <div class="preview-row"><span class="preview-label">⏱ 時間/Time :</span><span id="pTime" 
+      <div class="preview-row"><span class="preview-label">時間/Time :</span><span id="pTime" 
 class="preview-value"></span></div>
     </div>
     <div class="flex"><button class="btn-secondary w-100" onclick="backToForm()">← 返回修
@@ -180,102 +153,40 @@ class="preview-value"></span></div>
   <div id="successSection" class="card hidden">
     <div class="ref-box"><h3 style="color:#38a169;">🎉 登記申請已送出</h3><div 
 style="background:#fff;border-radius:12px;padding:16px;margin:16px 0"><span 
-style="color:#718096;">📄 參考編號</span><h2 id="refNumber" style="color:#2c7a7b;">----</h2></div>
-<p>📸 請截圖保存此畫⾯</p></div>
+style="color:#718096;">參考編號</span><h2 id="refNumber" style="color:#2c7a7b;">----</h2></div><p>
+請截圖保存此畫⾯</p></div>
     <button class="btn-outline w-100 mt-2" onclick="resetForm()">➕ 填寫新申請</button>
   </div>
 </div>
 <!-- 職員⾯板 -->
 <div id="staffPanel" style="display:none;">
-  <div id="loginBox" class="card text-center"><h3>🔒 職員驗證 <span class="eng-text">Staff 
-Verification</span></h3><input type="password" id="staffPwd" class="form-control mb-2" 
-placeholder="🔑 密碼 / Password"><button class="btn-success w-100" onclick="verifyLogin()">🔓 登
-入/Login</button><div id="loginError" class="hidden" style="color:#e53e3e;margin-top:12px;">❌ 密
-碼錯誤 / Wrong Password</div></div>
+  <div id="loginBox" class="card text-center"><h3>🔒 職員驗證</h3><input type="password" 
+id="staffPwd" class="form-control mb-2" placeholder="密碼 / Password"><button class="btn-success 
+w-100" onclick="verifyLogin()">登入/Login</button><div id="loginError" class="hidden" 
+style="color:#e53e3e;margin-top:12px;">密碼錯誤</div></div>
   <div id="adminPanel" class="card hidden">
-    <div class="flex" style="justify-content:space-between;align-items:center;margin-
-bottom:16px;flex-wrap:wrap;">
-      <h4 class="icon-text">🚗 閘⼝核對系統 <span class="eng-text">Gate Check System</span></h4>
-      <div class="flex">
-        <input type="date" id="exportDate" class="form-control" style="width:140px">
-
-
-        <button class="btn-success" onclick="exportPDF()">📄 匯出PDF / Export PDF</button>
-        <button class="btn-outline" onclick="logout()">🚪 登出 / Logout</button>
-      </div>
-    </div>
-    
-    <div class="search-wrapper">
-      <input type="text" id="searchInput" class="form-control plate-input-search mb-3" 
-placeholder="🔍 搜尋⾞牌 / Search Vehicle No." oninput="filterTable()">
-    </div>
-    
-    <div class="section-title icon-text">✅ 今⽇已確認名單 <span class="eng-text">Today's Confirmed 
-List</span></div>
-    <div class="table-responsive">
-      <table>
-        <thead>
-          <tr><th>#</th><th>📄 參考編號<br>Ref No.</th><th>🏢 公司<br>Company</th><th>🚗 ⾞牌
-<br>Vehicle No.</th><th>👤 聯絡⼈<br>Contact</th><th>📞 電話<br>Tel</th><th>📅 到訪⽇期<br>Visit 
-Date</th><th>⏱ 入站時間<br>Time In</th><th>📦 ⽬的<br>Purpose</th><th>🚙 ⾞型<br>Vehicle 
-Type</th></tr>
-        </thead>
-        <tbody id="confirmedTable"></tbody>
-      </table>
-    </div>
+    <div class="flex" style="justify-content:space-between;align-items:center;margin-bottom:16px">
+<h4>🚗 關⼝核對系統</h4><div class="flex"><input type="date" id="exportDate" class="form-control" 
+style="width:140px"><button class="btn-success" onclick="exportPDF()">📄 匯出PDF</button><button 
+class="btn-outline" onclick="logout()">🚪 登出</button></div></div>
+    <input type="text" id="searchInput" class="form-control plate-input mb-3" placeholder="🔍 搜尋
+⾞牌" oninput="filterTable()">
+    <div class="section-title">📋 申請處理中 <span class="eng-text">(未過15:00)</span></div>
+    <div class="table-responsive"><table><thead><tr><th>#</th><th>參考編號</th><th>公司</th><th>⾞
+牌</th><th>聯絡⼈</th><th>電話</th><th>時間</th><th>⽬的</th><th>⾞型</th></tr></thead><tbody 
+id="progressTable"></tbody></table></div>
+    <div class="section-title">✅ 已確認名單 <span class="eng-text">(今天或之後)</span></div>
+    <div class="table-responsive"><table><thead><tr><th>#</th><th>參考編號</th><th>公司</th><th>⾞
+牌</th><th>聯絡⼈</th><th>電話</th><th>到訪⽇期</th><th>入站時間</th><th>⽬的</th><th>⾞型</th></tr>
+</thead><tbody id="confirmedTable"></tbody></table></div>
   </div>
 </div>
 <script>
-// ==================== 全域變數 ====================
 let isLoggedIn = false;
 let cachedData = [];
-let isSubmitting = false;
-const API = "https://script.google.com/macros/s/AKfycbxzWm4hBTMZVKjZUv_0pLjKrp_VrDxCfmi6aLUVa4nB-
-x0N0MyEdDlSefU69MmbGb1D/exec";
-let pendingSubmissionData = null;
-// ==================== 香港時區核⼼函數 ====================
-function getHKTodayString() {
-  let now = new Date();
-  let hkTime = new Date(now.getTime() + 8 * 60 * 60 * 1000);
-  let year = hkTime.getUTCFullYear();
-  let month = (hkTime.getUTCMonth() + 1).toString().padStart(2, '0');
-  let day = hkTime.getUTCDate().toString().padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-function getHKCurrentHour() {
-  let now = new Date();
-  let hkTime = new Date(now.getTime() + 8 * 60 * 60 * 1000);
-  return hkTime.getUTCHours();
-}
-function convertUTCtoHKDate(utcDateStr) {
-  if (!utcDateStr) return '';
-  let str = safeString(utcDateStr).trim();
-  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
-  let isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/);
-  if (isoMatch) {
-    let year = parseInt(isoMatch[1]);
-    let month = parseInt(isoMatch[2]) - 1;
-    let day = parseInt(isoMatch[3]);
-    let hour = parseInt(isoMatch[4]);
-    let utcDate = new Date(Date.UTC(year, month, day, hour, 0, 0));
-    let hkDate = new Date(utcDate.getTime() + 8 * 60 * 60 * 1000);
-    let y = hkDate.getFullYear();
-    let m = (hkDate.getMonth() + 1).toString().padStart(2, '0');
-    let d = hkDate.getDate().toString().padStart(2, '0');
-    return `${y}-${m}-${d}`;
-  }
-
-
-  let d = new Date(str);
-  if (!isNaN(d.getTime())) {
-    let hkDate = new Date(d.getTime() + 8 * 60 * 60 * 1000);
-    let year = hkDate.getFullYear();
-    let month = (hkDate.getMonth() + 1).toString().padStart(2, '0');
-    let day = hkDate.getDate().toString().padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }
-  return str;
-}
+const API = 
+"https://script.google.com/macros/s/AKfycbz6L1lO15lIwMUcKT6Veg6RoTndla90i0pKLVTzE4qGmvHl2pZULMYhmd
+hnqJt-aVE9/exec";
 function safeString(str) {
   if (str === undefined || str === null) return '';
   return String(str);
@@ -284,70 +195,47 @@ function escapeHtml(str) {
   if (!str) return '';
   return safeString(str).replace(/[&<>]/g, function(m) {
     if (m === '&') return '&amp;';
+
+
     if (m === '<') return '&lt;';
     if (m === '>') return '&gt;';
     return m;
   });
 }
-function formatTimeOnly(timeStr) {
-  if (!timeStr) return '---';
-  let str = safeString(timeStr);
-  if (str === '---') return '---';
-  
-  let hour = 0;
-  let minute = 0;
-  let success = false;
-  
-  let isoMatch = str.match(/T(\d{2}):(\d{2})/);
-  if (isoMatch) {
-    hour = parseInt(isoMatch[1]);
-    minute = parseInt(isoMatch[2]);
-    success = true;
-    hour = hour + 8;
-    if (hour >= 24) hour = hour - 24;
-  } else {
-    let timeMatch = str.match(/(\d{2}):(\d{2})/);
-    if (timeMatch) {
-      hour = parseInt(timeMatch[1]);
-      minute = parseInt(timeMatch[2]);
-      success = true;
-    } else {
-      let testDate = new Date(str);
-      if (!isNaN(testDate.getTime())) {
-        hour = testDate.getUTCHours() + 8;
-        if (hour >= 24) hour = hour - 24;
-        minute = testDate.getUTCMinutes();
-        success = true;
-      }
-    }
+function toDateOnly(value) {
+  if (!value) return '';
+  let str = safeString(value);
+  if (str.includes('T')) return str.split('T')[0];
+  if (str.includes('/')) {
+    let parts = str.split('/');
+    if (parts.length === 3) return 
+`${parts[0]}-${parts[1].padStart(2,'0')}-${parts[2].padStart(2,'0')}`;
   }
-  
-  if (!success) return '---';
-  
-  let totalMinutes = hour * 60 + minute - 23;
-  if (totalMinutes < 0) totalMinutes += 24 * 60;
-  let newHour = Math.floor(totalMinutes / 60);
-  let newMinute = totalMinutes % 60;
-  let roundedMinute = Math.floor(newMinute / 15) * 15;
-  
-  return `${newHour.toString().padStart(2, '0')}:${roundedMinute.toString().padStart(2, '0')}`;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+  let d = new Date(str);
+  if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
+  return str;
 }
-
-
+function normTime(t) {
+  if (!t) return '---';
+  let s = safeString(t);
+  if (s.trim() === '') return '---';
+  if (/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(s)) return s;
+  let p = s.split(':');
+  if (p.length >= 2) return `${p[0].padStart(2,'0')}:${p[1].padStart(2,'0')}`;
+  return s;
+}
 function initDatePicker() {
   let p = document.getElementById('visitDatePicker');
   if (!p) return;
   let now = new Date();
-  let offset = getHKCurrentHour() >= 15 ? 2 : 1;
-  let minDate = new Date();
-  let maxDate = new Date();
-  minDate.setDate(now.getDate() + offset);
-  maxDate.setDate(now.getDate() + 7);
-  let minStr = minDate.toISOString().split('T')[0];
-  let maxStr = maxDate.toISOString().split('T')[0];
-  p.min = minStr;
-  p.max = maxStr;
-  p.value = minStr;
+  let offset = now.getHours() >= 15 ? 2 : 1;
+  let min = new Date();
+  let max = new Date();
+  min.setDate(now.getDate() + offset);
+  max.setDate(now.getDate() + 7);
+  flatpickr(p, { locale: "zh", dateFormat: "Y-m-d", minDate: min, maxDate: max, disableMobile: 
+true });
 }
 function initTimeSelects() {
   let h = document.getElementById('hour'), m = document.getElementById('minute');
@@ -372,6 +260,8 @@ document.getElementById('btnVisitor'), bs = document.getElementById('btnStaff');
 document.getElementById('adminPanel').classList.remove('hidden'); loadData(); }
   }
 }
+
+
 function showLogin() {
   document.getElementById('loginBox').classList.remove('hidden');
   document.getElementById('adminPanel').classList.add('hidden');
@@ -389,126 +279,259 @@ function verifyLogin() {
 }
 function logout() { isLoggedIn = false; showLogin(); }
 function loadData() {
-  const confirmTable = document.getElementById('confirmedTable');
-  if (confirmTable) confirmTable.innerHTML = '<tr><td colspan="10">載入中...<\/td><\/tr>';
-  
-  fetch(API)
-    .then(r => r.json())
-    .then(data => {
-      if (!Array.isArray(data)) { console.error("資料不是陣列"); return; }
-
-
-      cachedData = data.map(item => {
-        let rawVisitDate = item.visit_date || '';
-        let rawTimeIn = item.time_in || '';
-        let formattedTime = formatTimeOnly(rawTimeIn);
-        let convertedDate = convertUTCtoHKDate(rawVisitDate);
-        return {
-          ref_no: safeString(item.ref_no || ''),
-          company: safeString(item.company || ''),
-          vehicle_no: safeString(item.vehicle_no || ''),
-          contact_person: safeString(item.contact_person || ''),
-          tel_no: safeString(item.tel_no || ''),
-          visit_time: formattedTime,
-          purpose: safeString(item.purpose || ''),
-          vehicle_type: safeString(item.vehicle_type || ''),
-          visit_date: convertedDate,
-          status: 'in_progress'
-        };
-      });
-      renderTables();
-    })
-    .catch(error => { console.error(error); if (confirmTable) confirmTable.innerHTML = '<td><td 
-colspan="10" style="color:red">連線失敗<\/td><\/tr>'; });
+  document.getElementById('progressTable').innerHTML = '<tr><td colspan="9">載入中...</td></tr>';
+  fetch(API).then(r => r.json()).then(data => {
+    console.log("API資料:", data);
+    if (!Array.isArray(data)) { console.error("資料不是陣列"); return; }
+    cachedData = data.map(item => {
+      let rawDate = item.visit_date || item.到訪⽇期 || item.date || item.Date || '';
+      let company = item.company || item.公司 || item.Company || '';
+      let vehicleNo = item.vehicle_no || item.⾞牌 || item.vehicleNo || '';
+      let contact = item.contact_person || item.聯絡⼈ || item.contactPerson || '';
+      let tel = item.tel_no || item.電話 || item.telNo || '';
+      let visitTime = item.visit_time || item.到訪時間 || item.visitTime || '';
+      let purpose = item.purpose || item.⽬的 || item.Purpose || '';
+      let vehicleType = item.vehicle_type || item.⾞型 || item.vehicleType || '';
+      let refNo = item.ref_no || item.參考編號 || item.refNo || ('REF' + 
+Math.random().toString(36).substr(2, 6));
+      let status = item.status || item.Status || 'in_progress';
+      return {
+        ref_no: safeString(refNo),
+        company: safeString(company),
+        vehicle_no: safeString(vehicleNo),
+        contact_person: safeString(contact),
+        tel_no: safeString(tel),
+        visit_time: normTime(visitTime),
+        purpose: safeString(purpose),
+        vehicle_type: safeString(vehicleType),
+        visit_date: toDateOnly(rawDate),
+        status: safeString(status),
+        time_in: normTime(visitTime)
+      };
+    });
+    renderTables();
+  }).catch(error => { console.error(error); document.getElementById('progressTable').innerHTML = 
+'<tr><td colspan="9" style="color:red">連線失敗</td></tr>'; });
 }
-function getTodayConfirmed() {
-  let todayStr = getHKTodayString();
-  return cachedData.filter(item => item.visit_date === todayStr);
+function isPending(i) {
+  if (i.status !== 'in_progress') return false;
+  let vd = new Date(i.visit_date);
+  let td = new Date(); td.setHours(0, 0, 0, 0);
+  if (isNaN(vd) || vd < td) return false;
+  if (vd.getTime() === td.getTime()) return new Date().getHours() < 15;
+  return true;
+}
+function getValidConfirmed() {
+  let td = new Date(); td.setHours(0, 0, 0, 0);
+  return cachedData.filter(i => i.status === 'in_progress' && !isNaN(new Date(i.visit_date)) && 
+new Date(i.visit_date) >= td);
+
+
 }
 function renderTables() {
-  let confirmed = getTodayConfirmed();
+  let pending = cachedData.filter(isPending);
+  let confirmed = getValidConfirmed();
+  const progressBody = document.getElementById('progressTable');
+  if (pending.length === 0) progressBody.innerHTML = '<tr><td colspan="9">暫無處理中申請</td>
+</tr>';
+  else {
+    progressBody.innerHTML = pending.map((i, idx) => `<tr>
+        <td>${idx+1}</td><td>${escapeHtml(i.ref_no)}</td><td>${escapeHtml(i.company)}</td><td 
+style="color:#d69e2e">${escapeHtml(i.vehicle_no)}</td>
+        <td>${escapeHtml(i.contact_person)}</td><td>${escapeHtml(i.tel_no)}</td>
+<td>${escapeHtml(i.visit_time)}</td>
+        <td>${escapeHtml(i.purpose)}</td><td>${escapeHtml(i.vehicle_type)}</td>
+    </tr>`).join('');
+  }
   const confirmBody = document.getElementById('confirmedTable');
-  if (!confirmBody) return;
-  
-  if (confirmed.length === 0) {
-    confirmBody.innerHTML = '<tr><td colspan="10">今⽇暫無已確認⾞輛<\/td><\/tr>';
-  } else {
-    confirmBody.innerHTML = confirmed.map((i, idx) => `
-      <tr>
-        <td>${idx+1}</td>
-        <td>${escapeHtml(i.ref_no)}<\/td>
-        <td>${escapeHtml(i.company)}<\/td>
-        <td style="color:#2c7a7b;font-weight:bold;">${escapeHtml(i.vehicle_no)}<\/td>
-        <td>${escapeHtml(i.contact_person)}<\/td>
-        <td>${escapeHtml(i.tel_no)}<\/td>
-        <td>${escapeHtml(i.visit_date)}<\/td>
-        <td>${escapeHtml(i.visit_time)}<\/td>
-        <td>${escapeHtml(i.purpose)}<\/td>
-        <td>${escapeHtml(i.vehicle_type)}<\/td>
-      <\/tr>
-    `).join('');
+  if (confirmed.length === 0) confirmBody.innerHTML = '<tr><td colspan="10">暫無有效已確認名單</td>
+</tr>';
+  else {
+    confirmBody.innerHTML = confirmed.map((i, idx) => `<tr>
+        <td>${idx+1}</td><td>${escapeHtml(i.ref_no)}</td><td>${escapeHtml(i.company)}</td>
+<td>${escapeHtml(i.vehicle_no)}</td>
+        <td>${escapeHtml(i.contact_person)}</td><td>${escapeHtml(i.tel_no)}</td>
+<td>${escapeHtml(i.visit_date)}</td>
+        <td>${escapeHtml(i.visit_time)}</td><td>${escapeHtml(i.purpose)}</td>
+<td>${escapeHtml(i.vehicle_type)}</td>
+    </table>`).join('');
   }
 }
 function filterTable() {
   let kw = document.getElementById('searchInput').value.toUpperCase();
-  document.querySelectorAll('#confirmedTable tr').forEach(r => {
-    if (r.cells.length < 4) return;
+  document.querySelectorAll('#progressTable tr, #confirmedTable tr').forEach(r => {
     let cell = r.cells[3];
     if (cell) r.style.display = cell.innerText.toUpperCase().includes(kw) ? '' : 'none';
   });
 }
-function showLoading(show, message) {
-  let existing = document.getElementById('globalLoading');
-  if (show) {
-    if (existing) existing.remove();
-    let div = document.createElement('div');
-    div.id = 'globalLoading';
+// PDF 匯出 - 表格標題列都係⽩底⿊字
+async function exportPDF() {
+  let selectedDate = document.getElementById('exportDate').value;
+  if (!selectedDate) { alert('請先選擇要匯出的⽇期'); return; }
+  
+  let list = cachedData.filter(item => item.visit_date === selectedDate);
+  if (list.length === 0) {
+    let existingDates = cachedData.map(i => i.visit_date).filter(d => d).join(', ');
+    alert(`沒有 ${selectedDate} 的⾞輛紀錄\n\n⽬前資料中的⽇期：${existingDates || '無'}`);
+    return;
+  }
+  
+  if (!confirm(`確認匯出 ${selectedDate} 的 ${list.length} 筆紀錄？\n\n匯出後請⼿動從 Google Sheet 刪
+除這些資料。`)) return;
+  
+  let loadingDiv = document.createElement('div');
+  loadingDiv.innerText = '正在產⽣ PDF，請稍候... (這可能需要幾秒鐘)';
+  loadingDiv.style.cssText = 
+'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.85);color:
+#fff;padding:15px 30px;border-radius:10px;z-index:9999;font-size:16px;text-align:center;min-
+width:200px';
+  document.body.appendChild(loadingDiv);
+  await new Promise(r => setTimeout(r, 100));
+  
+  try {
+    let tableRows = '';
+    list.forEach((item, idx) => {
+      let timeInDisplay = normTime(item.visit_time);
 
 
-    div.className = 'loading-overlay';
-    div.innerHTML = `<div class="loading-spinner"><div class="spinner"></div><div>${message || '處
-理中...'}</div></div>`;
-    document.body.appendChild(div);
-  } else {
-    if (existing) existing.remove();
+      let timeOutDisplay = '---';
+      tableRows += `
+        <tr style="background-color: #ffffff;">
+          <td style="border: 1px solid #000000; padding: 8px; color: #000000;">${idx + 1}</td>
+          <td style="border: 1px solid #000000; padding: 8px; color: 
+#000000;">${escapeHtml(item.company)}</td>
+          <td style="border: 1px solid #000000; padding: 8px; color: 
+#000000;">${escapeHtml(item.vehicle_no)}</td>
+          <td style="border: 1px solid #000000; padding: 8px; color: 
+#000000;">${escapeHtml(item.contact_person)}</td>
+          <td style="border: 1px solid #000000; padding: 8px; color: 
+#000000;">${escapeHtml(item.tel_no)}</td>
+          <td style="border: 1px solid #000000; padding: 8px; color: #000000;">${timeInDisplay}
+</td>
+          <td style="border: 1px solid #000000; padding: 8px; color: #000000;">${timeOutDisplay}
+</td>
+          <td style="border: 1px solid #000000; padding: 8px; color: 
+#000000;">${escapeHtml(item.purpose)}</td>
+        </tr>
+      `;
+    });
+    
+    const pdfContainer = document.createElement('div');
+    pdfContainer.style.cssText = 
+'position:absolute;left:-9999px;top:-9999px;width:900px;background:white;padding:20px;font-
+family:"Noto Sans TC","Microsoft YaHei","PingFang SC","Helvetica Neue",Arial,sans-serif';
+    
+    pdfContainer.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-
+bottom: 15px; border-bottom: 2px solid #1f6e6e; padding-bottom: 10px;">
+        <div style="text-align: left;">
+          <div style="font-size: 14px; font-weight: bold; color: #1f6e6e;">中國港灣⼯程有限責任公司
+</div>
+          <div style="font-size: 12px; color: #000000;">China Harbour Engineering Company 
+Limited</div>
+          <div style="font-size: 11px; margin-top: 5px; color: #000000;">⻄九龍廢物轉運站 | West 
+Kowloon Transfer Station</div>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-size: 12px; font-weight: bold; color: #000000;">環境保護署查閱 / Checked 
+By EPD: _________________</div>
+        </div>
+      </div>
+      
+      <!-- 到訪⽇期放⼤置頂 -->
+      <div style="text-align: center; margin: 15px 0 20px 0;">
+        <div style="font-size: 22px; font-weight: bold; color: #1a5c5c; background: #e6f7f7; 
+display: inline-block; padding: 8px 25px; border-radius: 40px; letter-spacing: 2px;">
+          📅 到訪⽇期 / Visit Date：${selectedDate}
+        </div>
+      </div>
+      
+      <div style="font-size: 16px; font-weight: bold; text-align: center; margin-bottom: 12px; 
+color: #000000;">⾞輛進入預先登記記錄<br>Registered Vehicle Log</div>
+      
+      <table style="width:100%; border-collapse: collapse; font-size: 10px; background-color: 
+#ffffff;">
+        <thead>
+          <tr style="background-color: #ffffff; color: #000000; text-align: center;">
+            <th style="border: 1px solid #000000; padding: 10px 6px; font-weight: bold;">項⽬
+<br>Item</th>
+            <th style="border: 1px solid #000000; padding: 10px 6px; font-weight: bold;">公司名稱
+<br>Company</th>
+            <th style="border: 1px solid #000000; padding: 10px 6px; font-weight: bold;">⾞牌號碼
+<br>Vehicle No.</th>
+            <th style="border: 1px solid #000000; padding: 10px 6px; font-weight: bold;">聯絡⼈
+<br>Contact Person</th>
+            <th style="border: 1px solid #000000; padding: 10px 6px; font-weight: bold;">電話號碼
+
+
+<br>Tel. No.</th>
+            <th style="border: 1px solid #000000; padding: 10px 6px; font-weight: bold;">進入時間
+<br>Time In</th>
+            <th style="border: 1px solid #000000; padding: 10px 6px; font-weight: bold;">離開時間
+<br>Time Out</th>
+            <th style="border: 1px solid #000000; padding: 10px 6px; font-weight: bold;">進入⽬的/
+⼯作內容<br>Purpose/Work Description</th>
+          </tr>
+        </thead>
+        <tbody style="background-color: #ffffff; color: #000000;">
+          ${tableRows}
+        </tbody>
+      </table>
+      
+      <div style="margin-top: 18px; font-size: 8px; text-align: center; color: #000000;">
+        系統產⽣之記錄，請核對無誤後簽署
+      </div>
+    `;
+    
+    document.body.appendChild(pdfContainer);
+    await new Promise(r => setTimeout(r, 250));
+    
+    const canvas = await html2canvas(pdfContainer, {
+      scale: 2.8,
+      backgroundColor: '#ffffff',
+      logging: false,
+      useCORS: true,
+      windowWidth: pdfContainer.scrollWidth,
+      windowHeight: pdfContainer.scrollHeight
+    });
+    
+    document.body.removeChild(pdfContainer);
+    
+    const imgData = canvas.toDataURL('image/png');
+    const { jsPDF } = window.jspdf;
+    const imgWidth = 280;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    const pdf = new jsPDF('l', 'mm', 'a4');
+    let yPos = 8;
+    if (imgHeight < 190) yPos = (190 - imgHeight) / 2;
+    pdf.addImage(imgData, 'PNG', 10, yPos, imgWidth, imgHeight);
+    pdf.save(`WKTS_VehicleLog_${selectedDate}.pdf`);
+    
+    document.body.removeChild(loadingDiv);
+    alert(`✅ PDF 已下載！\n\n檔案名稱: WKTS_VehicleLog_${selectedDate}.pdf\n\n請記得⼿動從 Google 
+Sheet 刪除 ${selectedDate} 的 ${list.length} 筆紀錄`);
+    
+  } catch (err) {
+    console.error("PDF⽣成錯誤:", err);
+    if (loadingDiv && loadingDiv.parentNode) document.body.removeChild(loadingDiv);
+    alert('❌ PDF ⽣成失敗: ' + err.message + '\n\n請檢查網路連線後重試');
   }
 }
-function submitToGoogleSheet(formData, refNo) {
-  return new Promise((resolve) => {
-    const params = new URLSearchParams();
-    params.append('ref_no', refNo);
-    params.append('company', formData.company);
-    params.append('vehicle_no', formData.vehicleNo);
-    params.append('contact_person', formData.contactPerson);
-    params.append('tel_no', formData.telNo);
-    params.append('time_in', formData.visitTime);
-    params.append('purpose', formData.purpose);
-    params.append('vehicle_type', formData.vehicleType);
-    params.append('visit_date', formData.visitDate);
-    const url = `${API}?${params.toString()}`;
-    fetch(url, { method: 'GET', mode: 'no-cors' })
-      .then(() => { resolve({ success: true }); })
-      .catch((e) => { resolve({ success: true }); });
-  });
-}
-// 參考編號格式：YYYYMMDD-XXXX（4位隨機數字 + ⼤階字⺟）
 function generateRefNo() {
   let d = new Date();
-  let year = d.getFullYear();
-  let month = (d.getMonth() + 1).toString().padStart(2, '0');
-  let day = d.getDate().toString().padStart(2, '0');
-  let dateStr = `${year}${month}${day}`;
-  let chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  let randomStr = '';
-  for (let i = 0; i < 4; i++) {
-    randomStr += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return `${dateStr}-${randomStr}`;
+  let date = 
+`${d.getFullYear()}${(d.getMonth()+1).toString().padStart(2,'0')}${d.getDate().toString().padStart
+(2,'0')}`;
+  let chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand = '';
+  for (let i = 0; i < 4; i++) rand += chars[Math.floor(Math.random() * chars.length)];
+  return `${date}-${rand}`;
 }
 function showPreview(e) {
   e.preventDefault();
   let c = document.getElementById('company').value.trim();
   let v = document.getElementById('vehicleNo').value.trim().toUpperCase();
+
+
   let cp = document.getElementById('contactPerson').value.trim();
   let t = document.getElementById('telNo').value.trim();
   let p = document.getElementById('purpose').value.trim();
@@ -518,8 +541,6 @@ function showPreview(e) {
   let m = document.getElementById('minute').value;
   let tm = (h && m) ? `${h}:${m}` : '未選';
   if (!c || !v || !cp || !t || !p || !vt || !d) { alert('請填寫所有欄位'); return false; }
-  pendingSubmissionData = { company: c, vehicleNo: v, contactPerson: cp, telNo: t, purpose: p, 
-vehicleType: vt, visitDate: d, visitTime: tm };
   document.getElementById('pCompany').innerText = c;
   document.getElementById('pVehicle').innerText = v;
   document.getElementById('pContact').innerText = cp;
@@ -531,166 +552,24 @@ vehicleType: vt, visitDate: d, visitTime: tm };
   document.getElementById('formSection').classList.add('hidden');
   document.getElementById('previewSection').classList.remove('hidden');
   return false;
-
-
 }
 function backToForm() {
   document.getElementById('previewSection').classList.add('hidden');
   document.getElementById('formSection').classList.remove('hidden');
-  pendingSubmissionData = null;
 }
-async function submitFinal() {
-  if (isSubmitting) { return; }
-  if (!pendingSubmissionData) { alert('沒有可提交的資料'); return; }
-  isSubmitting = true;
-  const refNo = generateRefNo();
-  document.getElementById('refNumber').innerText = refNo;
-  showLoading(true, '正在提交資料到 Google Sheets...');
-  try {
-    const result = await submitToGoogleSheet(pendingSubmissionData, refNo);
-    showLoading(false);
-    if (result.success) {
-      document.getElementById('previewSection').classList.add('hidden');
-      document.getElementById('successSection').classList.remove('hidden');
-      pendingSubmissionData = null;
-      if (isLoggedIn) loadData();
-    } else {
-      alert(`提交失敗: ${result.message}\n\n參考編號: ${refNo}`);
-    }
-  } catch (error) {
-    showLoading(false);
-    alert(`提交時發⽣錯誤: ${error.message}\n\n參考編號: ${refNo}`);
-  } finally {
-    isSubmitting = false;
-  }
+function submitFinal() {
+  document.getElementById('refNumber').innerText = generateRefNo();
+  document.getElementById('previewSection').classList.add('hidden');
+  document.getElementById('successSection').classList.remove('hidden');
 }
 function resetForm() {
   document.getElementById('regForm').reset();
   document.getElementById('successSection').classList.add('hidden');
   document.getElementById('formSection').classList.remove('hidden');
-  pendingSubmissionData = null;
-  initDatePicker();
-}
-async function exportPDF() {
-  let selectedDate = document.getElementById('exportDate').value;
-  if (!selectedDate) { alert('請先選擇要匯出的⽇期'); return; }
-  let list = cachedData.filter(item => item.visit_date === selectedDate);
-  if (list.length === 0) {
-    alert(`沒有 ${selectedDate} 的⾞輛紀錄`);
-    return;
-  }
-  if (!confirm(`確認匯出 ${selectedDate} 的 ${list.length} 筆紀錄？`)) return;
-  
-  let loadingDiv = document.createElement('div');
-  loadingDiv.innerText = '正在產⽣ PDF，請稍候...';
-  loadingDiv.style.cssText = 
-'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.85);color:
-#fff;padding:15px 30px;border-radius:10px;z-index:9999';
-  document.body.appendChild(loadingDiv);
-  await new Promise(r => setTimeout(r, 100));
-  
-  try {
-    let tableRows = '';
-    list.forEach((item, idx) => {
-      tableRows += `<tr style="background:#ffffff;">
-        <td style="border:1px solid #000000;padding:8px;vertical-
-align:top;color:#000000;">${idx+1}<\/td>
-        <td style="border:1px solid #000000;padding:8px;vertical-
-align:top;color:#000000;">${escapeHtml(item.ref_no)}<\/td>
-
-
-        <td style="border:1px solid #000000;padding:8px;vertical-
-align:top;color:#000000;">${escapeHtml(item.company)}<\/td>
-        <td style="border:1px solid #000000;padding:8px;vertical-
-align:top;color:#000000;">${escapeHtml(item.vehicle_no)}<\/td>
-        <td style="border:1px solid #000000;padding:8px;vertical-
-align:top;color:#000000;">${escapeHtml(item.contact_person)}<\/td>
-        <td style="border:1px solid #000000;padding:8px;vertical-
-align:top;color:#000000;">${escapeHtml(item.tel_no)}<\/td>
-        <td style="border:1px solid #000000;padding:8px;vertical-
-align:top;color:#000000;">${item.visit_time}<\/td>
-        <td style="border:1px solid #000000;padding:8px;vertical-
-align:top;color:#000000;">${escapeHtml(item.purpose)}<\/td>
-      <\/tr>`;
-    });
-    const pdfContainer = document.createElement('div');
-    pdfContainer.style.cssText = 
-'position:absolute;left:-9999px;top:-9999px;width:900px;background:white;padding:20px';
-    pdfContainer.innerHTML = `
-      <div style="display:flex;justify-content:space-between;margin-bottom:15px;border-bottom:2px 
-solid #cccccc;padding-bottom:10px;">
-        <div><div style="font-size:14px;font-weight:bold;color:#000000;">中國港灣⼯程有限責任公司
-</div><div style="font-size:12px;color:#000000;">China Harbour Engineering Company Limited</div>
-<div style="font-size:11px;color:#000000;">⻄九龍廢物轉運站 | West Kowloon Transfer Station</div>
-</div>
-        <div><div style="font-size:12px;font-weight:bold;color:#000000;">環境保護署查閱 / Checked 
-By EPD: _________________</div></div>
-      </div>
-      <div style="text-align:center;margin:15px 0;"><div style="font-size:22px;font-
-weight:bold;color:#1a5c5c;background:#e6f7f7;display:inline-block;padding:8px 25px;border-
-radius:40px;">📅 到訪⽇期 / Visit Date：${selectedDate}</div></div>
-      <div style="font-size:16px;font-weight:bold;text-align:center;margin-
-bottom:12px;color:#000000;">⾞輛進入預先登記記錄<br>Registered Vehicle Log</div>
-      <table style="width:100%;border-collapse:collapse;font-size:10px;background-color:#ffffff;">
-        <thead>
-          <tr style="background-color:#ffffff;color:#000000;text-align:center;">
-            <th style="border:1px solid #000000;padding:10px 6px;font-weight:bold;color:#000000;">
-項⽬<br>Item</th>
-            <th style="border:1px solid #000000;padding:10px 6px;font-weight:bold;color:#000000;">
-參考編號<br>Ref No.</th>
-            <th style="border:1px solid #000000;padding:10px 6px;font-weight:bold;color:#000000;">
-公司名稱<br>Company</th>
-            <th style="border:1px solid #000000;padding:10px 6px;font-weight:bold;color:#000000;">
-⾞牌號碼<br>Vehicle No.</th>
-            <th style="border:1px solid #000000;padding:10px 6px;font-weight:bold;color:#000000;">
-聯絡⼈<br>Contact Person</th>
-            <th style="border:1px solid #000000;padding:10px 6px;font-weight:bold;color:#000000;">
-電話號碼<br>Tel. No.</th>
-            <th style="border:1px solid #000000;padding:10px 6px;font-weight:bold;color:#000000;">
-進入時間<br>Time In</th>
-            <th style="border:1px solid #000000;padding:10px 6px;font-weight:bold;color:#000000;">
-進入⽬的/⼯作內容<br>Purpose/Work Description</th>
-          </tr>
-        </thead>
-        <tbody style="background-color:#ffffff;color:#000000;">
-          ${tableRows}
-        </tbody>
-      </table>
-      <div style="margin-top:18px;font-size:8px;text-align:center;color:#000000;">系統產⽣之記錄，
-請核對無誤後簽署</div>
-    `;
-    document.body.appendChild(pdfContainer);
-    await new Promise(r => setTimeout(r, 250));
-    const canvas = await html2canvas(pdfContainer, { scale: 2.8, backgroundColor: '#ffffff' });
-    document.body.removeChild(pdfContainer);
-    const imgData = canvas.toDataURL('image/png');
-    const { jsPDF } = window.jspdf;
-    const imgWidth = 280;
-
-
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    const pdf = new jsPDF('l', 'mm', 'a4');
-    pdf.addImage(imgData, 'PNG', 10, 8, imgWidth, imgHeight);
-    pdf.save(`WKTS_VehicleLog_${selectedDate}.pdf`);
-    document.body.removeChild(loadingDiv);
-    alert(`✅ PDF 已下載！`);
-  } catch (err) {
-    console.error(err);
-    if (loadingDiv) loadingDiv.remove();
-    alert('❌ PDF ⽣成失敗: ' + err.message);
-  }
 }
 document.addEventListener('DOMContentLoaded', () => {
   initTimeSelects();
   initDatePicker();
-  
-  // 電話號碼輸入限制：只可輸入數字，最多8位
-  const telInput = document.getElementById('telNo');
-  if (telInput) {
-    telInput.addEventListener('input', function(e) {
-      this.value = this.value.replace(/[^0-9]/g, '').slice(0, 8);
-    });
-  }
 });
 </script>
 </body>
