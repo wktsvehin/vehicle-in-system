@@ -177,23 +177,28 @@ function convertUTCtoHKDate(utcDateStr) {
   return str;
 }
 
-// ✅ 時間修正：減 23 分鐘，然後向下取整到最近嘅 15 分鐘
+// ✅ 時間修正：先將 UTC 轉換為香港時間 (UTC+8)，再減 23 分鐘，然後向下取整到 15 分鐘
 function formatTimeOnly(timeStr) {
   if (!timeStr) return '---';
   let str = safeString(timeStr);
   if (str === '---') return '---';
   
-  // 提取小時和分鐘
   let hour = 0;
   let minute = 0;
   let success = false;
   
-  // 方法1: 從 ISO 格式提取 T 之後嘅 HH:MM
+  // 方法1: 從 ISO 格式提取 T 之後嘅 HH:MM (UTC 時間)
   let isoMatch = str.match(/T(\d{2}):(\d{2})/);
   if (isoMatch) {
     hour = parseInt(isoMatch[1]);
     minute = parseInt(isoMatch[2]);
     success = true;
+    
+    // 將 UTC 轉換為香港時間 (UTC+8)
+    hour = hour + 8;
+    if (hour >= 24) {
+      hour = hour - 24;
+    }
   }
   // 方法2: 匹配 HH:MM:SS 或 HH:MM
   else {
@@ -207,8 +212,9 @@ function formatTimeOnly(timeStr) {
     else {
       let testDate = new Date(str);
       if (!isNaN(testDate.getTime())) {
-        hour = testDate.getHours();
-        minute = testDate.getMinutes();
+        hour = testDate.getUTCHours() + 8;
+        if (hour >= 24) hour = hour - 24;
+        minute = testDate.getUTCMinutes();
         success = true;
       }
     }
@@ -227,12 +233,8 @@ function formatTimeOnly(timeStr) {
   let newHour = Math.floor(totalMinutes / 60);
   let newMinute = totalMinutes % 60;
   
-  // 步驟2: 向下取整到最近嘅 15 分鐘 (floor, 唔係 round)
-  // 例如: 45-59 -> 45, 30-44 -> 30, 15-29 -> 15, 0-14 -> 0
+  // 步驟2: 向下取整到最近嘅 15 分鐘
   let roundedMinute = Math.floor(newMinute / 15) * 15;
-  
-  // 如果 roundedMinute 係 0，保持 0
-  // 不需要處理 60 嘅情況，因為 floor 唔會到 60
   
   return `${newHour.toString().padStart(2, '0')}:${roundedMinute.toString().padStart(2, '0')}`;
 }
