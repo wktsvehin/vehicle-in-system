@@ -137,7 +137,7 @@
     
     <div class="section-title icon-text">✅ 今日已確認名單 <span class="eng-text">Today's Confirmed List</span></div>
     <div class="table-responsive">
-      <table>
+      </table>
         <thead>
           <tr>
             <th>#</th>
@@ -168,7 +168,7 @@ let isSubmitting = false;
 const API = "https://script.google.com/macros/s/AKfycbxzWm4hBTMZVKjZUv_0pLjKrp_VrDxCfmi6aLUVa4nB-x0N0MyEdDlSefU69MmbGb1D/exec";
 let pendingSubmissionData = null;
 
-// ==================== 最簡單嘅提取函數 ====================
+// ==================== 輔助函數 (完全移除 UTC+8) ====================
 
 // 獲取今日香港日期 YYYY-MM-DD
 function getHKTodayString() {
@@ -179,16 +179,18 @@ function getHKTodayString() {
   return `${year}-${month}-${day}`;
 }
 
-// 獲取香港當前小時
-function getHKCurrentHour() {
+// 獲取當前小時
+function getCurrentHour() {
   return new Date().getHours();
 }
 
 // ✅ 直接提取日期，完全忽略時區
-function extractDateOnly(utcDateStr) {
-  if (!utcDateStr) return '';
-  let str = String(utcDateStr).trim();
+function extractDateOnly(dateStr) {
+  if (!dateStr) return '';
+  let str = String(dateStr).trim();
+  // 如果已經是 YYYY-MM-DD，直接返回
   if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+  // 從 ISO 格式提取 YYYY-MM-DD（例如 2026-06-15T16:00:00.000Z -> 2026-06-15）
   let match = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
   if (match) {
     return `${match[1]}-${match[2]}-${match[3]}`;
@@ -196,15 +198,15 @@ function extractDateOnly(utcDateStr) {
   return str;
 }
 
-// ✅ 直接提取時間，唔加 8 小時（因為 Google Sheets 入面已經係香港時間）
+// ✅ 時間處理：直接提取時間，減 23 分鐘，然後向下取整到 15 分鐘（唔加 8 小時）
 function formatTimeOnly(timeStr) {
   if (!timeStr) return '---';
   let str = String(timeStr);
   if (str === '---') return '---';
   
-  // 提取時間
-  let match = str.match(/T(\d{2}):(\d{2})/);
+  // 提取小時和分鐘
   let hour = 0, minute = 0;
+  let match = str.match(/T(\d{2}):(\d{2})/);
   if (match) {
     hour = parseInt(match[1]);
     minute = parseInt(match[2]);
@@ -218,11 +220,9 @@ function formatTimeOnly(timeStr) {
     }
   }
   
-  // ❌ 唔再加 8 小時，直接使用原始時間
-  let hkHour = hour;
-  
-  // 減 23 分鐘
-  let totalMinutes = hkHour * 60 + minute - 23;
+  // ❌ 唔加 8 小時，直接使用原始時間
+  // 只做減 23 分鐘
+  let totalMinutes = hour * 60 + minute - 23;
   if (totalMinutes < 0) totalMinutes += 24 * 60;
   
   let newHour = Math.floor(totalMinutes / 60);
@@ -239,7 +239,7 @@ function initDatePicker() {
   let p = document.getElementById('visitDatePicker');
   if (!p) return;
   let now = new Date();
-  let offset = getHKCurrentHour() >= 15 ? 2 : 1;
+  let offset = getCurrentHour() >= 15 ? 2 : 1;
   let minDate = new Date();
   let maxDate = new Date();
   minDate.setDate(now.getDate() + offset);
@@ -309,7 +309,7 @@ function loadData() {
       }
       
       if (data.length === 0) {
-        confirmTable.innerHTML = '<tr><td colspan="10">📭 暫無任何登記記錄<\/td><\/tr>';
+        confirmTable.innerHTML = '<td><td colspan="10">📭 暫無任何登記記錄<\/td><\/tr>';
         return;
       }
       
@@ -338,7 +338,7 @@ function loadData() {
     })
     .catch(error => { 
       console.error("載入錯誤:", error); 
-      confirmTable.innerHTML = '<tr><td colspan="10" style="color:red">❌ 連線失敗<\/td><\/tr>';
+      confirmTable.innerHTML = '<td><td colspan="10" style="color:red">❌ 連線失敗<\/td><\/tr>';
     });
 }
 
@@ -630,7 +630,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   
-  console.log("系統初始化完成 (直接提取日期，唔做時區轉換)");
+  console.log("系統初始化完成 (完全移除 UTC+8，直接提取日期時間)");
 });
 </script>
 </body>
