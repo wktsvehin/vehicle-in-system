@@ -61,16 +61,16 @@
       margin-top: 2px;
     }
     
-    /* ===== 方案一：提高優先級（加上 #adminPanel） ===== */
+    /* ===== 職員面板英文字體（統一調大） ===== */
     
     /* 1. 職員驗證 / Staff Verification */
-    #staffPanel #adminPanel .staff-verify-title .chi-text {
+    #staffPanel .staff-verify-title .chi-text {
       display: inline;
       font-size: 1.2rem;
       font-weight: 700;
       color: #2d3748;
     }
-    #staffPanel #adminPanel .staff-verify-title .eng-text {
+    #staffPanel .staff-verify-title .eng-text {
       display: inline;
       font-size: 1.2rem !important;
       font-weight: 700;
@@ -79,57 +79,57 @@
     }
     
     /* 2. 閘口核對系統 / Gate Check System */
-    #staffPanel #adminPanel .gate-title .chi-text {
+    #staffPanel .gate-title .chi-text {
       display: block;
       font-size: 1rem;
       font-weight: 700;
       color: #2c7a7b;
     }
-    #staffPanel #adminPanel .gate-title .eng-text {
+    #staffPanel .gate-title .eng-text {
       display: block;
-      font-size: 1rem !important;
+      font-size: 1.2rem !important;
       font-weight: 700;
       color: #2c7a7b;
     }
     
     /* 3. 匯出PDF / Export PDF */
-    #staffPanel #adminPanel .staff-btn .chi-text {
+    #staffPanel .staff-btn .chi-text {
       display: block;
       font-size: 0.9rem;
       font-weight: 600;
     }
-    #staffPanel #adminPanel .staff-btn .eng-text {
+    #staffPanel .staff-btn .eng-text {
       display: block;
-      font-size: 0.9rem !important;
+      font-size: 1.2rem !important;
       font-weight: 400;
       color: #ffffff;
       margin-top: 2px;
     }
     
     /* 4. 登出 / Logout */
-    #staffPanel #adminPanel .staff-btn-outline .chi-text {
+    #staffPanel .staff-btn-outline .chi-text {
       display: block;
       font-size: 0.9rem;
       font-weight: 600;
     }
-    #staffPanel #adminPanel .staff-btn-outline .eng-text {
+    #staffPanel .staff-btn-outline .eng-text {
       display: block;
-      font-size: 0.9rem !important;
+      font-size: 1.2rem !important;
       font-weight: 400;
       color: inherit;
       margin-top: 2px;
     }
     
     /* 5. 今日已確認名單標題 / Today's Confirmed List */
-    #staffPanel #adminPanel .section-title .chi-text {
+    #staffPanel .section-title .chi-text {
       display: block;
       font-size: 1rem;
       font-weight: 700;
       color: #2c7a7b;
     }
-    #staffPanel #adminPanel .section-title .eng-text {
+    #staffPanel .section-title .eng-text {
       display: block;
-      font-size: 1rem !important;
+      font-size: 1.2rem !important;
       font-weight: 700;
       color: #2c7a7b;
     }
@@ -149,7 +149,10 @@
     .alert-reminder div.eng-text,
     .alert-cutoff div.eng-text { font-size: inherit !important; }
     
-    #staffPanel .eng-text { font-size: 0.7rem !important; }
+    /* ✅ 修改這裡：所有職員面板英文字體統一為 1.2rem */
+    #staffPanel .eng-text {
+      font-size: 1.2rem !important;
+    }
     #staffPanel .btn-success .eng-text,
     #staffPanel .btn-outline .eng-text { font-size: 0.9rem !important; }
     
