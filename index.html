@@ -62,46 +62,34 @@
     }
     
     /* ===== 職員面板英文字體 - 獨立控制 ===== */
-    
-    /* 1. Staff Verification - 獨立控制 */
     .staff-verify-eng {
       font-size: 1.2rem;
       font-weight: 700;
       color: #2d3748;
       margin-left: 8px;
     }
-    
-    /* 2. Gate Check System - 獨立控制 */
     .gate-title-eng {
       font-size: 1.0rem;
       font-weight: 700;
       color: #2c7a7b;
     }
-    
-    /* 3. Export PDF - 獨立控制 */
     .export-pdf-eng {
       font-size: 0.9rem;
       font-weight: 400;
       color: #ffffff;
       margin-top: 2px;
     }
-    
-    /* 4. Logout - 獨立控制 */
     .logout-eng {
       font-size: 0.9rem;
       font-weight: 400;
       color: inherit;
       margin-top: 2px;
     }
-    
-    /* 5. Today's Confirmed List - 獨立控制 */
     .today-list-eng {
       font-size: 1.0rem;
       font-weight: 700;
       color: #2c7a7b;
     }
-    
-    /* ===== 結束職員面板英文字體 ===== */
     
     .alert-cutoff .eng-text, 
     .alert-reminder .eng-text { font-size: inherit !important; line-height: 1.3; }
@@ -145,8 +133,6 @@
       word-wrap: break-word;
       overflow-wrap: break-word;
     }
-    
-    /* 成功頁面標題 - 中英文上下分行 */
     .success-title .chi-text {
       display: block;
       font-size: 1.5rem;
@@ -160,8 +146,6 @@
       color: #555;
       margin-top: 4px;
     }
-    
-    /* 成功頁面表格 - 字體放大 */
     .success-table {
       width: 100%;
       border-collapse: collapse;
@@ -185,7 +169,6 @@
     .success-table td {
       font-weight: 500;
     }
-    /* ===== 結束成功頁面 ===== */
     
     .reminder-box .eng-text {
       font-size: inherit !important;
@@ -219,7 +202,6 @@
       margin-left: 4px;
     }
     
-    /* ===== 時間下拉選單 ===== */
     .time-select {
       width: 100%;
       padding: 12px 14px;
@@ -236,7 +218,6 @@
       outline: none;
       border-color: #2c7a7b;
     }
-    /* ===== 結束 ===== */
     
     .date-checkbox-group {
       display: flex;
@@ -382,6 +363,190 @@
       margin-bottom: 20px;
     }
     
+    /* ===== 閘口核對系統樣式 ===== */
+    .check-section {
+      margin-top: 20px;
+      border: 2px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 16px 18px;
+      background: #f8fafc;
+    }
+    .check-section-title {
+      font-weight: 700;
+      font-size: 1rem;
+      color: #2c7a7b;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #e2e8f0;
+    }
+    .check-section-title .eng-text {
+      font-size: 0.85rem;
+      font-weight: 400;
+      color: #718096;
+    }
+    .check-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .check-row label {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #2d3748;
+      min-width: 100px;
+    }
+    .check-row input[type="text"],
+    .check-row select {
+      flex: 1;
+      min-width: 180px;
+      padding: 8px 12px;
+      font-size: 0.9rem;
+      border: 1px solid #cbd5e0;
+      border-radius: 8px;
+      background: #ffffff;
+      color: #1a202c;
+    }
+    .check-row input[type="text"]:focus,
+    .check-row select:focus {
+      outline: none;
+      border-color: #2c7a7b;
+    }
+    .check-row input[type="text"]:disabled,
+    .check-row select:disabled {
+      background: #edf2f7;
+      cursor: not-allowed;
+    }
+    .check-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+      font-size: 0.9rem;
+      color: #2d3748;
+    }
+    .check-checkbox input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #2c7a7b;
+      cursor: pointer;
+    }
+    .check-checkbox input[type="checkbox"]:disabled {
+      cursor: not-allowed;
+    }
+    .check-checkbox.checked {
+      color: #38a169;
+    }
+    .remark-textarea {
+      width: 100%;
+      min-height: 80px;
+      padding: 10px 12px;
+      font-size: 0.9rem;
+      border: 1px solid #cbd5e0;
+      border-radius: 8px;
+      background: #ffffff;
+      color: #1a202c;
+      font-family: inherit;
+      resize: vertical;
+      margin-top: 4px;
+    }
+    .remark-textarea:focus {
+      outline: none;
+      border-color: #2c7a7b;
+    }
+    .remark-textarea:disabled {
+      background: #edf2f7;
+      cursor: not-allowed;
+    }
+    .check-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid #e2e8f0;
+    }
+    .btn-check-confirm {
+      background: #2c7a7b;
+      border: none;
+      color: #fff;
+      padding: 10px 28px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-check-confirm:hover {
+      background: #236162;
+    }
+    .btn-check-confirm:disabled {
+      background: #a0aec0;
+      cursor: not-allowed;
+    }
+    .btn-print-pdf {
+      background: #38a169;
+      border: none;
+      color: #fff;
+      padding: 10px 28px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-print-pdf:hover {
+      background: #2f855a;
+    }
+    .btn-logout {
+      background: #e2e8f0;
+      border: none;
+      color: #2d3748;
+      padding: 10px 28px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-logout:hover {
+      background: #cbd5e0;
+    }
+    .submitted-badge {
+      display: inline-block;
+      background: #38a169;
+      color: #fff;
+      padding: 4px 14px;
+      border-radius: 40px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .pdf-date-selector {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .pdf-date-selector label {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #2d3748;
+    }
+    .pdf-date-selector input[type="date"] {
+      padding: 8px 12px;
+      font-size: 0.9rem;
+      border: 1px solid #cbd5e0;
+      border-radius: 8px;
+      background: #ffffff;
+      color: #1a202c;
+    }
+    .pdf-date-selector input[type="date"]:focus {
+      outline: none;
+      border-color: #2c7a7b;
+    }
+    
     @media (max-width:480px) { 
       body { padding: 12px; max-width: 100%; } 
       .card { padding: 16px; } 
@@ -412,6 +577,27 @@
       .success-title .eng-text {
         font-size: 0.8rem;
       }
+      .check-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .check-row label {
+        min-width: auto;
+      }
+      .check-row input[type="text"],
+      .check-row select {
+        min-width: auto;
+      }
+      .check-buttons {
+        flex-direction: column;
+      }
+      .check-buttons button {
+        width: 100%;
+      }
+      .pdf-date-selector {
+        flex-direction: column;
+        align-items: stretch;
+      }
     }
   </style>
 </head>
@@ -436,6 +622,7 @@
 
 <!-- 訪客面板 -->
 <div id="visitorPanel">
+  <!-- 訪客登記內容保持不變 -->
   <div id="formSection" class="card">
     <div class="alert-cutoff">
       <div style="font-weight:bold;"><span class="cutoff-icon">⏰</span> 預約截數提示：</div>
@@ -510,7 +697,6 @@
         <div id="selectedDatesHint" class="selected-dates-hint"></div>
       </div>
       
-      <!-- 預計到訪時間 - 下拉選單 -->
       <div class="form-group">
         <label class="form-label">
           <span class="chi-text">⏱️ 預計到訪時間</span>
@@ -522,7 +708,7 @@
           <option value="上午 A.M.">上午 A.M.</option>
           <option value="下午 P.M.">下午 P.M.</option>
           <option value="晚間 Evening">晚間 Evening</option>
-          <option value="凌晨 Midnight">凌晨 Midnight</option>
+          <option value="深夜 Midnight">深夜 Midnight</option>
         </select>
       </div>
       
@@ -599,33 +785,88 @@
         <span class="chi-text">🚗 閘口核對系統</span>
         <span class="gate-title-eng">Gate Check System</span>
       </h4>
-      <div class="flex">
-        <input type="date" id="exportDate" class="form-control" style="width:140px">
-        <button class="btn-success staff-btn" onclick="exportPDF()">
-          <span class="chi-text">📄 匯出PDF</span>
-          <span class="export-pdf-eng">Export PDF</span>
-        </button>
-        <button class="btn-outline staff-btn-outline" onclick="logout()">
-          <span class="chi-text">🚪 登出</span>
-          <span class="logout-eng">Logout</span>
-        </button>
+    </div>
+    
+    <!-- ===== 閘口核對系統內容 ===== -->
+    <div id="gateCheckSection">
+      <!-- 時間範圍顯示 -->
+      <div style="background:#edf2f7;padding:10px 14px;border-radius:10px;margin-bottom:16px;">
+        <span style="font-weight:600;font-size:0.9rem;">📅 今日申請名單 / Today's List</span>
+        <span style="display:block;font-size:0.8rem;color:#718096;margin-top:2px;" id="checkPeriodDisplay">時間範圍：載入中...</span>
+      </div>
+      
+      <!-- 表格區域 -->
+      <div class="table-responsive">
+        <table id="checkPeriodTable">
+          <thead>
+            <tr><th>#</th><th>📄 參考編號<br>Ref No.</th><th>🏢 公司<br>Company</th><th>🚗 車牌<br>Vehicle No.</th><th>🚙 車型<br>Vehicle Type</th><th>👤 聯絡人<br>Contact</th><th>📞 電話<br>Tel</th><th>📅 到訪日期<br>Visit Date</th><th>⏱️ 入站時間<br>Time In</th><th>📦 目的<br>Purpose</th></tr>
+          </thead>
+          <tbody id="checkPeriodTableBody">
+            <tr><td colspan="10" style="text-align:center;padding:20px;">⏳ 載入中...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- 核對區域 -->
+      <div class="check-section">
+        <div class="check-section-title">
+          📋 待檢查核對 / Pending Check
+        </div>
+        
+        <!-- CHEC 核對 -->
+        <div class="check-row">
+          <label>🔹 CHEC 核對</label>
+          <input type="text" id="checCheckerName" placeholder="姓名/職位 (如：陳大文 / 主任)" style="flex:1;min-width:180px;padding:8px 12px;font-size:0.9rem;border:1px solid #cbd5e0;border-radius:8px;">
+          <div class="check-checkbox" id="checCheckboxWrapper">
+            <input type="checkbox" id="checChecked" disabled>
+            <span>CHEC checked</span>
+          </div>
+        </div>
+        
+        <!-- EPD 核對 -->
+        <div class="check-row">
+          <label>🔹 EPD 核對</label>
+          <select id="epdCheckerName" style="flex:1;min-width:180px;padding:8px 12px;font-size:0.9rem;border:1px solid #cbd5e0;border-radius:8px;background:#ffffff;">
+            <option value="">請選擇 EPD 人員</option>
+            <option value="SI[TD]42 / Peter C. S. Yeung">SI[TD]42 / Peter C. S. Yeung</option>
+            <option value="SI[TD]43 / K. M. Yip">SI[TD]43 / K. M. Yip</option>
+            <option value="I[TD]41 / Daniel P.L. NG">I[TD]41 / Daniel P.L. NG</option>
+            <option value="I[TD]42 / Rick Y.H. WONG">I[TD]42 / Rick Y.H. WONG</option>
+            <option value="I[TD]43 / Matt S.F. CHEANG">I[TD]43 / Matt S.F. CHEANG</option>
+            <option value="I[TD]44 / Ryan L.M. YAU">I[TD]44 / Ryan L.M. YAU</option>
+            <option value="I[TD]45 / Samson H.S. FAN">I[TD]45 / Samson H.S. FAN</option>
+            <option value="I[TD]46 / Aron W.H. LO">I[TD]46 / Aron W.H. LO</option>
+            <option value="I[TD]47 / Stanley P.T. KWONG">I[TD]47 / Stanley P.T. KWONG</option>
+            <option value="I[TD]25 / H.C. CHEUNG">I[TD]25 / H.C. CHEUNG</option>
+          </select>
+          <div class="check-checkbox" id="epdCheckboxWrapper">
+            <input type="checkbox" id="epdChecked" disabled>
+            <span>EPD checked</span>
+          </div>
+        </div>
+        
+        <!-- 備註 -->
+        <div style="margin-top:12px;">
+          <label style="font-weight:600;font-size:0.9rem;color:#2d3748;display:block;margin-bottom:4px;">備註 / Remark</label>
+          <textarea id="remarkInput" class="remark-textarea" placeholder="輸入備註..."></textarea>
+        </div>
+        
+        <!-- 按鈕 -->
+        <div class="check-buttons">
+          <button class="btn-check-confirm" id="confirmCheckBtn" onclick="confirmCheck()">✅ 確認核對 / Confirm</button>
+          <button class="btn-print-pdf" onclick="exportCheckPeriodPDF()">📄 匯出PDF / Export PDF</button>
+          <button class="btn-logout" onclick="logout()">🚪 登出 / Logout</button>
+        </div>
+        
+        <!-- 提交狀態 -->
+        <div id="checkSubmitStatus" style="margin-top:12px;display:none;">
+          <span class="submitted-badge">✅ 已提交 / Submitted</span>
+          <span style="font-size:0.85rem;color:#555;margin-left:10px;">核對資料已儲存</span>
+        </div>
       </div>
     </div>
-    <div class="search-wrapper">
-      <input type="text" id="searchInput" class="form-control plate-input-search mb-3" placeholder="搜尋今天入站車牌 / Search Today's Vehicle No." oninput="filterTable()">
-    </div>
-    <div class="section-title">
-      <span class="chi-text">✅ 今日已確認名單</span>
-      <span class="today-list-eng">Today's Confirmed List</span>
-    </div>
-    <div class="table-responsive">
-      <table>
-        <thead>
-          <tr><th>#</th><th>📄 參考編號<br>Ref No.</th><th>🏢 公司<br>Company</th><th>🚗 車牌<br>Vehicle No.</th><th>🚙 車型<br>Vehicle Type</th><th>👤 聯絡人<br>Contact</th><th>📞 電話<br>Tel</th><th>📅 到訪日期<br>Visit Date</th><th>⏱️ 入站時間<br>Time In</th><th>📦 目的<br>Purpose</th></tr>
-        </thead>
-        <tbody id="confirmedTable"></tbody>
-      </table>
-    </div>
+    <!-- ===== 結束閘口核對系統內容 ===== -->
+    
   </div>
 </div>
 
@@ -634,10 +875,29 @@
 let isLoggedIn = false;
 let cachedData = [];
 let isSubmitting = false;
-const API = "https://script.google.com/macros/s/AKfycbxDD0ZtN-C7kciJ7vyI7kw0eJSvm6vhQ3LlGsoq3H7M-3vlprjkvH_6is6Sj6FAnaFU/exec";
+const API = "https://script.google.com/macros/s/AKfycbyg5Ln2csco7jBuKrzYGfBXQ7LwxJq4wParG2QLAPujavlm4XgHA6v_7mTB7ft7R-Kl/exec";
 let pendingSubmissionData = null;
 let selectedDates = [];
 let availableDates = [];
+
+// 核對功能全域變數
+let checkPeriodData = [];
+let checLocked = false;
+let epdLocked = false;
+
+// ==================== EPD 人員清單 ====================
+const EPD_STAFF_LIST = [
+  "SI[TD]42 / Peter C. S. Yeung",
+  "SI[TD]43 / K. M. Yip",
+  "I[TD]41 / Daniel P.L. NG",
+  "I[TD]42 / Rick Y.H. WONG",
+  "I[TD]43 / Matt S.F. CHEANG",
+  "I[TD]44 / Ryan L.M. YAU",
+  "I[TD]45 / Samson H.S. FAN",
+  "I[TD]46 / Aron W.H. LO",
+  "I[TD]47 / Stanley P.T. KWONG",
+  "I[TD]25 / H.C. CHEUNG"
+];
 
 // ==================== 輔助函數 ====================
 
@@ -657,6 +917,30 @@ function formatTimeOnly(timeStr) {
   if (!timeStr || timeStr === '---' || timeStr === '未選') return '---';
   return timeStr;
 }
+
+// 獲取核對期間（昨天15:00 到今天15:00）
+function getCheckPeriodRange() {
+  let now = new Date();
+  let today1500 = new Date(now);
+  today1500.setHours(15, 0, 0, 0);
+  
+  let yesterday1500 = new Date(now);
+  yesterday1500.setDate(now.getDate() - 1);
+  yesterday1500.setHours(15, 0, 0, 0);
+  
+  return { start: yesterday1500, end: today1500 };
+}
+
+function formatDateForDisplay(date) {
+  let year = date.getFullYear();
+  let month = (date.getMonth() + 1).toString().padStart(2, '0');
+  let day = date.getDate().toString().padStart(2, '0');
+  let hours = date.getHours().toString().padStart(2, '0');
+  let minutes = date.getMinutes().toString().padStart(2, '0');
+  return `${year}-${month}-${day} ${hours}:${minutes}`;
+}
+
+// ==================== 日期選擇器 ====================
 
 function generateAvailableDates() {
   let now = new Date();
@@ -719,6 +1003,429 @@ function updateSelectedHint() {
   }
 }
 
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+}
+
+function showLoading(show, message) {
+  let existing = document.getElementById('globalLoading');
+  if (show) {
+    if (existing) existing.remove();
+    let div = document.createElement('div');
+    div.id = 'globalLoading';
+    div.className = 'loading-overlay';
+    div.innerHTML = `<div class="loading-spinner"><div class="spinner"></div><div>${message || '處理中...'}</div></div>`;
+    document.body.appendChild(div);
+  } else if (existing) existing.remove();
+}
+
+// ==================== 核心功能：載入核對期間資料 ====================
+
+async function loadCheckPeriodData() {
+  const tbody = document.getElementById('checkPeriodTableBody');
+  const display = document.getElementById('checkPeriodDisplay');
+  
+  try {
+    const range = getCheckPeriodRange();
+    display.textContent = `時間範圍：${formatDateForDisplay(range.start)} ~ ${formatDateForDisplay(range.end)}`;
+    
+    const url = `${API}?action=getCheckPeriod`;
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    if (Array.isArray(data)) {
+      checkPeriodData = data;
+      
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:20px;">📭 該時間範圍內暫無申請記錄</td></tr>';
+        await loadCheckStatus();
+        return;
+      }
+      
+      tbody.innerHTML = data.map((item, idx) => `
+        <tr>
+          <td>${idx + 1}</td>
+          <td>${escapeHtml(item.ref_no)}</td>
+          <td>${escapeHtml(item.company)}</td>
+          <td style="color:#2c7a7b;font-weight:bold;">${escapeHtml(item.vehicle_no)}</td>
+          <td>${escapeHtml(item.vehicle_type)}</td>
+          <td>${escapeHtml(item.contact_person)}</td>
+          <td>${escapeHtml(item.tel_no)}</td>
+          <td>${escapeHtml(item.visit_date)}</td>
+          <td>${escapeHtml(item.time_in)}</td>
+          <td>${escapeHtml(item.purpose)}</td>
+        </tr>
+      `).join('');
+      
+      await loadCheckStatus();
+    } else {
+      tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:20px;color:red;">❌ 資料格式錯誤</td></tr>';
+    }
+  } catch (error) {
+    console.error('載入核對期間資料失敗:', error);
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:20px;color:red;">❌ 載入失敗: ${error.message}</td></tr>`;
+  }
+}
+
+// ==================== 載入核對狀態 ====================
+
+async function loadCheckStatus() {
+  try {
+    if (checkPeriodData.length === 0) {
+      const url = `${API}?action=getCheckStatus`;
+      const response = await fetch(url);
+      const status = await response.json();
+      if (status.chec_checked) {
+        document.getElementById('checChecked').checked = true;
+        document.getElementById('checCheckerName').value = status.chec_checker_name_post || '';
+        document.getElementById('checCheckerName').disabled = true;
+        document.getElementById('checChecked').disabled = true;
+        checLocked = true;
+      }
+      if (status.epd_checked) {
+        document.getElementById('epdChecked').checked = true;
+        document.getElementById('epdCheckerName').value = status.epd_checker_name_post || '';
+        document.getElementById('epdCheckerName').disabled = true;
+        document.getElementById('epdChecked').disabled = true;
+        epdLocked = true;
+      }
+      if (status.remark) {
+        document.getElementById('remarkInput').value = status.remark;
+      }
+      updateSubmitStatus();
+      return;
+    }
+    
+    const first = checkPeriodData[0];
+    const checChecked = first.chec_checked === true || first.chec_checked === 'true';
+    const epdChecked = first.epd_checked === true || first.epd_checked === 'true';
+    
+    if (checChecked) {
+      document.getElementById('checChecked').checked = true;
+      document.getElementById('checCheckerName').value = first.chec_checker_name_post || '';
+      document.getElementById('checCheckerName').disabled = true;
+      document.getElementById('checChecked').disabled = true;
+      checLocked = true;
+    }
+    
+    if (epdChecked) {
+      document.getElementById('epdChecked').checked = true;
+      document.getElementById('epdCheckerName').value = first.epd_checker_name_post || '';
+      document.getElementById('epdCheckerName').disabled = true;
+      document.getElementById('epdChecked').disabled = true;
+      epdLocked = true;
+    }
+    
+    if (first.remark) {
+      document.getElementById('remarkInput').value = first.remark;
+    }
+    
+    updateSubmitStatus();
+  } catch (error) {
+    console.error('載入核對狀態失敗:', error);
+  }
+}
+
+// ==================== 更新提交狀態顯示 ====================
+
+function updateSubmitStatus() {
+  const statusDiv = document.getElementById('checkSubmitStatus');
+  const checChecked = document.getElementById('checChecked').checked;
+  const epdChecked = document.getElementById('epdChecked').checked;
+  
+  if (checChecked || epdChecked) {
+    statusDiv.style.display = 'block';
+    const badge = statusDiv.querySelector('.submitted-badge');
+    if (checChecked && epdChecked) {
+      badge.textContent = '✅ 雙方已核對 / Both Checked';
+    } else if (checChecked) {
+      badge.textContent = '✅ CHEC 已核對 / CHEC Checked';
+    } else if (epdChecked) {
+      badge.textContent = '✅ EPD 已核對 / EPD Checked';
+    }
+  } else {
+    statusDiv.style.display = 'none';
+  }
+}
+
+// ==================== 確認核對 ====================
+
+async function confirmCheck() {
+  const checName = document.getElementById('checCheckerName').value.trim();
+  const epdName = document.getElementById('epdCheckerName').value;
+  const remark = document.getElementById('remarkInput').value.trim();
+  
+  const checHasName = checName.length > 0;
+  const epdHasName = epdName.length > 0;
+  
+  if (!checHasName && !epdHasName) {
+    alert('請至少填寫 CHEC 或 EPD 的核對人員資訊');
+    return;
+  }
+  
+  if (checHasName && !document.getElementById('checChecked').checked) {
+    const confirmCheck = confirm('CHEC 核對人員已填寫，是否確認核對？');
+    if (!confirmCheck) return;
+    document.getElementById('checChecked').checked = true;
+  }
+  
+  if (epdHasName && !document.getElementById('epdChecked').checked) {
+    const confirmCheck = confirm('EPD 核對人員已選擇，是否確認核對？');
+    if (!confirmCheck) return;
+    document.getElementById('epdChecked').checked = true;
+  }
+  
+  if (!document.getElementById('checChecked').checked && !document.getElementById('epdChecked').checked) {
+    alert('請至少勾選一個核對項目 (CHEC checked 或 EPD checked)');
+    return;
+  }
+  
+  if (document.getElementById('checChecked').checked && !checHasName) {
+    alert('CHEC 已勾選，請輸入姓名/職位');
+    return;
+  }
+  
+  if (document.getElementById('epdChecked').checked && !epdHasName) {
+    alert('EPD 已勾選，請選擇 EPD 人員');
+    return;
+  }
+  
+  const params = new URLSearchParams();
+  params.append('action', 'saveCheck');
+  params.append('chec_checked', document.getElementById('checChecked').checked);
+  params.append('chec_checker_name_post', checName);
+  params.append('epd_checked', document.getElementById('epdChecked').checked);
+  params.append('epd_checker_name_post', epdName);
+  params.append('remark', remark);
+  
+  try {
+    showLoading(true, '正在儲存核對資料...');
+    
+    const url = `${API}?${params.toString()}`;
+    const response = await fetch(url);
+    const result = await response.json();
+    
+    showLoading(false);
+    
+    if (result.result === 'success') {
+      alert(`✅ 核對資料已提交！\n\n已更新 ${result.updated || 0} 筆記錄`);
+      
+      if (document.getElementById('checChecked').checked) {
+        document.getElementById('checCheckerName').disabled = true;
+        document.getElementById('checChecked').disabled = true;
+        checLocked = true;
+      }
+      if (document.getElementById('epdChecked').checked) {
+        document.getElementById('epdCheckerName').disabled = true;
+        document.getElementById('epdChecked').disabled = true;
+        epdLocked = true;
+      }
+      
+      updateSubmitStatus();
+      await loadCheckPeriodData();
+    } else {
+      alert('❌ 提交失敗，請稍後再試');
+    }
+  } catch (error) {
+    showLoading(false);
+    console.error('提交核對失敗:', error);
+    alert('❌ 提交失敗: ' + error.message);
+  }
+}
+
+// ==================== 匯出核對期間 PDF（用戶可選擇日期） ====================
+
+async function exportCheckPeriodPDF() {
+  // 讓用戶選擇日期
+  const userSelectedDate = prompt('請輸入要匯出的日期 (格式: YYYY-MM-DD)\n例如: 2026-06-29\n\n留空則匯出今日申請名單', getTodayString());
+  
+  if (userSelectedDate === null) {
+    return; // 用戶取消
+  }
+  
+  let selectedDate = userSelectedDate.trim();
+  
+  // 驗證日期格式
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(selectedDate)) {
+    alert('❌ 日期格式錯誤，請使用 YYYY-MM-DD 格式');
+    return;
+  }
+  
+  // 檢查日期是否有效
+  const dateObj = new Date(selectedDate);
+  if (isNaN(dateObj.getTime())) {
+    alert('❌ 無效的日期');
+    return;
+  }
+  
+  // 從 cachedData 過濾該日期的記錄
+  if (cachedData.length === 0) {
+    await loadFreshData();
+  }
+  
+  const list = cachedData.filter(item => item.visit_date === selectedDate);
+  
+  if (list.length === 0) {
+    alert(`📭 沒有 ${selectedDate} 的車輛紀錄`);
+    return;
+  }
+  
+  // 獲取該日期的核對狀態（從第一筆記錄讀取）
+  const firstRecord = list[0];
+  const checChecked = firstRecord.chec_checked === true || firstRecord.chec_checked === 'true';
+  const epdChecked = firstRecord.epd_checked === true || firstRecord.epd_checked === 'true';
+  const checName = firstRecord.chec_checker_name_post || '';
+  const epdName = firstRecord.epd_checker_name_post || '';
+  const remark = firstRecord.remark || '';
+  
+  showLoading(true, '正在產生 PDF...');
+  
+  try {
+    const { jsPDF } = window.jspdf;
+    const ROWS_PER_PAGE = 10;
+    const totalPages = Math.ceil(list.length / ROWS_PER_PAGE);
+    const pdf = new jsPDF('l', 'mm', 'a4');
+    
+    for (let page = 0; page < totalPages; page++) {
+      const start = page * ROWS_PER_PAGE;
+      const end = Math.min(start + ROWS_PER_PAGE, list.length);
+      const pageData = list.slice(start, end);
+      let tableRows = '';
+      
+      const colWidths = {
+        item: '5%',
+        ref_no: '10%',
+        company: '12%',
+        vehicle_no: '10%',
+        vehicle_type: '12%',
+        contact: '8%',
+        tel: '8%',
+        time_in: '8%',
+        purpose: '27%'
+      };
+      
+      pageData.forEach((item, idx) => {
+        const globalIndex = start + idx + 1;
+        tableRows += `<tr style="background:#ffffff;">
+          <td style="border:1px solid #000000;padding:8px 4px;vertical-align:middle;text-align:center;font-size:11px;width:${colWidths.item};">${globalIndex}</td>
+          <td style="border:1px solid #000000;padding:8px 4px;vertical-align:middle;text-align:center;font-size:11px;width:${colWidths.ref_no};">${escapeHtml(item.ref_no)}</td>
+          <td style="border:1px solid #000000;padding:8px 4px;vertical-align:middle;text-align:center;font-size:11px;width:${colWidths.company};">${escapeHtml(item.company)}</td>
+          <td style="border:1px solid #000000;padding:8px 4px;vertical-align:middle;text-align:center;font-size:11px;width:${colWidths.vehicle_no};font-weight:bold;color:#2c7a7b;">${escapeHtml(item.vehicle_no)}</td>
+          <td style="border:1px solid #000000;padding:8px 4px;vertical-align:middle;text-align:center;font-size:11px;width:${colWidths.vehicle_type};">${escapeHtml(item.vehicle_type)}</td>
+          <td style="border:1px solid #000000;padding:8px 4px;vertical-align:middle;text-align:center;font-size:11px;width:${colWidths.contact};">${escapeHtml(item.contact_person)}</td>
+          <td style="border:1px solid #000000;padding:8px 4px;vertical-align:middle;text-align:center;font-size:11px;width:${colWidths.tel};">${escapeHtml(item.tel_no)}</td>
+          <td style="border:1px solid #000000;padding:8px 4px;vertical-align:middle;text-align:center;font-size:11px;width:${colWidths.time_in};">${escapeHtml(item.time_in)}</td>
+          <td style="border:1px solid #000000;padding:8px 4px;vertical-align:middle;text-align:center;font-size:11px;width:${colWidths.purpose};word-wrap:break-word;word-break:break-word;">${escapeHtml(item.purpose)}</td>
+        <\/tr>`;
+      });
+      
+      const pdfContainer = document.createElement('div');
+      pdfContainer.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:1200px;background:white;padding:15px;font-family:Arial,sans-serif;';
+      
+      let pageInfo = totalPages > 1 ? `<div style="text-align:right;font-size:11px;color:#666;margin-bottom:5px;">第 ${page+1} 頁 / 共 ${totalPages} 頁</div>` : '';
+      
+      // 建構核對狀態顯示
+      let checkStatusHtml = '';
+      if (checChecked || epdChecked) {
+        checkStatusHtml = `<div style="display:flex;justify-content:flex-end;gap:20px;font-size:12px;margin-bottom:8px;flex-wrap:wrap;">`;
+        if (checChecked) {
+          checkStatusHtml += `<span>☑ CHEC 已核對（姓名/職位：${escapeHtml(checName) || '___________'}）</span>`;
+        } else {
+          checkStatusHtml += `<span>☐ CHEC 已核對（姓名/職位：___________）</span>`;
+        }
+        if (epdChecked) {
+          checkStatusHtml += `<span>☑ EPD 已核對（姓名/職位：${escapeHtml(epdName) || '___________'}）</span>`;
+        } else {
+          checkStatusHtml += `<span>☐ EPD 已核對（姓名/職位：___________）</span>`;
+        }
+        checkStatusHtml += `</div>`;
+      } else {
+        checkStatusHtml = `<div style="display:flex;justify-content:flex-end;gap:20px;font-size:12px;margin-bottom:8px;flex-wrap:wrap;">
+          <span>☐ CHEC 已核對（姓名/職位：___________）</span>
+          <span>☐ EPD 已核對（姓名/職位：___________）</span>
+        </div>`;
+      }
+      
+      // 備註顯示
+      let remarkHtml = '';
+      if (remark) {
+        const remarkLines = remark.split('\n').filter(line => line.trim());
+        if (remarkLines.length > 0) {
+          remarkHtml = `<div style="font-size:11px;color:#555;margin-top:8px;padding:8px 12px;background:#f8f8f8;border-radius:4px;text-align:left;">
+            <strong>備註 / Remark：</strong><br>
+            ${remarkLines.map((line, i) => `${i+1}: ${escapeHtml(line)}`).join('<br>')}
+          </div>`;
+        }
+      }
+      
+      pdfContainer.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;border-bottom:2px solid #ccc;padding-bottom:8px;">
+          <div>
+            <div style="font-size:16px;font-weight:bold;">中國港灣工程有限責任公司</div>
+            <div style="font-size:12px;color:#555;">China Harbour Engineering Company Limited</div>
+            <div style="font-size:11px;color:#666;">西九龍廢物轉運站 | West Kowloon Transfer Station</div>
+          </div>
+          <div style="text-align:right;font-size:11px;color:#555;">
+            ${checkStatusHtml}
+          </div>
+        </div>
+        <div style="text-align:center;margin:10px 0;">
+          <div style="font-size:18px;font-weight:bold;color:#1a5c5c;background:#e6f7f7;display:inline-block;padding:6px 20px;border-radius:30px;">📅 到訪日期 / Visit Date：${selectedDate}</div>
+        </div>
+        <div style="font-size:16px;font-weight:bold;text-align:center;margin-bottom:6px;">車輛進入預先登記記錄</div>
+        <div style="font-size:13px;text-align:center;margin-bottom:10px;color:#555;">Registered Vehicle Log</div>
+        ${pageInfo}
+        <table style="width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed;">
+          <thead>
+            <tr style="background:#f0f0f0;">
+              <th style="border:1px solid #000;padding:8px 4px;text-align:center;font-weight:bold;font-size:12px;width:${colWidths.item};">項目<br><span style="font-weight:normal;font-size:10px;">Item</span></th>
+              <th style="border:1px solid #000;padding:8px 4px;text-align:center;font-weight:bold;font-size:12px;width:${colWidths.ref_no};">參考編號<br><span style="font-weight:normal;font-size:10px;">Ref No.</span></th>
+              <th style="border:1px solid #000;padding:8px 4px;text-align:center;font-weight:bold;font-size:12px;width:${colWidths.company};">公司<br><span style="font-weight:normal;font-size:10px;">Company</span></th>
+              <th style="border:1px solid #000;padding:8px 4px;text-align:center;font-weight:bold;font-size:12px;width:${colWidths.vehicle_no};">車牌<br><span style="font-weight:normal;font-size:10px;">Vehicle No.</span></th>
+              <th style="border:1px solid #000;padding:8px 4px;text-align:center;font-weight:bold;font-size:12px;width:${colWidths.vehicle_type};">車輛種類<br><span style="font-weight:normal;font-size:10px;">Vehicle Type</span></th>
+              <th style="border:1px solid #000;padding:8px 4px;text-align:center;font-weight:bold;font-size:12px;width:${colWidths.contact};">聯絡人<br><span style="font-weight:normal;font-size:10px;">Contact</span></th>
+              <th style="border:1px solid #000;padding:8px 4px;text-align:center;font-weight:bold;font-size:12px;width:${colWidths.tel};">電話<br><span style="font-weight:normal;font-size:10px;">Tel</span></th>
+              <th style="border:1px solid #000;padding:8px 4px;text-align:center;font-weight:bold;font-size:12px;width:${colWidths.time_in};">入站時間<br><span style="font-weight:normal;font-size:10px;">Time In</span></th>
+              <th style="border:1px solid #000;padding:8px 4px;text-align:center;font-weight:bold;font-size:12px;width:${colWidths.purpose};">目的<br><span style="font-weight:normal;font-size:10px;">Purpose</span></th>
+            </tr>
+          </thead>
+          <tbody>${tableRows}</tbody>
+        </table>
+        ${remarkHtml}
+        <div style="margin-top:8px;font-size:11px;text-align:center;color:#888;">系統產生之記錄，請查閱後簽署</div>
+        <div style="font-size:10px;text-align:center;color:#999;">System generated record, please sign after checking</div>
+      `;
+      
+      document.body.appendChild(pdfContainer);
+      await new Promise(r => setTimeout(r, 200));
+      const canvas = await html2canvas(pdfContainer, { scale: 2.5, backgroundColor: '#ffffff' });
+      document.body.removeChild(pdfContainer);
+      
+      const imgData = canvas.toDataURL('image/png');
+      const imgWidth = 280;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      if (page === 0) {
+        pdf.addImage(imgData, 'PNG', 8, 6, imgWidth, imgHeight);
+      } else {
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 8, 6, imgWidth, imgHeight);
+      }
+    }
+    
+    pdf.save(`WKTS_VehicleLog_${selectedDate}.pdf`);
+    showLoading(false);
+    alert(`✅ PDF 已下載！`);
+  } catch (err) {
+    showLoading(false);
+    console.error('PDF 生成失敗:', err);
+    alert('❌ PDF 生成失敗: ' + err.message);
+  }
+}
+
+// ==================== 現有功能函數 ====================
+
 async function loadFreshData() {
   try {
     console.log("🔄 載入 Google Sheets 資料...");
@@ -730,6 +1437,8 @@ async function loadFreshData() {
         let vehicleNo = item.vehicle_no || item.車牌 || '';
         let visitDate = item.visit_date || item.到訪日期 || item.date || '';
         let rawTime = item.time_in || item.入站時間 || '';
+        let checChecked = item.chec_checked === true || item.chec_checked === 'true';
+        let epdChecked = item.epd_checked === true || item.epd_checked === 'true';
         
         return {
           ref_no: item.ref_no || item.參考編號 || '',
@@ -740,7 +1449,12 @@ async function loadFreshData() {
           tel_no: item.tel_no || item.電話 || '',
           visit_time: formatTimeOnly(rawTime),
           purpose: item.purpose || item.目的 || '',
-          visit_date: visitDate
+          visit_date: visitDate,
+          chec_checked: checChecked,
+          chec_checker_name_post: item.chec_checker_name_post || '',
+          epd_checked: epdChecked,
+          epd_checker_name_post: item.epd_checker_name_post || '',
+          remark: item.remark || ''
         };
       });
       
@@ -788,7 +1502,11 @@ function switchTab(t) {
     v.style.display = 'none'; s.style.display = 'block';
     bs.classList.add('active'); bv.classList.remove('active');
     if (!isLoggedIn) showLogin();
-    else { document.getElementById('loginBox').classList.add('hidden'); document.getElementById('adminPanel').classList.remove('hidden'); loadData(); }
+    else { 
+      document.getElementById('loginBox').classList.add('hidden');
+      document.getElementById('adminPanel').classList.remove('hidden');
+      loadCheckPeriodData();
+    }
   }
 }
 
@@ -805,76 +1523,17 @@ function verifyLogin() {
     isLoggedIn = true;
     document.getElementById('loginBox').classList.add('hidden');
     document.getElementById('adminPanel').classList.remove('hidden');
-    loadData();
+    loadCheckPeriodData();
   } else {
     document.getElementById('loginError').classList.remove('hidden');
   }
 }
 
-function logout() { isLoggedIn = false; showLogin(); }
-
-function loadData() {
-  const confirmTable = document.getElementById('confirmedTable');
-  if (confirmTable) confirmTable.innerHTML = '<tr><td colspan="10">⏳ 載入中...<\/td><\/tr>';
-  fetch(API).then(r => r.json()).then(data => {
-    if (!Array.isArray(data)) { confirmTable.innerHTML = '<tr><td colspan="10">❌ 資料格式錯誤<\/td><\/tr>'; return; }
-    if (data.length === 0) { confirmTable.innerHTML = '<tr><td colspan="10">📭 暫無任何登記記錄<\/td><\/tr>'; return; }
-    cachedData = data.map(item => {
-      let vehicleNo = item.vehicle_no || item.車牌 || '';
-      let visitDate = item.visit_date || item.到訪日期 || item.date || '';
-      let rawTime = item.time_in || item.入站時間 || '';
-      return {
-        ref_no: item.ref_no || item.參考編號 || '',
-        company: item.company || item.公司 || '',
-        vehicle_no: String(vehicleNo).toUpperCase(),
-        vehicle_type: item.vehicle_type || item.車型 || '',
-        contact_person: item.contact_person || item.聯絡人 || '',
-        tel_no: item.tel_no || item.電話 || '',
-        visit_time: formatTimeOnly(rawTime),
-        purpose: item.purpose || item.目的 || '',
-        visit_date: visitDate
-      };
-    }).filter(item => item.vehicle_no && item.visit_date);
-    renderTables();
-  }).catch(error => { confirmTable.innerHTML = `</td><td colspan="10">❌ 連線失敗: ${error.message}<\/td><\/tr>`; });
+function logout() { 
+  isLoggedIn = false; 
+  showLogin(); 
 }
 
-function renderTables() {
-  let todayStr = getTodayString();
-  let confirmed = cachedData.filter(item => item.visit_date === todayStr);
-  const confirmBody = document.getElementById('confirmedTable');
-  if (!confirmBody) return;
-  if (confirmed.length === 0) confirmBody.innerHTML = '<tr><td colspan="10">📭 今日暫無已確認車輛<\/td><\/tr>';
-  else confirmBody.innerHTML = confirmed.map((i, idx) => `<tr><td>${idx+1}<\/td><td>${escapeHtml(i.ref_no)}<\/td><td>${escapeHtml(i.company)}<\/td><td style="color:#2c7a7b;font-weight:bold;">${escapeHtml(i.vehicle_no)}<\/td><td>${escapeHtml(i.vehicle_type)}<\/td><td>${escapeHtml(i.contact_person)}<\/td><td>${escapeHtml(i.tel_no)}<\/td><td>${escapeHtml(i.visit_date)}<\/td><td>${escapeHtml(i.visit_time)}<\/td><td>${escapeHtml(i.purpose)}<\/td><\/tr>`).join('');
-}
-
-function filterTable() {
-  let kw = document.getElementById('searchInput').value.toUpperCase();
-  document.querySelectorAll('#confirmedTable tr').forEach(r => {
-    if (r.cells.length < 4) return;
-    let cell = r.cells[3];
-    if (cell) r.style.display = cell.innerText.toUpperCase().includes(kw) ? '' : 'none';
-  });
-}
-
-function escapeHtml(str) {
-  if (!str) return '';
-  return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
-}
-
-function showLoading(show, message) {
-  let existing = document.getElementById('globalLoading');
-  if (show) {
-    if (existing) existing.remove();
-    let div = document.createElement('div');
-    div.id = 'globalLoading';
-    div.className = 'loading-overlay';
-    div.innerHTML = `<div class="loading-spinner"><div class="spinner"></div><div>${message || '處理中...'}</div></div>`;
-    document.body.appendChild(div);
-  } else if (existing) existing.remove();
-}
-
-// ✅ 修改：加入單引號強制純文字
 async function submitToGoogleSheet(formData, refNo, date) {
   return new Promise((resolve) => {
     const params = new URLSearchParams();
@@ -1015,8 +1674,6 @@ async function submitFinal() {
   renderDateCheckboxes();
   document.getElementById('timeSelect').value = '';
   
-  if (isLoggedIn) loadData();
-  
   isSubmitting = false;
 }
 
@@ -1027,136 +1684,6 @@ function resetForm() {
   pendingSubmissionData = null;
   renderDateCheckboxes();
   document.getElementById('timeSelect').value = '';
-}
-
-// ==================== PDF 匯出（資料列無中文對照） ====================
-async function exportPDF() {
-  let selectedDate = document.getElementById('exportDate').value;
-  if (!selectedDate) { 
-    alert('請先選擇要匯出的日期 / Please select a date first'); 
-    return; 
-  }
-  
-  await loadFreshData();
-  let list = cachedData.filter(item => item.visit_date === selectedDate);
-  
-  if (list.length === 0) { 
-    alert(`沒有 ${selectedDate} 的車輛紀錄 / No records for ${selectedDate}`);
-    return; 
-  }
-  if (!confirm(`確認匯出 ${selectedDate} 的 ${list.length} 筆紀錄？/ Export ${list.length} record(s) for ${selectedDate}?`)) return;
-  
-  let loadingDiv = document.createElement('div');
-  loadingDiv.innerText = '正在產生 PDF，請稍候...';
-  loadingDiv.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.85);color:#fff;padding:15px 30px;border-radius:10px;z-index:9999';
-  document.body.appendChild(loadingDiv);
-  await new Promise(r => setTimeout(r, 100));
-  
-  try {
-    const { jsPDF } = window.jspdf;
-    const ROWS_PER_PAGE = 10;
-    const totalPages = Math.ceil(list.length / ROWS_PER_PAGE);
-    const pdf = new jsPDF('l', 'mm', 'a4');
-    
-    for (let page = 0; page < totalPages; page++) {
-      const start = page * ROWS_PER_PAGE;
-      const end = Math.min(start + ROWS_PER_PAGE, list.length);
-      const pageData = list.slice(start, end);
-      let tableRows = '';
-      
-      const colWidths = {
-        item: '5%',
-        ref_no: '10%',
-        company: '12%',
-        vehicle_no: '10%',
-        vehicle_type: '12%',
-        contact: '8%',
-        tel: '8%',
-        time_in: '8%',
-        purpose: '27%'
-      };
-      
-      pageData.forEach((item, idx) => {
-        const globalIndex = start + idx + 1;
-        tableRows += `<tr style="background:#ffffff;">
-          <td style="border:1px solid #000000;padding:8px 4px;vertical-align:middle;text-align:center;font-size:12px;width:${colWidths.item};">${globalIndex}</td>
-          <td style="border:1px solid #000000;padding:8px 4px;vertical-align:middle;text-align:center;font-size:12px;width:${colWidths.ref_no};">${escapeHtml(item.ref_no)}</td>
-          <td style="border:1px solid #000000;padding:8px 4px;vertical-align:middle;text-align:center;font-size:12px;width:${colWidths.company};">${escapeHtml(item.company)}</td>
-          <td style="border:1px solid #000000;padding:8px 4px;vertical-align:middle;text-align:center;font-size:12px;width:${colWidths.vehicle_no};font-weight:bold;color:#2c7a7b;">${escapeHtml(item.vehicle_no)}</td>
-          <td style="border:1px solid #000000;padding:8px 4px;vertical-align:middle;text-align:center;font-size:12px;width:${colWidths.vehicle_type};">${escapeHtml(item.vehicle_type)}</td>
-          <td style="border:1px solid #000000;padding:8px 4px;vertical-align:middle;text-align:center;font-size:12px;width:${colWidths.contact};">${escapeHtml(item.contact_person)}</td>
-          <td style="border:1px solid #000000;padding:8px 4px;vertical-align:middle;text-align:center;font-size:12px;width:${colWidths.tel};">${escapeHtml(item.tel_no)}</td>
-          <td style="border:1px solid #000000;padding:8px 4px;vertical-align:middle;text-align:center;font-size:12px;width:${colWidths.time_in};">${item.visit_time}</td>
-          <td style="border:1px solid #000000;padding:8px 4px;vertical-align:middle;text-align:center;font-size:12px;width:${colWidths.purpose};word-wrap:break-word;word-break:break-word;">${escapeHtml(item.purpose)}</td>
-        <\/tr>`;
-      });
-      
-      const pdfContainer = document.createElement('div');
-      pdfContainer.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:1200px;background:white;padding:15px;font-family:Arial,sans-serif;';
-      
-      let pageInfo = totalPages > 1 ? `<div style="text-align:right;font-size:11px;color:#666;margin-bottom:5px;">第 ${page+1} 頁 / 共 ${totalPages} 頁</div>` : '';
-      
-      pdfContainer.innerHTML = `
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;border-bottom:2px solid #ccc;padding-bottom:8px;">
-          <div>
-            <div style="font-size:16px;font-weight:bold;">中國港灣工程有限責任公司</div>
-            <div style="font-size:12px;color:#555;">China Harbour Engineering Company Limited</div>
-            <div style="font-size:11px;color:#666;">西九龍廢物轉運站 | West Kowloon Transfer Station</div>
-          </div>
-          <div style="text-align:right;font-size:11px;color:#555;">
-            環境保護署查閱 / Checked By EPD: _________________
-          </div>
-        </div>
-        <div style="text-align:center;margin:10px 0;">
-          <div style="font-size:20px;font-weight:bold;color:#1a5c5c;background:#e6f7f7;display:inline-block;padding:6px 20px;border-radius:30px;">📅 到訪日期 / Visit Date：${selectedDate}</div>
-        </div>
-        <div style="font-size:16px;font-weight:bold;text-align:center;margin-bottom:6px;">車輛進入預先登記記錄</div>
-        <div style="font-size:13px;text-align:center;margin-bottom:10px;color:#555;">Registered Vehicle Log</div>
-        ${pageInfo}
-        <table style="width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed;">
-          <thead>
-            <tr style="background:#f0f0f0;">
-              <th style="border:1px solid #000;padding:8px 4px;text-align:center;font-weight:bold;font-size:13px;width:${colWidths.item};">項目<br><span style="font-weight:normal;font-size:11px;">Item</span></th>
-              <th style="border:1px solid #000;padding:8px 4px;text-align:center;font-weight:bold;font-size:13px;width:${colWidths.ref_no};">參考編號<br><span style="font-weight:normal;font-size:11px;">Ref No.</span></th>
-              <th style="border:1px solid #000;padding:8px 4px;text-align:center;font-weight:bold;font-size:13px;width:${colWidths.company};">公司<br><span style="font-weight:normal;font-size:11px;">Company</span></th>
-              <th style="border:1px solid #000;padding:8px 4px;text-align:center;font-weight:bold;font-size:13px;width:${colWidths.vehicle_no};">車牌<br><span style="font-weight:normal;font-size:11px;">Vehicle No.</span></th>
-              <th style="border:1px solid #000;padding:8px 4px;text-align:center;font-weight:bold;font-size:13px;width:${colWidths.vehicle_type};">車輛種類<br><span style="font-weight:normal;font-size:11px;">Vehicle Type</span></th>
-              <th style="border:1px solid #000;padding:8px 4px;text-align:center;font-weight:bold;font-size:13px;width:${colWidths.contact};">聯絡人<br><span style="font-weight:normal;font-size:11px;">Contact</span></th>
-              <th style="border:1px solid #000;padding:8px 4px;text-align:center;font-weight:bold;font-size:13px;width:${colWidths.tel};">電話<br><span style="font-weight:normal;font-size:11px;">Tel</span></th>
-              <th style="border:1px solid #000;padding:8px 4px;text-align:center;font-weight:bold;font-size:13px;width:${colWidths.time_in};">入站時間<br><span style="font-weight:normal;font-size:11px;">Time In</span></th>
-              <th style="border:1px solid #000;padding:8px 4px;text-align:center;font-weight:bold;font-size:13px;width:${colWidths.purpose};">目的<br><span style="font-weight:normal;font-size:11px;">Purpose</span></th>
-            </tr>
-          </thead>
-          <tbody>${tableRows}</tbody>
-        </table>
-        <div style="margin-top:10px;font-size:12px;text-align:center;color:#555;">系統產生之記錄，請查閱後簽署</div>
-        <div style="font-size:10px;text-align:center;color:#888;">System generated record, please sign after checking</div>
-      `;
-      
-      document.body.appendChild(pdfContainer);
-      await new Promise(r => setTimeout(r, 200));
-      const canvas = await html2canvas(pdfContainer, { scale: 2.5, backgroundColor: '#ffffff' });
-      document.body.removeChild(pdfContainer);
-      
-      const imgData = canvas.toDataURL('image/png');
-      const imgWidth = 280;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
-      if (page === 0) {
-        pdf.addImage(imgData, 'PNG', 8, 6, imgWidth, imgHeight);
-      } else {
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 8, 6, imgWidth, imgHeight);
-      }
-    }
-    
-    pdf.save(`WKTS_VehicleLog_${selectedDate}.pdf`);
-    document.body.removeChild(loadingDiv);
-    alert(`✅ PDF 已下載！`);
-  } catch (err) {
-    if (loadingDiv) loadingDiv.remove();
-    alert('❌ PDF 生成失敗: ' + err.message);
-  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
