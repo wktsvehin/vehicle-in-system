@@ -522,29 +522,76 @@
       font-size: 0.8rem;
       font-weight: 600;
     }
-    .pdf-date-selector {
+    .date-selector {
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
       align-items: center;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
+      padding: 12px 14px;
+      background: #edf2f7;
+      border-radius: 10px;
     }
-    .pdf-date-selector label {
+    .date-selector label {
       font-weight: 600;
       font-size: 0.9rem;
       color: #2d3748;
     }
-    .pdf-date-selector input[type="date"] {
+    .date-selector input[type="date"] {
       padding: 8px 12px;
       font-size: 0.9rem;
       border: 1px solid #cbd5e0;
       border-radius: 8px;
       background: #ffffff;
       color: #1a202c;
+      cursor: pointer;
     }
-    .pdf-date-selector input[type="date"]:focus {
+    .date-selector input[type="date"]:focus {
       outline: none;
       border-color: #2c7a7b;
+    }
+    .date-selector .quick-btns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .date-selector .quick-btn {
+      padding: 6px 16px;
+      border: 1px solid #cbd5e0;
+      border-radius: 20px;
+      background: #ffffff;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #2d3748;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .date-selector .quick-btn:hover {
+      background: #2c7a7b;
+      color: #ffffff;
+      border-color: #2c7a7b;
+    }
+    .date-selector .quick-btn.active {
+      background: #2c7a7b;
+      color: #ffffff;
+      border-color: #2c7a7b;
+    }
+    .date-display {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #2c7a7b;
+      margin-left: auto;
+    }
+    
+    .unsaved-indicator {
+      display: inline-block;
+      background: #e53e3e;
+      color: #fff;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      margin-left: 8px;
     }
     
     @media (max-width:480px) { 
@@ -594,9 +641,13 @@
       .check-buttons button {
         width: 100%;
       }
-      .pdf-date-selector {
+      .date-selector {
         flex-direction: column;
         align-items: stretch;
+      }
+      .date-selector .date-display {
+        margin-left: 0;
+        text-align: center;
       }
     }
   </style>
@@ -620,9 +671,8 @@
   </div>
 </div>
 
-<!-- 訪客面板 -->
+<!-- 訪客面板（保持原樣） -->
 <div id="visitorPanel">
-  <!-- 訪客登記內容保持不變 -->
   <div id="formSection" class="card">
     <div class="alert-cutoff">
       <div style="font-weight:bold;"><span class="cutoff-icon">⏰</span> 預約截數提示：</div>
@@ -639,7 +689,6 @@
         </label>
         <input type="text" class="form-control" id="company" placeholder="e.g. China Harbour Engineering" required>
       </div>
-      
       <div class="form-group">
         <label class="form-label">
           <span class="chi-text">🚗 車牌號碼</span>
@@ -647,7 +696,6 @@
         </label>
         <input type="text" class="form-control plate-input" id="vehicleNo" placeholder="AB1234" required>
       </div>
-      
       <div class="form-group">
         <label class="form-label">
           <span class="chi-text">👤 聯絡人</span>
@@ -655,7 +703,6 @@
         </label>
         <input type="text" class="form-control" id="contactPerson" placeholder="Chan Tai Man" required>
       </div>
-      
       <div class="form-group">
         <label class="form-label">
           <span class="chi-text">📞 電話號碼</span>
@@ -663,7 +710,6 @@
         </label>
         <input type="tel" class="form-control" id="telNo" placeholder="9xxxxxxx" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" required>
       </div>
-      
       <div class="form-group">
         <label class="form-label">
           <span class="chi-text">📦 進入目的/工作内容</span>
@@ -671,7 +717,6 @@
         </label>
         <input type="text" class="form-control" id="purpose" placeholder="送貨 / Goods Delivery" required>
       </div>
-      
       <div class="form-group">
         <label class="form-label">
           <span class="chi-text">🚙 車輛種類</span>
@@ -687,7 +732,6 @@
           <option>其他/Other</option>
         </select>
       </div>
-      
       <div class="form-group">
         <label class="form-label">
           <span class="chi-text">📅 預計到訪日期（可選多日，上限七天，每個車牌號碼僅限每天預約一次）</span>
@@ -696,7 +740,6 @@
         <div id="dateCheckboxGroup" class="date-checkbox-group"></div>
         <div id="selectedDatesHint" class="selected-dates-hint"></div>
       </div>
-      
       <div class="form-group">
         <label class="form-label">
           <span class="chi-text">⏱️ 預計到訪時間</span>
@@ -711,7 +754,6 @@
           <option value="深夜 Midnight">深夜 Midnight</option>
         </select>
       </div>
-      
       <button type="submit" class="btn-gold mt-2 submit-btn">
         <span class="chi-text">📮 提交申請</span>
         <span class="eng-text">Application Submission</span>
@@ -789,10 +831,17 @@
     
     <!-- ===== 閘口核對系統內容 ===== -->
     <div id="gateCheckSection">
-      <!-- 時間範圍顯示 -->
-      <div style="background:#edf2f7;padding:10px 14px;border-radius:10px;margin-bottom:16px;">
-        <span style="font-weight:600;font-size:0.9rem;">📅 今日申請名單 / Today's List</span>
-        <span style="display:block;font-size:0.8rem;color:#718096;margin-top:2px;" id="checkPeriodDisplay">時間範圍：載入中...</span>
+      <!-- 日期選擇器 -->
+      <div class="date-selector">
+        <label>📅 選擇核對日期 / Select Date：</label>
+        <input type="date" id="checkDatePicker">
+        <div class="quick-btns">
+          <button class="quick-btn" onclick="quickSelectDate(0)">今天 / Today</button>
+          <button class="quick-btn" onclick="quickSelectDate(-1)">昨天 / Yesterday</button>
+          <button class="quick-btn" onclick="quickSelectDate(-14)">過去14天 / Past 14 Days</button>
+        </div>
+        <span class="date-display" id="currentDateDisplay"></span>
+        <span id="unsavedIndicator" class="unsaved-indicator" style="display:none;">未儲存 / Unsaved</span>
       </div>
       
       <!-- 表格區域 -->
@@ -855,7 +904,7 @@
         <div class="check-buttons">
           <button class="btn-check-confirm" id="confirmCheckBtn" onclick="confirmCheck()">✅ 確認核對 / Confirm</button>
           <button class="btn-print-pdf" onclick="exportCheckPeriodPDF()">📄 匯出PDF / Export PDF</button>
-          <button class="btn-logout" onclick="logout()">🚪 登出 / Logout</button>
+          <button class="btn-logout" onclick="handleLogout()">🚪 登出 / Logout</button>
         </div>
         
         <!-- 提交狀態 -->
@@ -875,15 +924,25 @@
 let isLoggedIn = false;
 let cachedData = [];
 let isSubmitting = false;
-const API = "https://script.google.com/macros/s/AKfycbyg5Ln2csco7jBuKrzYGfBXQ7LwxJq4wParG2QLAPujavlm4XgHA6v_7mTB7ft7R-Kl/exec";
+const API = "https://script.google.com/macros/s/AKfycbyVFS5OabEoxXbVxHDARs3nSeondyKKimi1nN8hawt85lMt7xH4CuGhdfisW7YQ4Qgs/exec";
 let pendingSubmissionData = null;
 let selectedDates = [];
 let availableDates = [];
 
 // 核對功能全域變數
 let checkPeriodData = [];
-let checLocked = false;
-let epdLocked = false;
+let currentCheckDate = '';
+let hasUnsavedChanges = false;
+let isNavigating = false;
+
+// 本地暫存的核對資料（尚未儲存到 Google Sheets）
+let localCheckData = {
+  checChecked: false,
+  checCheckerName: '',
+  epdChecked: false,
+  epdCheckerName: '',
+  remark: ''
+};
 
 // ==================== EPD 人員清單 ====================
 const EPD_STAFF_LIST = [
@@ -913,31 +972,29 @@ function getTodayString() {
   return `${year}-${month}-${day}`;
 }
 
+function getDefaultCheckDate() {
+  let now = new Date();
+  let currentHour = now.getHours();
+  // 15:00 後預設顯示明天，15:00 前預設顯示今天
+  let offset = currentHour >= 15 ? 1 : 0;
+  let d = new Date();
+  d.setDate(now.getDate() + offset);
+  let year = d.getFullYear();
+  let month = (d.getMonth() + 1).toString().padStart(2, '0');
+  let day = d.getDate().toString().padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function formatDateForDisplay(dateStr) {
+  if (!dateStr) return '';
+  let parts = dateStr.split('-');
+  if (parts.length !== 3) return dateStr;
+  return `${parts[0]}-${parts[1]}-${parts[2]}`;
+}
+
 function formatTimeOnly(timeStr) {
   if (!timeStr || timeStr === '---' || timeStr === '未選') return '---';
   return timeStr;
-}
-
-// 獲取核對期間（昨天15:00 到今天15:00）
-function getCheckPeriodRange() {
-  let now = new Date();
-  let today1500 = new Date(now);
-  today1500.setHours(15, 0, 0, 0);
-  
-  let yesterday1500 = new Date(now);
-  yesterday1500.setDate(now.getDate() - 1);
-  yesterday1500.setHours(15, 0, 0, 0);
-  
-  return { start: yesterday1500, end: today1500 };
-}
-
-function formatDateForDisplay(date) {
-  let year = date.getFullYear();
-  let month = (date.getMonth() + 1).toString().padStart(2, '0');
-  let day = date.getDate().toString().padStart(2, '0');
-  let hours = date.getHours().toString().padStart(2, '0');
-  let minutes = date.getMinutes().toString().padStart(2, '0');
-  return `${year}-${month}-${day} ${hours}:${minutes}`;
 }
 
 // ==================== 日期選擇器 ====================
@@ -1020,17 +1077,133 @@ function showLoading(show, message) {
   } else if (existing) existing.remove();
 }
 
-// ==================== 核心功能：載入核對期間資料 ====================
+// ==================== 日期選擇功能 ====================
 
-async function loadCheckPeriodData() {
+// 初始化日期選擇器
+function initDatePicker() {
+  const picker = document.getElementById('checkDatePicker');
+  if (!picker) return;
+  
+  // 設定日期範圍：今天 到 過去14天
+  let today = new Date();
+  let minDate = new Date(today);
+  minDate.setDate(today.getDate() - 14);
+  let maxDate = new Date(today);
+  
+  let minStr = minDate.toISOString().split('T')[0];
+  let maxStr = maxDate.toISOString().split('T')[0];
+  
+  picker.min = minStr;
+  picker.max = maxStr;
+  
+  // 設定預設值
+  let defaultDate = getDefaultCheckDate();
+  picker.value = defaultDate;
+  currentCheckDate = defaultDate;
+  
+  // 監聽日期變更
+  picker.addEventListener('change', function() {
+    let newDate = this.value;
+    if (newDate && newDate !== currentCheckDate) {
+      navigateToDate(newDate);
+    }
+  });
+  
+  // 更新顯示
+  updateDateDisplay(defaultDate);
+  loadCheckPeriodData(defaultDate);
+}
+
+// 快速選擇日期
+function quickSelectDate(offset) {
+  let now = new Date();
+  let targetDate = new Date(now);
+  targetDate.setDate(now.getDate() + offset);
+  
+  // 限制範圍：今天 到 過去14天
+  let minDate = new Date(now);
+  minDate.setDate(now.getDate() - 14);
+  
+  if (offset === -14) {
+    // 過去14天：打開日期選擇器，讓用戶選擇
+    const picker = document.getElementById('checkDatePicker');
+    picker.focus();
+    picker.showPicker ? picker.showPicker() : picker.click();
+    return;
+  }
+  
+  if (targetDate < minDate || targetDate > now) {
+    alert('日期超出可選範圍（今天 到 過去14天）\nDate out of range (Today to past 14 days)');
+    return;
+  }
+  
+  let dateStr = targetDate.toISOString().split('T')[0];
+  navigateToDate(dateStr);
+}
+
+// 切換日期
+function navigateToDate(dateStr) {
+  // 檢查是否有未儲存的資料
+  if (hasUnsavedChanges) {
+    // 彈出提示，要求用戶先儲存
+    const confirmSave = confirm(
+      '⚠️ 有未儲存的核對資料 / Unsaved check data\n\n' +
+      '您尚未儲存 ' + currentCheckDate + ' 的核對資料。\n' +
+      'You have unsaved check data for ' + currentCheckDate + '.\n\n' +
+      '按「確定」儲存並切換 / Press OK to save and switch\n' +
+      '按「取消」繼續編輯 / Press Cancel to continue editing'
+    );
+    
+    if (confirmSave) {
+      // 用戶選擇儲存
+      confirmCheck(true); // 靜默儲存
+    } else {
+      // 用戶選擇取消，停留在當前頁面
+      // 恢復日期選擇器的值
+      document.getElementById('checkDatePicker').value = currentCheckDate;
+      return;
+    }
+  }
+  
+  // 更新當前日期
+  currentCheckDate = dateStr;
+  document.getElementById('checkDatePicker').value = dateStr;
+  updateDateDisplay(dateStr);
+  
+  // 載入該日期的資料
+  loadCheckPeriodData(dateStr);
+}
+
+// 更新日期顯示
+function updateDateDisplay(dateStr) {
+  const display = document.getElementById('currentDateDisplay');
+  if (display) {
+    let displayText = formatDateForDisplay(dateStr);
+    let now = new Date();
+    let todayStr = now.toISOString().split('T')[0];
+    let yesterdayStr = new Date(now.setDate(now.getDate() - 1)).toISOString().split('T')[0];
+    
+    if (dateStr === todayStr) {
+      displayText += ' (今天 / Today)';
+    } else if (dateStr === yesterdayStr) {
+      displayText += ' (昨天 / Yesterday)';
+    }
+    display.textContent = '📅 ' + displayText;
+  }
+}
+
+// ==================== 載入核對期間資料 ====================
+
+async function loadCheckPeriodData(dateStr) {
   const tbody = document.getElementById('checkPeriodTableBody');
-  const display = document.getElementById('checkPeriodDisplay');
+  
+  if (!dateStr) {
+    dateStr = getDefaultCheckDate();
+  }
   
   try {
-    const range = getCheckPeriodRange();
-    display.textContent = `時間範圍：${formatDateForDisplay(range.start)} ~ ${formatDateForDisplay(range.end)}`;
-    
-    const url = `${API}?action=getCheckPeriod`;
+    // 使用 action=getCheckPeriod 參數
+    const url = `${API}?action=getCheckPeriod&date=${dateStr}`;
     const response = await fetch(url);
     const data = await response.json();
     
@@ -1038,11 +1211,13 @@ async function loadCheckPeriodData() {
       checkPeriodData = data;
       
       if (data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:20px;">📭 該時間範圍內暫無申請記錄</td></tr>';
-        await loadCheckStatus();
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:20px;">📭 ' + dateStr + ' 暫無申請記錄 / No records for ' + dateStr + '</td></tr>';
+        // 重置核對狀態
+        resetCheckUI();
         return;
       }
       
+      // 渲染表格
       tbody.innerHTML = data.map((item, idx) => `
         <tr>
           <td>${idx + 1}</td>
@@ -1058,7 +1233,8 @@ async function loadCheckPeriodData() {
         </tr>
       `).join('');
       
-      await loadCheckStatus();
+      // 載入核對狀態
+      loadCheckStatus(data);
     } else {
       tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:20px;color:red;">❌ 資料格式錯誤</td></tr>';
     }
@@ -1070,60 +1246,139 @@ async function loadCheckPeriodData() {
 
 // ==================== 載入核對狀態 ====================
 
-async function loadCheckStatus() {
-  try {
-    if (checkPeriodData.length === 0) {
-      const url = `${API}?action=getCheckStatus`;
-      const response = await fetch(url);
-      const status = await response.json();
-      if (status.chec_checked) {
-        document.getElementById('checChecked').checked = true;
-        document.getElementById('checCheckerName').value = status.chec_checker_name_post || '';
-        document.getElementById('checCheckerName').disabled = true;
-        document.getElementById('checChecked').disabled = true;
-        checLocked = true;
-      }
-      if (status.epd_checked) {
-        document.getElementById('epdChecked').checked = true;
-        document.getElementById('epdCheckerName').value = status.epd_checker_name_post || '';
-        document.getElementById('epdCheckerName').disabled = true;
-        document.getElementById('epdChecked').disabled = true;
-        epdLocked = true;
-      }
-      if (status.remark) {
-        document.getElementById('remarkInput').value = status.remark;
-      }
-      updateSubmitStatus();
-      return;
-    }
-    
-    const first = checkPeriodData[0];
+function loadCheckStatus(data) {
+  // 從第一筆資料讀取核對狀態（該日期所有記錄應一致）
+  if (data && data.length > 0) {
+    const first = data[0];
     const checChecked = first.chec_checked === true || first.chec_checked === 'true';
     const epdChecked = first.epd_checked === true || first.epd_checked === 'true';
     
+    // 更新 UI
+    document.getElementById('checChecked').checked = checChecked;
+    document.getElementById('checCheckerName').value = first.chec_checker_name_post || '';
+    document.getElementById('epdChecked').checked = epdChecked;
+    document.getElementById('epdCheckerName').value = first.epd_checker_name_post || '';
+    document.getElementById('remarkInput').value = first.remark || '';
+    
+    // 如果已核對，鎖定
     if (checChecked) {
-      document.getElementById('checChecked').checked = true;
-      document.getElementById('checCheckerName').value = first.chec_checker_name_post || '';
       document.getElementById('checCheckerName').disabled = true;
       document.getElementById('checChecked').disabled = true;
-      checLocked = true;
+    } else {
+      document.getElementById('checCheckerName').disabled = false;
+      document.getElementById('checChecked').disabled = false;
     }
     
     if (epdChecked) {
-      document.getElementById('epdChecked').checked = true;
-      document.getElementById('epdCheckerName').value = first.epd_checker_name_post || '';
       document.getElementById('epdCheckerName').disabled = true;
       document.getElementById('epdChecked').disabled = true;
-      epdLocked = true;
+    } else {
+      document.getElementById('epdCheckerName').disabled = false;
+      document.getElementById('epdChecked').disabled = false;
     }
     
-    if (first.remark) {
-      document.getElementById('remarkInput').value = first.remark;
-    }
+    // 更新本地暫存
+    localCheckData.checChecked = checChecked;
+    localCheckData.checCheckerName = first.chec_checker_name_post || '';
+    localCheckData.epdChecked = epdChecked;
+    localCheckData.epdCheckerName = first.epd_checker_name_post || '';
+    localCheckData.remark = first.remark || '';
+    
+    // 重置未儲存標記
+    hasUnsavedChanges = false;
+    updateUnsavedIndicator();
     
     updateSubmitStatus();
-  } catch (error) {
-    console.error('載入核對狀態失敗:', error);
+  } else {
+    resetCheckUI();
+  }
+}
+
+// 重置核對 UI
+function resetCheckUI() {
+  document.getElementById('checChecked').checked = false;
+  document.getElementById('checCheckerName').value = '';
+  document.getElementById('checCheckerName').disabled = false;
+  document.getElementById('checChecked').disabled = false;
+  document.getElementById('epdChecked').checked = false;
+  document.getElementById('epdCheckerName').value = '';
+  document.getElementById('epdCheckerName').disabled = false;
+  document.getElementById('epdChecked').disabled = false;
+  document.getElementById('remarkInput').value = '';
+  
+  localCheckData = {
+    checChecked: false,
+    checCheckerName: '',
+    epdChecked: false,
+    epdCheckerName: '',
+    remark: ''
+  };
+  
+  hasUnsavedChanges = false;
+  updateUnsavedIndicator();
+  document.getElementById('checkSubmitStatus').style.display = 'none';
+}
+
+// ==================== 監聽輸入變化 ====================
+
+// 監聽所有核對輸入的變化
+function setupChangeListeners() {
+  const inputs = [
+    'checCheckerName',
+    'epdCheckerName',
+    'remarkInput'
+  ];
+  
+  inputs.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input', function() {
+        if (!this.disabled) {
+          markAsUnsaved();
+        }
+      });
+      el.addEventListener('change', function() {
+        if (!this.disabled) {
+          markAsUnsaved();
+        }
+      });
+    }
+  });
+  
+  // 監聽 checkbox 變化
+  const checkboxes = ['checChecked', 'epdChecked'];
+  checkboxes.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('change', function() {
+        if (!this.disabled) {
+          markAsUnsaved();
+        }
+      });
+    }
+  });
+}
+
+// 標記為有未儲存變更
+function markAsUnsaved() {
+  if (document.getElementById('checChecked').disabled && 
+      document.getElementById('epdChecked').disabled) {
+    // 如果兩者都已鎖定，不標記為未儲存
+    return;
+  }
+  hasUnsavedChanges = true;
+  updateUnsavedIndicator();
+}
+
+// 更新未儲存指示器
+function updateUnsavedIndicator() {
+  const indicator = document.getElementById('unsavedIndicator');
+  if (indicator) {
+    if (hasUnsavedChanges) {
+      indicator.style.display = 'inline-block';
+    } else {
+      indicator.style.display = 'none';
+    }
   }
 }
 
@@ -1151,7 +1406,7 @@ function updateSubmitStatus() {
 
 // ==================== 確認核對 ====================
 
-async function confirmCheck() {
+async function confirmCheck(silentMode = false) {
   const checName = document.getElementById('checCheckerName').value.trim();
   const epdName = document.getElementById('epdCheckerName').value;
   const remark = document.getElementById('remarkInput').value.trim();
@@ -1159,40 +1414,60 @@ async function confirmCheck() {
   const checHasName = checName.length > 0;
   const epdHasName = epdName.length > 0;
   
+  // 檢查是否至少有一方填寫了姓名
   if (!checHasName && !epdHasName) {
-    alert('請至少填寫 CHEC 或 EPD 的核對人員資訊');
+    if (!silentMode) {
+      alert('請至少填寫 CHEC 或 EPD 的核對人員資訊 / Please fill in at least one checker');
+    }
     return;
   }
   
+  // 如果 CHEC 已填寫姓名但未勾選
   if (checHasName && !document.getElementById('checChecked').checked) {
-    const confirmCheck = confirm('CHEC 核對人員已填寫，是否確認核對？');
-    if (!confirmCheck) return;
+    if (!silentMode) {
+      const confirmCheck = confirm('CHEC 核對人員已填寫，是否確認核對？/ CHEC checker filled, confirm?');
+      if (!confirmCheck) return;
+    }
     document.getElementById('checChecked').checked = true;
   }
   
+  // 如果 EPD 已選擇但未勾選
   if (epdHasName && !document.getElementById('epdChecked').checked) {
-    const confirmCheck = confirm('EPD 核對人員已選擇，是否確認核對？');
-    if (!confirmCheck) return;
+    if (!silentMode) {
+      const confirmCheck = confirm('EPD 核對人員已選擇，是否確認核對？/ EPD checker selected, confirm?');
+      if (!confirmCheck) return;
+    }
     document.getElementById('epdChecked').checked = true;
   }
   
+  // 如果兩者都未勾選
   if (!document.getElementById('checChecked').checked && !document.getElementById('epdChecked').checked) {
-    alert('請至少勾選一個核對項目 (CHEC checked 或 EPD checked)');
+    if (!silentMode) {
+      alert('請至少勾選一個核對項目 (CHEC checked 或 EPD checked)');
+    }
     return;
   }
   
+  // 如果 CHEC 已勾選但沒有姓名
   if (document.getElementById('checChecked').checked && !checHasName) {
-    alert('CHEC 已勾選，請輸入姓名/職位');
+    if (!silentMode) {
+      alert('CHEC 已勾選，請輸入姓名/職位 / CHEC checked, please enter name/post');
+    }
     return;
   }
   
+  // 如果 EPD 已勾選但沒有選擇人員
   if (document.getElementById('epdChecked').checked && !epdHasName) {
-    alert('EPD 已勾選，請選擇 EPD 人員');
+    if (!silentMode) {
+      alert('EPD 已勾選，請選擇 EPD 人員 / EPD checked, please select staff');
+    }
     return;
   }
   
+  // 準備提交資料
   const params = new URLSearchParams();
   params.append('action', 'saveCheck');
+  params.append('date', currentCheckDate);
   params.append('chec_checked', document.getElementById('checChecked').checked);
   params.append('chec_checker_name_post', checName);
   params.append('epd_checked', document.getElementById('epdChecked').checked);
@@ -1200,62 +1475,103 @@ async function confirmCheck() {
   params.append('remark', remark);
   
   try {
-    showLoading(true, '正在儲存核對資料...');
+    if (!silentMode) {
+      showLoading(true, '正在儲存核對資料...');
+    }
     
     const url = `${API}?${params.toString()}`;
     const response = await fetch(url);
     const result = await response.json();
     
-    showLoading(false);
+    if (!silentMode) {
+      showLoading(false);
+    }
     
     if (result.result === 'success') {
-      alert(`✅ 核對資料已提交！\n\n已更新 ${result.updated || 0} 筆記錄`);
-      
+      // 鎖定已核對的部分
       if (document.getElementById('checChecked').checked) {
         document.getElementById('checCheckerName').disabled = true;
         document.getElementById('checChecked').disabled = true;
-        checLocked = true;
       }
       if (document.getElementById('epdChecked').checked) {
         document.getElementById('epdCheckerName').disabled = true;
         document.getElementById('epdChecked').disabled = true;
-        epdLocked = true;
       }
       
+      // 更新本地暫存
+      localCheckData.checChecked = document.getElementById('checChecked').checked;
+      localCheckData.checCheckerName = checName;
+      localCheckData.epdChecked = document.getElementById('epdChecked').checked;
+      localCheckData.epdCheckerName = epdName;
+      localCheckData.remark = remark;
+      
+      // 重置未儲存標記
+      hasUnsavedChanges = false;
+      updateUnsavedIndicator();
+      
       updateSubmitStatus();
-      await loadCheckPeriodData();
+      
+      if (!silentMode) {
+        alert(`✅ 核對資料已提交！\n\n已更新 ${result.updated || 0} 筆記錄 / Check data saved! ${result.updated || 0} records updated`);
+      }
+      
+      // 重新載入資料以更新狀態
+      await loadCheckPeriodData(currentCheckDate);
     } else {
-      alert('❌ 提交失敗，請稍後再試');
+      if (!silentMode) {
+        alert('❌ 提交失敗，請稍後再試 / Submission failed, please try again');
+      }
     }
   } catch (error) {
-    showLoading(false);
+    if (!silentMode) {
+      showLoading(false);
+    }
     console.error('提交核對失敗:', error);
-    alert('❌ 提交失敗: ' + error.message);
+    if (!silentMode) {
+      alert('❌ 提交失敗: ' + error.message);
+    }
   }
 }
 
-// ==================== 匯出核對期間 PDF（用戶可選擇日期） ====================
+// ==================== 處理登出 ====================
 
-async function exportCheckPeriodPDF() {
-  // 讓用戶選擇日期
-  const userSelectedDate = prompt('請輸入要匯出的日期 (格式: YYYY-MM-DD)\n例如: 2026-06-29\n\n留空則匯出今日申請名單', getTodayString());
-  
-  if (userSelectedDate === null) {
-    return; // 用戶取消
-  }
-  
-  let selectedDate = userSelectedDate.trim();
-  
-  // 驗證日期格式
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(selectedDate)) {
-    alert('❌ 日期格式錯誤，請使用 YYYY-MM-DD 格式');
+function handleLogout() {
+  if (hasUnsavedChanges) {
+    const confirmSave = confirm(
+      '⚠️ 有未儲存的核對資料 / Unsaved check data\n\n' +
+      '您尚未儲存 ' + currentCheckDate + ' 的核對資料。\n' +
+      'You have unsaved check data for ' + currentCheckDate + '.\n\n' +
+      '按「確定」儲存並登出 / Press OK to save and logout\n' +
+      '按「取消」繼續編輯 / Press Cancel to continue editing'
+    );
+    
+    if (confirmSave) {
+      // 用戶選擇儲存
+      confirmCheck(true).then(() => {
+        logout();
+      }).catch(() => {
+        // 如果儲存失敗，不登出
+      });
+    }
+    // 用戶選擇取消，停留在當前頁面
     return;
   }
   
-  // 檢查日期是否有效
-  const dateObj = new Date(selectedDate);
-  if (isNaN(dateObj.getTime())) {
-    alert('❌ 無效的日期');
+  logout();
+}
+
+function logout() { 
+  isLoggedIn = false; 
+  showLogin(); 
+}
+
+// ==================== 匯出核對期間 PDF ====================
+
+async function exportCheckPeriodPDF() {
+  const selectedDate = currentCheckDate;
+  
+  if (!selectedDate) {
+    alert('請先選擇日期 / Please select a date first');
     return;
   }
   
@@ -1267,11 +1583,11 @@ async function exportCheckPeriodPDF() {
   const list = cachedData.filter(item => item.visit_date === selectedDate);
   
   if (list.length === 0) {
-    alert(`📭 沒有 ${selectedDate} 的車輛紀錄`);
+    alert(`📭 沒有 ${selectedDate} 的車輛紀錄 / No records for ${selectedDate}`);
     return;
   }
   
-  // 獲取該日期的核對狀態（從第一筆記錄讀取）
+  // 獲取該日期的核對狀態
   const firstRecord = list[0];
   const checChecked = firstRecord.chec_checked === true || firstRecord.chec_checked === 'true';
   const epdChecked = firstRecord.epd_checked === true || firstRecord.epd_checked === 'true';
@@ -1505,7 +1821,8 @@ function switchTab(t) {
     else { 
       document.getElementById('loginBox').classList.add('hidden');
       document.getElementById('adminPanel').classList.remove('hidden');
-      loadCheckPeriodData();
+      initDatePicker();
+      setupChangeListeners();
     }
   }
 }
@@ -1523,15 +1840,11 @@ function verifyLogin() {
     isLoggedIn = true;
     document.getElementById('loginBox').classList.add('hidden');
     document.getElementById('adminPanel').classList.remove('hidden');
-    loadCheckPeriodData();
+    initDatePicker();
+    setupChangeListeners();
   } else {
     document.getElementById('loginError').classList.remove('hidden');
   }
-}
-
-function logout() { 
-  isLoggedIn = false; 
-  showLogin(); 
 }
 
 async function submitToGoogleSheet(formData, refNo, date) {
