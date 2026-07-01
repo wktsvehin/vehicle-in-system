@@ -459,6 +459,23 @@
       background: #edf2f7;
       cursor: not-allowed;
     }
+    .existing-remark-display {
+      background: #f7fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 10px 12px;
+      min-height: 40px;
+      font-size: 0.9rem;
+      color: #2d3748;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      margin-bottom: 12px;
+      line-height: 1.6;
+    }
+    .existing-remark-display.empty {
+      color: #a0aec0;
+      font-style: italic;
+    }
     .check-buttons {
       display: flex;
       flex-wrap: wrap;
@@ -498,6 +515,20 @@
     }
     .btn-print-pdf:hover {
       background: #2f855a;
+    }
+    .btn-blank-pdf {
+      background: #6c757d;
+      border: none;
+      color: #fff;
+      padding: 10px 28px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-blank-pdf:hover {
+      background: #5a6268;
     }
     .btn-logout {
       background: #e2e8f0;
@@ -671,7 +702,7 @@
   </div>
 </div>
 
-<!-- 訪客面板（保持原樣） -->
+<!-- 訪客面板 -->
 <div id="visitorPanel">
   <div id="formSection" class="card">
     <div class="alert-cutoff">
@@ -728,7 +759,7 @@
           <option>客貨車/Van</option>
           <option>中型貨車/Medium Truck</option>
           <option>重型貨車/Heavy Truck</option>
-          <option>工程車/Engineering Vehicle</option>
+          <option>工程車/Engg. Vehicle</option>
           <option>其他/Other</option>
         </select>
       </div>
@@ -894,7 +925,17 @@
           </div>
         </div>
         
-        <!-- 備註 -->
+        <!-- 現有備註顯示 -->
+        <div style="margin-top:12px;">
+          <label style="font-weight:600;font-size:0.9rem;color:#2d3748;display:block;margin-bottom:4px;">
+            📝 現有備註 / Existing Remark
+          </label>
+          <div id="existingRemarkDisplay" class="existing-remark-display empty">
+            載入中...
+          </div>
+        </div>
+        
+        <!-- 備註輸入 -->
         <div style="margin-top:12px;">
           <label style="font-weight:600;font-size:0.9rem;color:#2d3748;display:block;margin-bottom:4px;">備註 / Remark</label>
           <textarea id="remarkInput" class="remark-textarea" placeholder="輸入備註..."></textarea>
@@ -904,6 +945,7 @@
         <div class="check-buttons">
           <button class="btn-check-confirm" id="confirmCheckBtn" onclick="confirmCheck()">✅ 確認核對 / Confirm</button>
           <button class="btn-print-pdf" onclick="exportCheckPeriodPDF()">📄 匯出PDF / Export PDF</button>
+          <button class="btn-blank-pdf" onclick="exportBlankPDF()">📄 匯出空白PDF / Export Blank PDF</button>
           <button class="btn-logout" onclick="handleLogout()">🚪 登出 / Logout</button>
         </div>
         
@@ -1258,7 +1300,12 @@ function loadCheckStatus(data) {
     document.getElementById('checCheckerName').value = first.chec_checker_name_post || '';
     document.getElementById('epdChecked').checked = epdChecked;
     document.getElementById('epdCheckerName').value = first.epd_checker_name_post || '';
-    document.getElementById('remarkInput').value = first.remark || '';
+    
+    // Remark：唔顯示，保持空白（每次打開都係空白）
+    document.getElementById('remarkInput').value = '';
+    
+    // 更新現有 Remark 顯示
+    updateExistingRemarkDisplay(first.remark || '');
     
     // 如果已核對，鎖定
     if (checChecked) {
@@ -1306,6 +1353,9 @@ function resetCheckUI() {
   document.getElementById('epdChecked').disabled = false;
   document.getElementById('remarkInput').value = '';
   
+  // 更新現有 Remark 顯示（清空）
+  updateExistingRemarkDisplay('');
+  
   localCheckData = {
     checChecked: false,
     checCheckerName: '',
@@ -1317,6 +1367,59 @@ function resetCheckUI() {
   hasUnsavedChanges = false;
   updateUnsavedIndicator();
   document.getElementById('checkSubmitStatus').style.display = 'none';
+}
+
+// ==================== 更新現有 Remark 顯示 ====================
+
+function updateExistingRemarkDisplay(remark) {
+  const display = document.getElementById('existingRemarkDisplay');
+  if (!display) return;
+  
+  if (remark && remark.trim()) {
+    // 有 remark，顯示
+    const lines = remark.split('\n').filter(line => line.trim());
+    if (lines.length > 0) {
+      display.innerHTML = lines.map(function(line) {
+        return escapeHtml(line);
+      }).join('<br>');
+      display.className = 'existing-remark-display';
+    } else {
+      display.innerHTML = '暫無備註 / No remark';
+      display.className = 'existing-remark-display empty';
+    }
+  } else {
+    // 冇 remark
+    display.innerHTML = '暫無備註 / No remark';
+    display.className = 'existing-remark-display empty';
+  }
+}
+
+// ==================== 獲取現有 Remark ====================
+
+async function getExistingRemark(dateStr) {
+  try {
+    // 先從 cachedData 搵
+    if (cachedData.length > 0) {
+      var records = cachedData.filter(function(item) {
+        return item.visit_date === dateStr;
+      });
+      if (records.length > 0) {
+        return records[0].remark || '';
+      }
+    }
+    
+    // 如果 cachedData 冇，直接 fetch
+    var url = API + '?action=getCheckPeriod&date=' + dateStr;
+    var response = await fetch(url);
+    var data = await response.json();
+    if (data && data.length > 0) {
+      return data[0].remark || '';
+    }
+    return '';
+  } catch(e) {
+    console.log('獲取 remark 失敗:', e);
+    return '';
+  }
 }
 
 // ==================== 監聽輸入變化 ====================
@@ -1409,7 +1512,6 @@ function updateSubmitStatus() {
 async function confirmCheck(silentMode = false) {
   const checName = document.getElementById('checCheckerName').value.trim();
   const epdName = document.getElementById('epdCheckerName').value;
-  const remark = document.getElementById('remarkInput').value.trim();
   
   const checHasName = checName.length > 0;
   const epdHasName = epdName.length > 0;
@@ -1464,23 +1566,55 @@ async function confirmCheck(silentMode = false) {
     return;
   }
   
+  // ===== Remark 處理 =====
+  var userRemark = document.getElementById('remarkInput').value.trim();
+  var finalRemark = '';
+  
+  if (userRemark) {
+    // 有用戶輸入：當作新 remark，append 落去
+    var existingRemark = await getExistingRemark(currentCheckDate);
+    var existingLines = existingRemark 
+      ? existingRemark.split('\n').filter(function(line) { return line.trim(); }) 
+      : [];
+    var nextNumber = existingLines.length + 1;
+    var newLine = nextNumber + '. ' + userRemark;
+    
+    finalRemark = existingRemark 
+      ? existingRemark + '\n' + newLine
+      : newLine;
+  } else {
+    // 冇用戶輸入：唔傳 remark（保留現有）
+    finalRemark = '';
+  }
+  
   // 準備提交資料
-  const params = new URLSearchParams();
-  params.append('action', 'saveCheck');
-  params.append('date', currentCheckDate);
-  params.append('chec_checked', document.getElementById('checChecked').checked);
-  params.append('chec_checker_name_post', checName);
-  params.append('epd_checked', document.getElementById('epdChecked').checked);
-  params.append('epd_checker_name_post', epdName);
-  params.append('remark', remark);
+  var params = {
+    date: currentCheckDate,
+    chec_checked: document.getElementById('checChecked').checked,
+    chec_checker_name_post: checName,
+    epd_checked: document.getElementById('epdChecked').checked,
+    epd_checker_name_post: epdName
+  };
+  
+  // 只有當有用戶輸入 remark 時，先加入 params
+  if (finalRemark) {
+    params.remark = finalRemark;
+  }
   
   try {
     if (!silentMode) {
       showLoading(true, '正在儲存核對資料...');
     }
     
-    const url = `${API}?${params.toString()}`;
-    const response = await fetch(url);
+    const url = `${API}?action=saveCheck&date=${params.date}&chec_checked=${params.chec_checked}&chec_checker_name_post=${encodeURIComponent(params.chec_checker_name_post)}&epd_checked=${params.epd_checked}&epd_checker_name_post=${encodeURIComponent(params.epd_checker_name_post)}`;
+    
+    // 如果有 remark 先加落 URL
+    let finalUrl = url;
+    if (params.remark) {
+      finalUrl += `&remark=${encodeURIComponent(params.remark)}`;
+    }
+    
+    const response = await fetch(finalUrl);
     const result = await response.json();
     
     if (!silentMode) {
@@ -1503,7 +1637,9 @@ async function confirmCheck(silentMode = false) {
       localCheckData.checCheckerName = checName;
       localCheckData.epdChecked = document.getElementById('epdChecked').checked;
       localCheckData.epdCheckerName = epdName;
-      localCheckData.remark = remark;
+      if (params.remark) {
+        localCheckData.remark = params.remark;
+      }
       
       // 重置未儲存標記
       hasUnsavedChanges = false;
@@ -1513,6 +1649,18 @@ async function confirmCheck(silentMode = false) {
       
       if (!silentMode) {
         alert(`✅ 核對資料已提交！\n\n已更新 ${result.updated || 0} 筆記錄 / Check data saved! ${result.updated || 0} records updated`);
+      }
+      
+      // 清空 remark 輸入框（為下次輸入做好準備）
+      document.getElementById('remarkInput').value = '';
+      
+      // 更新現有 Remark 顯示（顯示最新嘅 remark）
+      if (params.remark) {
+        updateExistingRemarkDisplay(params.remark);
+      } else {
+        // 如果冇新 remark，重新獲取現有 remark
+        var existingRemark = await getExistingRemark(currentCheckDate);
+        updateExistingRemarkDisplay(existingRemark);
       }
       
       // 重新載入資料以更新狀態
@@ -1565,6 +1713,50 @@ function logout() {
   showLogin(); 
 }
 
+// ==================== 輔助：車輛種類中英分兩行 ====================
+
+function formatVehicleTypeForPDF(vehicleType) {
+  if (!vehicleType) return '&nbsp;';
+  
+  // 定義所有車輛種類嘅中英對照
+  var typeMap = {
+    '私家車/Private Car': '私家車<br>Private Car',
+    '客貨車/Van': '客貨車<br>Van',
+    '中型貨車/Medium Truck': '中型貨車<br>Medium Truck',
+    '重型貨車/Heavy Truck': '重型貨車<br>Heavy Truck',
+    '工程車/Engg. Vehicle': '工程車<br>Engg. Vehicle',
+    '其他/Other': '其他<br>Other'
+  };
+  
+  // 如果 exact match，直接 return
+  if (typeMap[vehicleType]) {
+    return typeMap[vehicleType];
+  }
+  
+  // 否則嘗試部分比對
+  if (vehicleType.indexOf('私家車') !== -1 || vehicleType.indexOf('Private Car') !== -1) {
+    return '私家車<br>Private Car';
+  }
+  if (vehicleType.indexOf('客貨車') !== -1 || vehicleType.indexOf('Van') !== -1) {
+    return '客貨車<br>Van';
+  }
+  if (vehicleType.indexOf('中型貨車') !== -1 || vehicleType.indexOf('Medium Truck') !== -1) {
+    return '中型貨車<br>Medium Truck';
+  }
+  if (vehicleType.indexOf('重型貨車') !== -1 || vehicleType.indexOf('Heavy Truck') !== -1) {
+    return '重型貨車<br>Heavy Truck';
+  }
+  if (vehicleType.indexOf('工程車') !== -1 || vehicleType.indexOf('Engg') !== -1 || vehicleType.indexOf('Engineering') !== -1) {
+    return '工程車<br>Engg. Vehicle';
+  }
+  if (vehicleType.indexOf('其他') !== -1 || vehicleType.indexOf('Other') !== -1) {
+    return '其他<br>Other';
+  }
+  
+  // 如果都 match 唔到，就將原本嘅 / 換成 <br>
+  return vehicleType.replace('/', '<br>');
+}
+
 // ==================== 匯出核對期間 PDF ====================
 
 async function exportCheckPeriodPDF() {
@@ -1609,42 +1801,44 @@ async function exportCheckPeriodPDF() {
       const pageData = list.slice(start, end);
       let tableRows = '';
       
+      // 欄位寬度調整（更舒適）
       const colWidths = {
         item: '5%',
-        ref_no: '10%',
-        company: '12%',
-        vehicle_no: '10%',
+        ref_no: '12%',
+        company: '14%',
+        vehicle_no: '12%',
         vehicle_type: '12%',
         contact: '8%',
         tel: '8%',
         time_in: '8%',
-        purpose: '27%'
+        purpose: '21%'
       };
       
       pageData.forEach((item, idx) => {
         const globalIndex = start + idx + 1;
+        const formattedVehicleType = formatVehicleTypeForPDF(item.vehicle_type);
         tableRows += `<tr style="background:#ffffff;">
-          <td style="border:1px solid #000000;padding:8px 4px;vertical-align:middle;text-align:center;font-size:11px;width:${colWidths.item};">${globalIndex}</td>
-          <td style="border:1px solid #000000;padding:8px 4px;vertical-align:middle;text-align:center;font-size:11px;width:${colWidths.ref_no};">${escapeHtml(item.ref_no)}</td>
-          <td style="border:1px solid #000000;padding:8px 4px;vertical-align:middle;text-align:center;font-size:11px;width:${colWidths.company};">${escapeHtml(item.company)}</td>
-          <td style="border:1px solid #000000;padding:8px 4px;vertical-align:middle;text-align:center;font-size:11px;width:${colWidths.vehicle_no};font-weight:bold;color:#2c7a7b;">${escapeHtml(item.vehicle_no)}</td>
-          <td style="border:1px solid #000000;padding:8px 4px;vertical-align:middle;text-align:center;font-size:11px;width:${colWidths.vehicle_type};">${escapeHtml(item.vehicle_type)}</td>
-          <td style="border:1px solid #000000;padding:8px 4px;vertical-align:middle;text-align:center;font-size:11px;width:${colWidths.contact};">${escapeHtml(item.contact_person)}</td>
-          <td style="border:1px solid #000000;padding:8px 4px;vertical-align:middle;text-align:center;font-size:11px;width:${colWidths.tel};">${escapeHtml(item.tel_no)}</td>
-          <td style="border:1px solid #000000;padding:8px 4px;vertical-align:middle;text-align:center;font-size:11px;width:${colWidths.time_in};">${escapeHtml(item.time_in)}</td>
-          <td style="border:1px solid #000000;padding:8px 4px;vertical-align:middle;text-align:center;font-size:11px;width:${colWidths.purpose};word-wrap:break-word;word-break:break-word;">${escapeHtml(item.purpose)}</td>
+          <td style="border:1px solid #000000;padding:6px 6px;vertical-align:middle;text-align:center;font-size:14px;width:${colWidths.item};">${globalIndex}</td>
+          <td style="border:1px solid #000000;padding:6px 6px;vertical-align:middle;text-align:center;font-size:14px;width:${colWidths.ref_no};">${escapeHtml(item.ref_no)}</td>
+          <td style="border:1px solid #000000;padding:6px 6px;vertical-align:middle;text-align:center;font-size:14px;width:${colWidths.company};">${escapeHtml(item.company)}</td>
+          <td style="border:1px solid #000000;padding:6px 6px;vertical-align:middle;text-align:center;font-size:14px;width:${colWidths.vehicle_no};font-weight:bold;color:#2c7a7b;">${escapeHtml(item.vehicle_no)}</td>
+          <td style="border:1px solid #000000;padding:6px 6px;vertical-align:middle;text-align:center;font-size:14px;width:${colWidths.vehicle_type};">${formattedVehicleType}</td>
+          <td style="border:1px solid #000000;padding:6px 6px;vertical-align:middle;text-align:center;font-size:14px;width:${colWidths.contact};">${escapeHtml(item.contact_person)}</td>
+          <td style="border:1px solid #000000;padding:6px 6px;vertical-align:middle;text-align:center;font-size:14px;width:${colWidths.tel};">${escapeHtml(item.tel_no)}</td>
+          <td style="border:1px solid #000000;padding:6px 6px;vertical-align:middle;text-align:center;font-size:14px;width:${colWidths.time_in};">${escapeHtml(item.time_in)}</td>
+          <td style="border:1px solid #000000;padding:6px 6px;vertical-align:middle;text-align:center;font-size:14px;width:${colWidths.purpose};word-wrap:break-word;word-break:break-word;">${escapeHtml(item.purpose)}</td>
         <\/tr>`;
       });
       
       const pdfContainer = document.createElement('div');
-      pdfContainer.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:1200px;background:white;padding:15px;font-family:Arial,sans-serif;';
+      pdfContainer.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:1200px;background:white;padding:25px;font-family:Arial,sans-serif;';
       
-      let pageInfo = totalPages > 1 ? `<div style="text-align:right;font-size:11px;color:#666;margin-bottom:5px;">第 ${page+1} 頁 / 共 ${totalPages} 頁</div>` : '';
+      let pageInfo = totalPages > 1 ? `<div style="text-align:right;font-size:15px;color:#666;margin-bottom:5px;">第 ${page+1} 頁 / 共 ${totalPages} 頁</div>` : '';
       
-      // 建構核對狀態顯示
+      // 建構核對狀態顯示（字體 +4px）
       let checkStatusHtml = '';
       if (checChecked || epdChecked) {
-        checkStatusHtml = `<div style="display:flex;justify-content:flex-end;gap:20px;font-size:12px;margin-bottom:8px;flex-wrap:wrap;">`;
+        checkStatusHtml = `<div style="display:flex;justify-content:flex-end;gap:20px;font-size:16px;margin-bottom:8px;flex-wrap:wrap;">`;
         if (checChecked) {
           checkStatusHtml += `<span>☑ CHEC 已核對（姓名/職位：${escapeHtml(checName) || '___________'}）</span>`;
         } else {
@@ -1657,20 +1851,22 @@ async function exportCheckPeriodPDF() {
         }
         checkStatusHtml += `</div>`;
       } else {
-        checkStatusHtml = `<div style="display:flex;justify-content:flex-end;gap:20px;font-size:12px;margin-bottom:8px;flex-wrap:wrap;">
+        checkStatusHtml = `<div style="display:flex;justify-content:flex-end;gap:20px;font-size:16px;margin-bottom:8px;flex-wrap:wrap;">
           <span>☐ CHEC 已核對（姓名/職位：___________）</span>
           <span>☐ EPD 已核對（姓名/職位：___________）</span>
         </div>`;
       }
       
-      // 備註顯示
+      // 備註顯示 - 只喺最後一頁顯示
       let remarkHtml = '';
-      if (remark) {
+      if (page === totalPages - 1 && remark) {
         const remarkLines = remark.split('\n').filter(line => line.trim());
         if (remarkLines.length > 0) {
-          remarkHtml = `<div style="font-size:11px;color:#555;margin-top:8px;padding:8px 12px;background:#f8f8f8;border-radius:4px;text-align:left;">
+          remarkHtml = `<div style="font-size:14px;color:#555;margin-top:12px;padding:10px 14px;background:#f8f8f8;border-radius:4px;text-align:left;">
             <strong>備註 / Remark：</strong><br>
-            ${remarkLines.map((line, i) => `${i+1}: ${escapeHtml(line)}`).join('<br>')}
+            ${remarkLines.map(function(line) {
+              return escapeHtml(line);
+            }).join('<br>')}
           </div>`;
         }
       }
@@ -1678,39 +1874,39 @@ async function exportCheckPeriodPDF() {
       pdfContainer.innerHTML = `
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;border-bottom:2px solid #ccc;padding-bottom:8px;">
           <div>
-            <div style="font-size:16px;font-weight:bold;">中國港灣工程有限責任公司</div>
-            <div style="font-size:12px;color:#555;">China Harbour Engineering Company Limited</div>
-            <div style="font-size:11px;color:#666;">西九龍廢物轉運站 | West Kowloon Transfer Station</div>
+            <div style="font-size:20px;font-weight:bold;">中國港灣工程有限責任公司</div>
+            <div style="font-size:16px;color:#555;">China Harbour Engineering Company Limited</div>
+            <div style="font-size:15px;color:#666;">西九龍廢物轉運站 | West Kowloon Transfer Station</div>
           </div>
-          <div style="text-align:right;font-size:11px;color:#555;">
+          <div style="text-align:right;font-size:16px;color:#555;">
             ${checkStatusHtml}
           </div>
         </div>
         <div style="text-align:center;margin:10px 0;">
-          <div style="font-size:18px;font-weight:bold;color:#1a5c5c;background:#e6f7f7;display:inline-block;padding:6px 20px;border-radius:30px;">📅 到訪日期 / Visit Date：${selectedDate}</div>
+          <div style="font-size:22px;font-weight:bold;color:#1a5c5c;background:#e6f7f7;display:inline-block;padding:6px 20px;border-radius:30px;">📅 到訪日期 / Visit Date：${selectedDate}</div>
         </div>
-        <div style="font-size:16px;font-weight:bold;text-align:center;margin-bottom:6px;">車輛進入預先登記記錄</div>
-        <div style="font-size:13px;text-align:center;margin-bottom:10px;color:#555;">Registered Vehicle Log</div>
+        <div style="font-size:20px;font-weight:bold;text-align:center;margin-bottom:6px;">車輛進入預先登記記錄</div>
+        <div style="font-size:17px;text-align:center;margin-bottom:10px;color:#555;">Registered Vehicle Log</div>
         ${pageInfo}
         <table style="width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed;">
           <thead>
             <tr style="background:#f0f0f0;">
-              <th style="border:1px solid #000;padding:8px 4px;text-align:center;font-weight:bold;font-size:12px;width:${colWidths.item};">項目<br><span style="font-weight:normal;font-size:10px;">Item</span></th>
-              <th style="border:1px solid #000;padding:8px 4px;text-align:center;font-weight:bold;font-size:12px;width:${colWidths.ref_no};">參考編號<br><span style="font-weight:normal;font-size:10px;">Ref No.</span></th>
-              <th style="border:1px solid #000;padding:8px 4px;text-align:center;font-weight:bold;font-size:12px;width:${colWidths.company};">公司<br><span style="font-weight:normal;font-size:10px;">Company</span></th>
-              <th style="border:1px solid #000;padding:8px 4px;text-align:center;font-weight:bold;font-size:12px;width:${colWidths.vehicle_no};">車牌<br><span style="font-weight:normal;font-size:10px;">Vehicle No.</span></th>
-              <th style="border:1px solid #000;padding:8px 4px;text-align:center;font-weight:bold;font-size:12px;width:${colWidths.vehicle_type};">車輛種類<br><span style="font-weight:normal;font-size:10px;">Vehicle Type</span></th>
-              <th style="border:1px solid #000;padding:8px 4px;text-align:center;font-weight:bold;font-size:12px;width:${colWidths.contact};">聯絡人<br><span style="font-weight:normal;font-size:10px;">Contact</span></th>
-              <th style="border:1px solid #000;padding:8px 4px;text-align:center;font-weight:bold;font-size:12px;width:${colWidths.tel};">電話<br><span style="font-weight:normal;font-size:10px;">Tel</span></th>
-              <th style="border:1px solid #000;padding:8px 4px;text-align:center;font-weight:bold;font-size:12px;width:${colWidths.time_in};">入站時間<br><span style="font-weight:normal;font-size:10px;">Time In</span></th>
-              <th style="border:1px solid #000;padding:8px 4px;text-align:center;font-weight:bold;font-size:12px;width:${colWidths.purpose};">目的<br><span style="font-weight:normal;font-size:10px;">Purpose</span></th>
+              <th style="border:1px solid #000;padding:8px 6px;text-align:center;font-weight:bold;font-size:16px;width:${colWidths.item};">項目<br><span style="font-weight:normal;font-size:14px;">Item</span></th>
+              <th style="border:1px solid #000;padding:8px 6px;text-align:center;font-weight:bold;font-size:16px;width:${colWidths.ref_no};">參考編號<br><span style="font-weight:normal;font-size:14px;">Ref No.</span></th>
+              <th style="border:1px solid #000;padding:8px 6px;text-align:center;font-weight:bold;font-size:16px;width:${colWidths.company};">公司<br><span style="font-weight:normal;font-size:14px;">Company</span></th>
+              <th style="border:1px solid #000;padding:8px 6px;text-align:center;font-weight:bold;font-size:16px;width:${colWidths.vehicle_no};">車牌<br><span style="font-weight:normal;font-size:14px;">Vehicle No.</span></th>
+              <th style="border:1px solid #000;padding:8px 6px;text-align:center;font-weight:bold;font-size:16px;width:${colWidths.vehicle_type};">車輛種類<br><span style="font-weight:normal;font-size:14px;">Vehicle Type</span></th>
+              <th style="border:1px solid #000;padding:8px 6px;text-align:center;font-weight:bold;font-size:16px;width:${colWidths.contact};">聯絡人<br><span style="font-weight:normal;font-size:14px;">Contact</span></th>
+              <th style="border:1px solid #000;padding:8px 6px;text-align:center;font-weight:bold;font-size:16px;width:${colWidths.tel};">電話<br><span style="font-weight:normal;font-size:14px;">Tel</span></th>
+              <th style="border:1px solid #000;padding:8px 6px;text-align:center;font-weight:bold;font-size:16px;width:${colWidths.time_in};">入站時間<br><span style="font-weight:normal;font-size:14px;">Time In</span></th>
+              <th style="border:1px solid #000;padding:8px 6px;text-align:center;font-weight:bold;font-size:16px;width:${colWidths.purpose};">目的<br><span style="font-weight:normal;font-size:14px;">Purpose</span></th>
             </tr>
           </thead>
           <tbody>${tableRows}</tbody>
         </table>
         ${remarkHtml}
-        <div style="margin-top:8px;font-size:11px;text-align:center;color:#888;">系統產生之記錄，請查閱後簽署</div>
-        <div style="font-size:10px;text-align:center;color:#999;">System generated record, please sign after checking</div>
+        <div style="margin-top:8px;font-size:15px;text-align:center;color:#888;">系統產生之記錄，請查閱後續簽署</div>
+        <div style="font-size:14px;text-align:center;color:#999;">System generated record, please sign after checking</div>
       `;
       
       document.body.appendChild(pdfContainer);
@@ -1737,6 +1933,107 @@ async function exportCheckPeriodPDF() {
     showLoading(false);
     console.error('PDF 生成失敗:', err);
     alert('❌ PDF 生成失敗: ' + err.message);
+  }
+}
+
+// ==================== 匯出空白 PDF ====================
+
+async function exportBlankPDF() {
+  showLoading(true, '正在產生空白 PDF...');
+  
+  try {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('l', 'mm', 'a4');
+    const ROWS_PER_PAGE = 10; // 空白行數
+    
+    // 建構空白 PDF 嘅 HTML - padding 25px 四邊留白
+    const pdfContainer = document.createElement('div');
+    pdfContainer.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:1200px;background:white;padding:25px;font-family:Arial,sans-serif;';
+    
+    // 建構空白表格行（10 行）- padding 6px，字體 14px
+    let blankRows = '';
+    for (let i = 0; i < ROWS_PER_PAGE; i++) {
+      blankRows += `<tr style="background:#ffffff;">
+        <td style="border:1px solid #000000;padding:6px 6px;vertical-align:middle;text-align:center;font-size:14px;width:5%;">&nbsp;</td>
+        <td style="border:1px solid #000000;padding:6px 6px;vertical-align:middle;text-align:center;font-size:14px;width:12%;">&nbsp;</td>
+        <td style="border:1px solid #000000;padding:6px 6px;vertical-align:middle;text-align:center;font-size:14px;width:14%;">&nbsp;</td>
+        <td style="border:1px solid #000000;padding:6px 6px;vertical-align:middle;text-align:center;font-size:14px;width:12%;">&nbsp;</td>
+        <td style="border:1px solid #000000;padding:6px 6px;vertical-align:middle;text-align:center;font-size:14px;width:12%;">&nbsp;</td>
+        <td style="border:1px solid #000000;padding:6px 6px;vertical-align:middle;text-align:center;font-size:14px;width:8%;">&nbsp;</td>
+        <td style="border:1px solid #000000;padding:6px 6px;vertical-align:middle;text-align:center;font-size:14px;width:8%;">&nbsp;</td>
+        <td style="border:1px solid #000000;padding:6px 6px;vertical-align:middle;text-align:center;font-size:14px;width:8%;">&nbsp;</td>
+        <td style="border:1px solid #000000;padding:6px 6px;vertical-align:middle;text-align:center;font-size:14px;width:21%;">&nbsp;</td>
+      </tr>`;
+    }
+    
+    // 核對狀態（全部未核對）- 字體 16px
+    let checkStatusHtml = `<div style="display:flex;justify-content:flex-end;gap:20px;font-size:16px;margin-bottom:8px;flex-wrap:wrap;">
+      <span>☐ CHEC 已核對（姓名/職位：___________）</span>
+      <span>☐ EPD 已核對（姓名/職位：___________）</span>
+    </div>`;
+    
+    // 空白備註 - 字體 14px，2 行底線
+    let remarkHtml = `<div style="font-size:14px;color:#555;margin-top:12px;padding:10px 14px;background:#f8f8f8;border-radius:4px;text-align:left;">
+      <strong>備註 / Remark：</strong><br>
+      ___________________________________________________________________________________________<br>
+      ___________________________________________________________________________________________
+    </div>`;
+    
+    pdfContainer.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;border-bottom:2px solid #ccc;padding-bottom:8px;">
+        <div>
+          <div style="font-size:20px;font-weight:bold;">中國港灣工程有限責任公司</div>
+          <div style="font-size:16px;color:#555;">China Harbour Engineering Company Limited</div>
+          <div style="font-size:15px;color:#666;">西九龍廢物轉運站 | West Kowloon Transfer Station</div>
+        </div>
+        <div style="text-align:right;font-size:16px;color:#555;">
+          ${checkStatusHtml}
+        </div>
+      </div>
+      <div style="text-align:center;margin:10px 0;">
+        <div style="font-size:22px;font-weight:bold;color:#1a5c5c;background:#e6f7f7;display:inline-block;padding:6px 20px;border-radius:30px;">📅 到訪日期 / Visit Date：___________</div>
+      </div>
+      <div style="font-size:20px;font-weight:bold;text-align:center;margin-bottom:6px;">車輛進入預先登記記錄</div>
+      <div style="font-size:17px;text-align:center;margin-bottom:10px;color:#555;">Registered Vehicle Log</div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed;">
+        <thead>
+          <tr style="background:#f0f0f0;">
+            <th style="border:1px solid #000;padding:8px 6px;text-align:center;font-weight:bold;font-size:16px;width:5%;">項目<br><span style="font-weight:normal;font-size:14px;">Item</span></th>
+            <th style="border:1px solid #000;padding:8px 6px;text-align:center;font-weight:bold;font-size:16px;width:12%;">參考編號<br><span style="font-weight:normal;font-size:14px;">Ref No.</span></th>
+            <th style="border:1px solid #000;padding:8px 6px;text-align:center;font-weight:bold;font-size:16px;width:14%;">公司<br><span style="font-weight:normal;font-size:14px;">Company</span></th>
+            <th style="border:1px solid #000;padding:8px 6px;text-align:center;font-weight:bold;font-size:16px;width:12%;">車牌<br><span style="font-weight:normal;font-size:14px;">Vehicle No.</span></th>
+            <th style="border:1px solid #000;padding:8px 6px;text-align:center;font-weight:bold;font-size:16px;width:12%;">車輛種類<br><span style="font-weight:normal;font-size:14px;">Vehicle Type</span></th>
+            <th style="border:1px solid #000;padding:8px 6px;text-align:center;font-weight:bold;font-size:16px;width:8%;">聯絡人<br><span style="font-weight:normal;font-size:14px;">Contact</span></th>
+            <th style="border:1px solid #000;padding:8px 6px;text-align:center;font-weight:bold;font-size:16px;width:8%;">電話<br><span style="font-weight:normal;font-size:14px;">Tel</span></th>
+            <th style="border:1px solid #000;padding:8px 6px;text-align:center;font-weight:bold;font-size:16px;width:8%;">入站時間<br><span style="font-weight:normal;font-size:14px;">Time In</span></th>
+            <th style="border:1px solid #000;padding:8px 6px;text-align:center;font-weight:bold;font-size:16px;width:21%;">目的<br><span style="font-weight:normal;font-size:14px;">Purpose</span></th>
+          </tr>
+        </thead>
+        <tbody>${blankRows}</tbody>
+      </table>
+      ${remarkHtml}
+      <div style="margin-top:8px;font-size:15px;text-align:center;color:#888;">系統產生之記錄，請查閱後續簽署</div>
+      <div style="font-size:14px;text-align:center;color:#999;">System generated record, please sign after checking</div>
+    `;
+    
+    document.body.appendChild(pdfContainer);
+    await new Promise(r => setTimeout(r, 200));
+    const canvas = await html2canvas(pdfContainer, { scale: 2.5, backgroundColor: '#ffffff' });
+    document.body.removeChild(pdfContainer);
+    
+    const imgData = canvas.toDataURL('image/png');
+    const imgWidth = 280;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    
+    pdf.addImage(imgData, 'PNG', 8, 6, imgWidth, imgHeight);
+    
+    pdf.save('WKTS_Blank_VehicleLog.pdf');
+    showLoading(false);
+    alert('✅ 空白 PDF 已下載！');
+  } catch (err) {
+    showLoading(false);
+    console.error('空白 PDF 生成失敗:', err);
+    alert('❌ 空白 PDF 生成失敗: ' + err.message);
   }
 }
 
